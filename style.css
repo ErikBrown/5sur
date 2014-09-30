@@ -1,0 +1,217 @@
+/* Get rid of unnecessary normalize rules */
+
+html {
+	overflow-y: scroll; 
+}
+
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td { 
+	margin: 0;
+	padding: 0;
+}
+	
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+fieldset,img,iframe { 
+	border: 0;
+}
+	
+address,caption,cite,code,dfn,em,strong,th,var {
+	font-style: normal;
+	font-weight: normal;
+}
+
+h1,h2,h3,h4,h5,h6 {
+	font-size: 100%;
+	font-weight: normal;
+}
+
+q:before,q:after {
+	content: '';
+}
+
+abbr,acronym { 
+	border:0;
+}
+	
+ul { 
+	list-style: none;
+}
+
+a, a:hover, a:visited, a:active {
+	text-decoration: none;
+	color: inherit;
+}
+
+* {
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	box-sizing: border-box;         /* Opera/IE 8+ */
+}
+
+body {
+	font-family: 'Open Sans', sans-serif;
+}
+
+h1 {
+	float: left;
+	margin-left: 15px;
+	font-family: 'Montserrat', sans-serif;
+	font-size: 24px;
+	line-height: 45px;
+}
+
+#header {
+	width: 100%;
+	height: 45px;
+	background: #333333;
+	color: #ffffff;
+}
+
+#account_nav {
+	float: right;
+	font-family: 'Bitter', serif;
+	font-size: 14px;
+	line-height: 45px;
+}
+
+#account_nav > li {
+	float: left;
+	margin-right: 15px;
+}
+
+#search_wrapper {
+	width: 100%;
+	margin-bottom: 50px;
+	background: #E5E5E5;
+	overflow: hidden;
+}
+
+#search_box {
+	width: 400px;
+	height: 35px;
+	border: 1px solid #D4D4D4;
+	margin: 25px 0 25px 15px;
+	padding-left: 10px;
+	border-radius: 3px;
+}
+
+#search_submit {
+	width: 50px;
+	height: 35px;
+	border: 1px solid #BBBBBB;
+	background: #DBDBDB;
+	margin-left: 0;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.list_item {
+	float: left;
+	clear: left;
+	height: 100px;
+	margin: 0 0 15px 15px;
+	border: 1px solid #dddddd;
+	background: #ffffff;
+	overflow: hidden;
+	text-align: center;
+}
+
+.list_item > li {
+	float: left;
+}
+
+.list_item > li + li {
+	padding: 0 25px;
+}
+
+.list_item > li + li > span {
+	height: 100px;
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.listing_user {
+	position: relative;
+	color: #15B031;
+	width: 100px;
+	height: 100px;
+}
+
+.listing_user > span {
+	display: block;
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	padding: 0 0 2px 0;
+	background: #333333;
+	opacity: .95;
+	font-weight: 600;
+}
+
+.date_leaving {
+	height: 100px;
+	width: 100px;
+	border-right: 1px solid #D7D7D7;
+}
+
+.date_leaving > div {
+	margin-top: 25px;
+}
+
+.month {
+	display: block;
+	font-family: 'Bitter', serif;
+	font-size: 26px;
+	color: #048F9B;
+}
+
+.day {
+	display: block;
+	margin-top: 3px;
+	font-size: 14px;
+}
+
+.city {
+	font-size: 26px;
+	font-weight: 700;
+}
+
+.to {
+	color: #ACACAC;
+	padding: 0 10px;
+}
+
+.fee {
+	position: relative;
+	width: 100px;
+	margin-right: 0px;
+	border-left: 1px solid #D7D7D7;
+	background: #333333;
+	font-weight: 700;
+	color: #ffffff;	
+	-webkit-transition: .5s;
+	transition: .5s;
+}
+
+.fee:hover {
+	cursor: pointer;
+}
+
+.fee > span {
+	width: 100px;
+}
+
+.seats {
+	width: 100px;
+	margin-right: 0px;
+	border-left: 1px solid #D7D7D7;
+	font-size: 44px;
+	font-weight: 600;
+}
+
+.seats > span {
+	width: 100px;
+}
