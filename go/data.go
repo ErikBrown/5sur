@@ -1,10 +1,13 @@
 package main
 
 import (
+	"net/http"
 	"fmt"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 )
+
+var db *sql.DB
 
 type Listing struct {
 	datePosting string
@@ -16,7 +19,8 @@ type Listing struct {
 	fee float32
 }
 
-func main() {
+func returnListings() []Listing {
+	results := make ([]Listing, 0)
 	// The db should be long lived. Do not recreate it unless accessing a different
 	// database. Do not Open() and Close() from a short lived function, just pass in
 	// the db object to the function
@@ -43,8 +47,6 @@ func main() {
 	}
 	defer stmt.Close()
 
-	results := make ([]Listing, 0) // Make struct to store everything
-
 	// db.Query() prepares, executes, and closes a prepared statement - three round
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	rows, err := stmt.Query(2)
@@ -64,6 +66,23 @@ func main() {
 		}
 		results = append(results, temp)
 	}
+	return results
+}
 
-	fmt.Printf("%v\n", results[1].driver)
+func createHTML (myListing Listing) string{
+	result := "<ul class=\"list_item\"><li class=\"listing_user\"><img src=\"" + myListing.picture + "\" alt=\"User Picture\"><span class=\"positive\">+100</span></li><li class=\"date_leaving\"><div><span class=\"month\">" + myListing.dateLeaving + "</span></div></li><li class=\"city\"><span>" + myListing.origin + "</span><span class=\"to\">&#10132;</span><span>" + myListing.destination + "</span></li><li class=\"seats\"><span>2</span></li><li class=\"fee\"><span>$" + fmt.Sprintf("%.6f", myListing.fee) + "</span></li></ul>}"
+	return result
+}
+
+func generateHtml(w http.ResponseWriter, r *http.Request) {
+	results := returnListings() // Make struct to store everything
+	var myString string
+	for i := range results{
+		myString += createHTML(results[i])
+	}
+	fmt.Fprint(w, myString)
+}
+func main() {
+	http.HandleFunc("/go/", generateHtml)
+	http.ListenAndServe(":8080", nil)
 }
