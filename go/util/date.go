@@ -2,6 +2,7 @@ package util
 
 import (
 	"strings"
+	"strconv"
 )
 
 type Date struct{
@@ -10,23 +11,26 @@ type Date struct{
 	Day string
 }
 
-var []months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
+var months = [12]string{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
 
 //FORM yyyy-mm-dd hh:mm:ss Drop the seconds. Parse the rest.
-func customDate (date string) Date{
-	var splits []string = strings.SplitAfter(date, "")
+func customDate (timestamp string) Date{
+	var splits []string = strings.SplitAfter(timestamp, "")
 	var date Date
-	var month = splits[5] + splits[6]
-	date.Month = months[ParseInt(month, 10, 8)-1]
-	var day = splits[8] + splits[9]
-	if(splits[9]=="1"){
-		day+="st"
+	month := splits[5] + splits[6]
+	m, err := strconv.ParseInt(month, 10, 8)
+	if err != nil {
+		// FUCKING PANIC
 	}
-	else if(splits[9]=="2"){
+	date.Month = months[m-1]
+	var day = splits[8] + splits[9]
+	if splits[9]=="1" {
+		day+="st"
+	} else if splits[9]=="2" {
 		day+="nd"
-	} else if(splits[9]=="3"){
+	} else if splits[9]=="3" {
 		day+="rd"
-	}else{
+	} else{
 		day+="th"
 	}
 	date.Day = day
