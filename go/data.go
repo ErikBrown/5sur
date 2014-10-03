@@ -8,7 +8,8 @@ import (
 )
 
 func createHTML (myListing results.Listing) string{
-	output := "<ul class=\"list_item\"><li class=\"listing_user\"><img src=\"" + myListing.Picture + "\" alt=\"User Picture\"><span class=\"positive\">+100</span></li><li class=\"date_leaving\"><div><span class=\"month\">" + myListing.DateLeaving + "</span></div></li><li class=\"city\"><span>" + myListing.Origin + "</span><span class=\"to\">&#10132;</span><span>" + myListing.Destination + "</span></li><li class=\"seats\"><span>2</span></li><li class=\"fee\"><span>$" + fmt.Sprintf("%.6f", myListing.Fee) + "</span></li></ul>"
+	var date Date = date.CustomDate(results.DateLeaving)
+	output := "<ul class=\"list_item\"><li class=\"listing_user\"><img src=\"" + myListing.Picture + "\" alt=\"User Picture\"><span class=\"positive\">+100</span></li><li class=\"date_leaving\"><div><span class=\"month\">" + date.Month + "</span></div></li><li class=\"city\"><span>" + myListing.Origin + "</span><span class=\"to\">&#10132;</span><span>" + myListing.Destination + "</span></li><li class=\"seats\"><span>2</span></li><li class=\"fee\"><span>$" + fmt.Sprintf("%.6f", myListing.Fee) + "</span></li></ul>"
 	return output
 }
 
