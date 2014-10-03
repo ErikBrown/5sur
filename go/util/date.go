@@ -23,7 +23,12 @@ func CustomDate (timestamp string) Date{
 		// FUCKING PANIC
 	}
 	date.Month = months[m-1]
-	var day = splits[8] + splits[9]
+	var day string
+	if splits[8]=="0" {
+		day = splits[9]
+	} else {
+		day = splits[8] + splits[9]
+	}
 	if splits[9]=="1" {
 		day+="st"
 	} else if splits[9]=="2" {
