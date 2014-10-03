@@ -7,14 +7,14 @@ import (
 
 type Date struct{
 	Month string
-	Time string
 	Day string
+	Time string
 }
 
 var months = [12]string{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
 
 //FORM yyyy-mm-dd hh:mm:ss Drop the seconds. Parse the rest.
-func customDate (timestamp string) Date{
+func CustomDate (timestamp string) Date{
 	var splits []string = strings.SplitAfter(timestamp, "")
 	var date Date
 	month := splits[5] + splits[6]

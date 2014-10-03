@@ -5,11 +5,12 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"data/results"
+	"data/util"
 )
 
 func createHTML (myListing results.Listing) string{
-	var date Date = date.CustomDate(results.DateLeaving)
-	output := "<ul class=\"list_item\"><li class=\"listing_user\"><img src=\"http://192.241.219.35/" + myListing.Picture + "\" alt=\"User Picture\"><span class=\"positive\">+100</span></li><li class=\"date_leaving\"><div><span class=\"month\">" + date.Month+ "</span></div></li><li class=\"city\"><span>" + myListing.Origin + "</span><span class=\"to\">&#10132;</span><span>" + myListing.Destination + "</span></li><li class=\"seats\"><span>2</span></li><li class=\"fee\"><span>$" + fmt.Sprintf("%.2f", myListing.Fee) + "</span></li></ul>"
+	var date util.Date = util.CustomDate(myListing.DateLeaving)
+	output := "<ul class=\"list_item\"><li class=\"listing_user\"><img src=\"http://192.241.219.35/" + myListing.Picture + "\" alt=\"User Picture\"><span class=\"positive\">+100</span></li><li class=\"date_leaving\"><div><span class=\"month\">" + date.Month + "</span><span class=\"month\">" + date.Day + "</span><span class=\"month\">" + date.Time + "</span></div></li><li class=\"city\"><span>" + myListing.Origin + "</span><span class=\"to\">&#10132;</span><span>" + myListing.Destination + "</span></li><li class=\"seats\"><span>2</span></li><li class=\"fee\"><span>$" + fmt.Sprintf("%.2f", myListing.Fee) + "</span></li></ul>"
 	return output
 }
 
