@@ -7,6 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"data/results"
 	"data/util"
+	"strconv"
 )
 
 func generateListing (myListing results.Listing) string{
@@ -44,8 +45,21 @@ func showListings(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// panic
 	}
-	m, _ := url.ParseQuery(u.RawQuery)
-	results := results.ReturnListings(m["o"][0], m["d"][0]) // Make struct to store everything
+	m, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		//404 error
+	}
+	m1, err := strconv.Atoi(m["o"][0])
+	if err != nil{
+		//redirect to index to prevent sql injection and end function.
+		return
+	}
+	m2, err := strconv.Atoi(m["d"][0])
+	if err != nil{
+		// redirect to index to prevent sql injection and end function
+		return
+	}
+	results := results.ReturnListings(m1, m2) // Make struct to store everything
 	myString := `
 	<!doctype html>
 	<html>
