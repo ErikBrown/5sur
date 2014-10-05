@@ -97,6 +97,7 @@ func showListings(w http.ResponseWriter, r *http.Request) {
 	m2, err := strconv.Atoi(m["d"][0])
 	if err != nil{
 		fmt.Fprint(w, customError())
+		// redirect to index to prevent sql injection and end function
 		return
 	}
 	results := results.ReturnListings(m1, m2) // Make struct to store everything
