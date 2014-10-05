@@ -17,7 +17,7 @@ type Listing struct {
 	Fee float32
 }
 
-func ReturnListings(o string, d string) []Listing {
+func ReturnListings(o int, d int) []Listing {
 	results := make ([]Listing, 0)
 	// The db should be long lived. Do not recreate it unless accessing a different
 	// database. Do not Open() and Close() from a short lived function, just pass in
