@@ -69,38 +69,98 @@ func customError() string{
 	return output
 }
 
+type Filter struct {
+	Origin int
+	Destination int
+	Time string
+}
+
+type MyError struct {
+	What string
+}
+
+func (e *MyError) Error() string {
+	return e.What
+}
+
+func validPost(origin string, destination string) (Filter, error) {
+	if len(origin) > 0 || len(destination) > 0 {
+		city1, err := strconv.Atoi(origin)
+		if err != nil{
+			f := Filter {0,0,""}
+			e := &MyError{"Errors!"}
+			return f, e
+		}
+		city2, err := strconv.Atoi(destination)
+		if err != nil{
+			f := Filter {0,0,""}
+			e := &MyError{"Errors!"}
+			return f, e
+		}
+		f := Filter{city1, city2, "filler"}
+		var e error
+		return f, e
+	} else {
+		f := Filter {0,0,""}
+		var e error
+		return f, e
+	}
+}
+
+func validQueryString(u *url.URL) (Filter, error) {
+	m, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		f := Filter {0,0,""}
+		e := &MyError{"Errors!"}
+		return f, e
+	}
+	if _,ok := m["o"]; !ok {
+		f := Filter {0,0,""}
+		e := &MyError{"Errors!"}
+		return f, e
+	}
+	if _,ok := m["d"]; !ok {
+		f := Filter {0,0,""}
+		e := &MyError{"Errors!"}
+		return f, e
+	}
+	city1, err := strconv.Atoi(m["o"][0])
+	if err != nil{
+		f := Filter {0,0,""}
+		e := &MyError{"Errors!"}
+		return f, e
+	}
+	city2, err := strconv.Atoi(m["d"][0])
+	if err != nil{
+		f := Filter {0,0,""}
+		e := &MyError{"Errors!"}
+		// redirect to index to prevent sql injection and end function
+		return f, e
+	}
+	f := Filter{city1, city2, "filler"}
+	var e error
+	return f, e
+}
+
 func showListings(w http.ResponseWriter, r *http.Request) {
-	name := r.FormValue("Name")
-	fmt.Fprint(w, name)
+	postFilter, err := validPost(r.FormValue("Origin"), r.FormValue("Destination"))
+	if err != nil {
+		fmt.Fprint(w, customError())
+		return
+	}
+	if postFilter.Origin != 0 {
+		http.Redirect(w, r, "http://192.241.219.35/go/l/?o=" + fmt.Sprintf("%d", postFilter.Origin) + "&d=" + fmt.Sprintf("%d", postFilter.Destination), 301)
+	}
 	u, err := url.Parse(r.URL.String())
 	if err != nil {
 		// panic
 	}
-	m, err := url.ParseQuery(u.RawQuery)
+	queryFilter, err := validQueryString(u)
 	if err != nil {
 		fmt.Fprint(w, customError())
 		return
 	}
-	if _,ok := m["o"]; !ok {
-		fmt.Fprint(w, customError())
-		return
-	}
-	if _,ok := m["d"]; !ok {
-		fmt.Fprint(w, customError())
-		return
-	}
-	m1, err := strconv.Atoi(m["o"][0])
-	if err != nil{
-		fmt.Fprint(w, customError())
-		return
-	}
-	m2, err := strconv.Atoi(m["d"][0])
-	if err != nil{
-		fmt.Fprint(w, customError())
-		// redirect to index to prevent sql injection and end function
-		return
-	}
-	results := results.ReturnListings(m1, m2) // Make struct to store everything
+	results := results.ReturnListings(queryFilter.Origin, queryFilter.Destination)
 	myString := `
 	<!doctype html>
 	<html>
@@ -111,7 +171,7 @@ func showListings(w http.ResponseWriter, r *http.Request) {
 		</head>
 	<body>
 	<div id="header">
-		<h1>RideChile</h1>
+		<h1><a href="http://192.241.219.35">RideChile</a></h1>
 		<ul id="account_nav">
 			<li>UserName</li>
 			<li>MsgIcon</li>
@@ -126,6 +186,7 @@ func showListings(w http.ResponseWriter, r *http.Request) {
 				<option value="2">City 2</option>
 				<option value="3">City 3</option>
 				<option value="4">City 4</option>
+				<option value="5">City 5</option>
 			</select>
 			To
 			<select name="Destination">
@@ -133,6 +194,7 @@ func showListings(w http.ResponseWriter, r *http.Request) {
 				<option value="2">City 2</option>
 				<option value="3">City 3</option>
 				<option value="4">City 4</option>
+				<option value="5">City 5</option>
 			</select>
 			<input type="submit" value="Go">
 		</form>
