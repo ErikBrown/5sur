@@ -41,31 +41,33 @@ func generateListing (myListing results.Listing) string{
 }
 
 func customError() string{
-	output := `<!doctype html>
+	output := `
+	<!doctype html>
 
-<html>
+	<html>
 
-<head>
+	<head>
 
-<meta charset='utf-8'>
+	<meta charset='utf-8'>
 
-<link rel="stylesheet" type="text/css" href="http://192.241.219.35/404_style.css" />
-<link href='http://fonts.googleapis.com/css?family=Exo:700' rel='stylesheet' type='text/css'>
-<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
-<link rel="icon" type="image/png" href="favicon.ico">
+	<link rel="stylesheet" type="text/css" href="http://192.241.219.35/404_style.css" />
+	<link href='http://fonts.googleapis.com/css?family=Exo:700' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+	<link rel="icon" type="image/png" href="favicon.ico">
 
-<title>RideShare App</title>
+	<title>RideShare App</title>
 
-</head>
+	</head>
 
-<body>
-<div id="center">
-	<h1>404 Error</h1>
-	<span><a href="http://192.241.219.35/">Return to homepage</a></span>
-</div>
-</body>
+	<body>
+	<div id="center">
+		<h1>404 Error</h1>
+		<span><a href="http://192.241.219.35/">Return to homepage</a></span>
+	</div>
+	</body>
 
-</html>`
+	</html>
+	`
 	return output
 }
 
