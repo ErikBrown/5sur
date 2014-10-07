@@ -1,8 +1,10 @@
-package results
+package gen
 
 import (
+	"fmt"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
+	"data/util"
 )
 
 var db *sql.DB
@@ -17,7 +19,7 @@ type Listing struct {
 	Fee float32
 }
 
-func ReturnListings(o int, d int) []Listing {
+func ReturnListings(o int, d int) string {
 	results := make ([]Listing, 0)
 	// The db should be long lived. Do not recreate it unless accessing a different
 	// database. Do not Open() and Close() from a short lived function, just pass in
@@ -73,5 +75,39 @@ func ReturnListings(o int, d int) []Listing {
 		}
 		results = append(results, temp)
 	}
-	return results
+	resultString := ""
+	for i := range results{
+		resultString += GenerateListing(results[i])
+	}
+	return resultString
+}
+
+func GenerateListing (myListing Listing) string{
+	var date util.Date = util.CustomDate(myListing.DateLeaving)
+	output := `
+	<ul class="list_item">
+		<li class="listing_user">
+			<img src="https://192.241.219.35/` + myListing.Picture + `" alt="User Picture">
+			<span class="positive">+100</span>
+		</li>
+		<li class="date_leaving">
+			<div>
+				<span class="month">` + date.Month + `</span>
+				<span class="day">` + date.Day + `</span>
+				<span class="time">` + date.Time + `</span>
+			</div>
+		</li>
+		<li class="city">
+			<span>` + myListing.Origin + `</span>
+			<span class="to">&#10132;</span>
+			<span>` + myListing.Destination + `</span>
+		</li>
+		<li class="seats">
+			<span>` + fmt.Sprintf("%d", myListing.Seats) + `</span>
+		</li>
+			<li class="fee"><span>$` + fmt.Sprintf("%.2f", myListing.Fee) + `</span>
+		</li>
+	</ul>
+	`
+	return output
 }
