@@ -7,37 +7,79 @@ import (
 	"data/util"
 )
 
-var db *sql.DB
-
-type Listing struct {
-	Driver int
-	Picture string
-	DateLeaving string
-	Origin string
-	Destination string
-	Seats int
-	Fee float32
+type city struct {
+	id int
+	name string
 }
 
-func ReturnListings(o int, d int) string {
-	results := make ([]Listing, 0)
-	// The db should be long lived. Do not recreate it unless accessing a different
-	// database. Do not Open() and Close() from a short lived function, just pass in
-	// the db object to the function
-	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
+type listing struct {
+	driver int
+	picture string
+	dateLeaving string
+	origin string
+	destination string
+	seats int
+	fee float32
+}
+
+func ReturnFilter(db *sql.DB, o int, d int) string {
+	results := make ([]city, 0)
+
+	// Always prepare queries to be used multiple times. The parameter placehold is ?
+	stmt, err := db.Prepare(`
+SELECT * from cities
+	ORDER BY name;
+		`)
+	
 	if err != nil {
 		panic(err.Error()) // Have a proper error in production
 	}
+	defer stmt.Close()
 
-	// Defer Close() to be run at the end of main()
-	defer db.Close()
-
-	// sql.Open does not establish any connections to the database - To check if the
-	// database is available and accessable, use sql.Ping()
-	err = db.Ping()
+	// db.Query() prepares, executes, and closes a prepared statement - three round
+	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
+	rows, err := stmt.Query()
 	if err != nil {
 		panic(err.Error()) // Have a proper error in production
 	}
+	// Always defer rows.Close(), even if you explicitly Close it at the end of the
+	// loop. The connection will have the chance to remain open otherwise.
+	defer rows.Close()
+
+	// The last rows.Next() call will encounter an EOF error and call rows.Close()
+	for rows.Next() {
+		var temp city
+		err := rows.Scan(&temp.id, &temp.name)
+		if err != nil {
+			panic(err.Error()) // Have a proper error in production
+		}
+		results = append(results, temp)
+	}
+	resultString := `
+	<div id="search_wrapper">
+		<form method="post" action="https://192.241.219.35/go/l/">
+			<select name="Origin">`
+	for i := range results{
+		resultString += generateOption(results[i], o)
+	}
+	resultString += `
+			</select>
+			To
+			<select name="Destination">
+	`
+	for i := range results{
+		resultString += generateOption(results[i], d)
+	}
+	resultString += `
+			</select>
+			<input type="submit" value="Go">
+		</form>
+	</div>`
+	return resultString
+} 
+
+func ReturnListings(db *sql.DB, o int, d int) string {
+	results := make ([]listing, 0)
 
 	// Always prepare queries to be used multiple times. The parameter placehold is ?
 	stmt, err := db.Prepare(`
@@ -68,8 +110,8 @@ func ReturnListings(o int, d int) string {
 
 	// The last rows.Next() call will encounter an EOF error and call rows.Close()
 	for rows.Next() {
-		var temp Listing
-		err := rows.Scan(&temp.Driver, &temp.Picture, &temp.DateLeaving, &temp.Origin, &temp.Destination, &temp.Seats, &temp.Fee)
+		var temp listing
+		err := rows.Scan(&temp.driver, &temp.picture, &temp.dateLeaving, &temp.origin, &temp.destination, &temp.seats, &temp.fee)
 		if err != nil {
 			panic(err.Error()) // Have a proper error in production
 		}
@@ -77,17 +119,25 @@ func ReturnListings(o int, d int) string {
 	}
 	resultString := ""
 	for i := range results{
-		resultString += GenerateListing(results[i])
+		resultString += generateListing(results[i])
 	}
 	return resultString
 }
 
-func GenerateListing (myListing Listing) string{
-	var date util.Date = util.CustomDate(myListing.DateLeaving)
+func generateOption(f city, i int) string {
+	selected := ""
+	if f.id == i {
+		selected = " selected"
+	}
+	return `<option value=` + fmt.Sprintf("%d", f.id) + selected + `>` + f.name + `</option>`
+}
+
+func generateListing (myListing listing) string{
+	var date util.Date = util.CustomDate(myListing.dateLeaving)
 	output := `
 	<ul class="list_item">
 		<li class="listing_user">
-			<img src="https://192.241.219.35/` + myListing.Picture + `" alt="User Picture">
+			<img src="https://192.241.219.35/` + myListing.picture + `" alt="User Picture">
 			<span class="positive">+100</span>
 		</li>
 		<li class="date_leaving">
@@ -98,14 +148,14 @@ func GenerateListing (myListing Listing) string{
 			</div>
 		</li>
 		<li class="city">
-			<span>` + myListing.Origin + `</span>
+			<span>` + myListing.origin + `</span>
 			<span class="to">&#10132;</span>
-			<span>` + myListing.Destination + `</span>
+			<span>` + myListing.destination + `</span>
 		</li>
 		<li class="seats">
-			<span>` + fmt.Sprintf("%d", myListing.Seats) + `</span>
+			<span>` + fmt.Sprintf("%d", myListing.seats) + `</span>
 		</li>
-			<li class="fee"><span>$` + fmt.Sprintf("%.2f", myListing.Fee) + `</span>
+			<li class="fee"><span>$` + fmt.Sprintf("%.2f", myListing.fee) + `</span>
 		</li>
 	</ul>
 	`

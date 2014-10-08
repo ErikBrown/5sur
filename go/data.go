@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
-	"fmt"
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
 	"data/gen"
 	"data/util"
 )
@@ -28,10 +30,28 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, gen.Error404())
 		return
 	}
+	// The db should be long lived. Do not recreate it unless accessing a different
+	// database. Do not Open() and Close() from a short lived function, just pass in
+	// the db object to the function
+	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+
+	// Defer Close() to be run at the end of main()
+	defer db.Close()
+
+	// sql.Open does not establish any connections to the database - To check if the
+	// database is available and accessable, use sql.Ping()
+	err = db.Ping()
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
 
 	// Generate the html for the listings page
 	myString := gen.HeaderHtml("Listings Page")
-	myString += gen.ReturnListings(query.Origin, query.Destination)
+	myString += gen.ReturnFilter(db, query.Origin, query.Destination)
+	myString += gen.ReturnListings(db, query.Origin, query.Destination)
 	myString += gen.FooterHtml()
 
 	// Print html

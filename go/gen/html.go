@@ -16,27 +16,6 @@ return `<!doctype html>
 		<li>MsgIcon</li>
 		<li>Logout</li>
 	</ul>
-</div>
-
-<div id="search_wrapper">
-	<form method="post" action="https://192.241.219.35/go/l/">
-		<select name="Origin">
-			<option value="1">City 1</option>
-			<option value="2">City 2</option>
-			<option value="3">City 3</option>
-			<option value="4">City 4</option>
-			<option value="5">City 5</option>
-		</select>
-		To
-		<select name="Destination">
-			<option value="1">City 1</option>
-			<option value="2">City 2</option>
-			<option value="3">City 3</option>
-			<option value="4">City 4</option>
-			<option value="5">City 5</option>
-		</select>
-		<input type="submit" value="Go">
-	</form>
 </div>`
 }
 
