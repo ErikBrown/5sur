@@ -88,25 +88,29 @@ h1 {
 	padding: 30px 10px;
 	background: #E5E5E5;
 	overflow: hidden;
+	text-align: center;
 }
 
-#search_box {
-	width: 400px;
-	height: 35px;
-	border: 1px solid #D4D4D4;
-	margin: 25px 0 25px 15px;
-	padding-left: 10px;
-	border-radius: 3px;
+.city_select {
+	min-width: 150px;
+	height: 30px;
+	padding: 0 10px;
 }
 
-#search_submit {
-	width: 50px;
-	height: 35px;
-	border: 1px solid #BBBBBB;
-	background: #DBDBDB;
-	margin-left: 0;
-	border-radius: 3px;
-	cursor: pointer;
+#city_wrapper {
+}
+
+#city_wrapper {
+	display: block;
+	margin: 0 auto;
+}
+
+#date_wrapper {
+	display: none;
+}
+
+.blank_option {
+	display: none;
 }
 
 .list_item {

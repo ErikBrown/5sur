@@ -11,14 +11,9 @@ import (
 )
 
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
-	// Checks if the query string follows the correct format and converts query variables to integers
-	postFields, err := util.ValidPost(r.FormValue("Origin"), r.FormValue("Destination"))
-	if err != nil {
-		fmt.Fprint(w, gen.Error404())
+	if r.FormValue("Origin") != "" {
+		http.Redirect(w, r, "https://192.241.219.35/go/l/?o=" + r.FormValue("Origin") + "&d=" + r.FormValue("Destination"), 301)
 		return
-	}
-	if postFields.Origin != 0 {
-		http.Redirect(w, r, "https://192.241.219.35/go/l/?o=" + fmt.Sprintf("%d", postFields.Origin) + "&d=" + fmt.Sprintf("%d", postFields.Destination), 301)
 	}
 
 	u, err := url.Parse(r.URL.String())

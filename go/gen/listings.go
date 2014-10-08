@@ -58,20 +58,21 @@ SELECT * from cities
 	resultString := `
 	<div id="search_wrapper">
 		<form method="post" action="https://192.241.219.35/go/l/">
-			<select name="Origin">`
+			<div id="city_wrapper">
+			<select name="Origin" id="origin_select" class="city_select">`
 	for i := range results{
 		resultString += generateOption(results[i], o)
 	}
 	resultString += `
 			</select>
-			To
-			<select name="Destination">
-	`
+			<span class="to">&#10132;</span>
+			<select name="Destination" id="destination_select" class="city_select">`
 	for i := range results{
 		resultString += generateOption(results[i], d)
 	}
 	resultString += `
 			</select>
+			</div>
 			<input type="submit" value="Go">
 		</form>
 	</div>`
@@ -129,7 +130,8 @@ func generateOption(f city, i int) string {
 	if f.id == i {
 		selected = " selected"
 	}
-	return `<option value=` + fmt.Sprintf("%d", f.id) + selected + `>` + f.name + `</option>`
+	return `
+	<option value=` + fmt.Sprintf("%d", f.id) + selected + `>` + f.name + `</option>`
 }
 
 func generateListing (myListing listing) string{

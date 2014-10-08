@@ -29,22 +29,107 @@
 </div>
 
 <div id="search_wrapper">
-	<form method="post" action="https://192.241.219.35/go/l/?o=1&d=2">
-		<select name="Origin">
-			<option value="1">City 1</option>
-			<option value="2">City 2</option>
-			<option value="3">City 3</option>
-			<option value="4">City 4</option>
-			<option value="5">City 5</option>
-		</select>
-		To
-		<select name="Destination">
-			<option value="1">City 1</option>
-			<option value="2">City 2</option>
-			<option value="3">City 3</option>
-			<option value="4">City 4</option>
-			<option value="5">City 5</option>
-		</select>
+	<form method="post" action="https://192.241.219.35/go/l/" id="search_form">
+		<div id="city_wrapper">
+			<select name="Origin" id="origin_select" class="city_select">
+				<option disabled selected class="blank_option"></option>
+				<option value="1">City 1</option>
+				<option value="2">City 2</option>
+				<option value="3">City 3</option>
+				<option value="4">City 4</option>
+				<option value="5">City 5</option>
+			</select>
+			<span class="to">&#10132;</span>
+			<select name="Destination" id="destination_select" class="city_select">
+				<option disabled selected class="blank_option"></option>
+				<option value="1">City 1</option>
+				<option value="2">City 2</option>
+				<option value="3">City 3</option>
+				<option value="4">City 4</option>
+				<option value="5">City 5</option>
+			</select>
+		</div>
+		<div id="date_wrapper">
+			<select name="Month" id="month_select" class="date_select">
+				<option value="1">January</option>
+				<option value="2">Febuary</option>
+				<option value="3">March</option>
+				<option value="4">April</option>
+				<option value="5">May</option>
+				<option value="6">June</option>
+				<option value="7">July</option>
+				<option value="8">August</option>
+				<option value="9">September</option>
+				<option value="10" selected>October</option>
+				<option value="11">November</option>
+				<option value="12">December</option>
+			</select>
+			<select name="Day" id="day_select" class="date_select">
+				<option value="01">1</option>
+				<option value="02">2</option>
+				<option value="03">3</option>
+				<option value="04">4</option>
+				<option value="05">5</option>
+				<option value="06">6</option>
+				<option value="07">7</option>
+				<option value="08" selected>8</option>
+				<option value="09">9</option>
+				<option value="10">10</option>
+				<option value="11">11</option>
+				<option value="12">12</option>
+				<option value="13">13</option>
+				<option value="14">14</option>
+				<option value="15">15</option>
+				<option value="16">16</option>
+				<option value="17">17</option>
+				<option value="18">18</option>
+				<option value="19">19</option>
+				<option value="20">20</option>
+				<option value="21">21</option>
+				<option value="22">22</option>
+				<option value="23">23</option>
+				<option value="24">24</option>
+				<option value="25">25</option>
+				<option value="26">26</option>
+				<option value="27">27</option>
+				<option value="28">28</option>
+				<option value="29">29</option>
+				<option value="30">30</option>
+				<option value="31">31</option>
+				<option value="32">32</option>
+			</select>
+			<select name="Hour" id="hour_select" class="date_select">
+				<option value="00">00:00</option>
+				<option value="01">01:00</option>
+				<option value="02">02:00</option>
+				<option value="03">03:00</option>
+				<option value="04">04:00</option>
+				<option value="05">05:00</option>
+				<option value="06">06:00</option>
+				<option value="07">07:00</option>
+				<option value="08">08:00</option>
+				<option value="09">09:00</option>
+				<option value="10">10:00</option>
+				<option value="11">11:00</option>
+				<option value="12">12:00</option>
+				<option value="13" selected>13:00</option>
+				<option value="14">14:00</option>
+				<option value="15">15:00</option>
+				<option value="16">16:00</option>
+				<option value="17">17:00</option>
+				<option value="18">18:00</option>
+				<option value="19">19:00</option>
+				<option value="20">20:00</option>
+				<option value="21">21:00</option>
+				<option value="22">22:00</option>
+				<option value="23">23:00</option>
+			</select>
+			<select name="Year" id="year_select" class="date_select">
+				<option value="2014" selected>2014</option>
+				<option value="2015">2015</option>
+			</select>
+		</div>
+			
 		<input type="submit" value="Go">
 	</form>
 </div>
