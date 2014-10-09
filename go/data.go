@@ -53,19 +53,38 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, myString)
 }
 
-/*
-func ListingsHandler(w http.ResponseWriter, r *http.Request) {
-	// Generate user page
-}
-*/
+func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
+	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+	defer db.Close()
+	if gen.UnusedUsername(r.FormValue("Username")){
+		http.Redirect(w, r, "https://192.241.219.35/u=usernameTaken")
+		return
+	}
 
-/*
-func ListingsHandler(w http.ResponseWriter, r *http.Request) {
-	// Create session cookie and redirect to Listings homepage
+	if r.FormValue("password") == "" || r.FormValue("username") == "" {
+		panic(err.Error()) // Have a proper error in production
+	}
+
+
+	gen.CreateUser(db, r.FormValue("username"), r.FormValue("password"))
+
 }
-*/
+
+func UsersHandler(w http.ResponseWriter, r *http.Request) {
+	var userCookie := r.Cookie
+
+
+}
 
 func main() {
 	http.HandleFunc("/go/l/", ListingsHandler)
+	http.HandleFunc("/go/u/", UsersHandler)
+	http.HandleFunc("/go/r/", RegistrationHandler)
 	http.ListenAndServe(":8080", nil)
 }
