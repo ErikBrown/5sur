@@ -77,7 +77,6 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UsersHandler(w http.ResponseWriter, r *http.Request) {
-	var userCookie := r.Cookie
 
 
 }

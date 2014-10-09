@@ -1,21 +1,13 @@
 package gen
 
 import (
-	"fmt"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	"data/util"
+	"code.google.com/p/go.crypto/bcrypt"
+	"bytes"
 )
 
-type PasswordData struct {
-	Hash string
-	Session string
-	Salt string
-}
-
 func UnusedUsername(db *sql.DB, username string) bool {
-	results := make ([]listing, 0)
-
 	// Always prepare queries to be used multiple times. The parameter placehold is ?
 	stmt, err := db.Prepare(`
 		SELECT users.name
@@ -30,7 +22,7 @@ func UnusedUsername(db *sql.DB, username string) bool {
 
 	// db.Query() prepares, executes, and closes a prepared statement - three round
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
-	rows, err := stmt.Query(o, d)
+	rows, err := stmt.Query(username)
 	if err != nil {
 		panic(err.Error()) // Have a proper error in production
 	}
@@ -45,12 +37,13 @@ func UnusedUsername(db *sql.DB, username string) bool {
 	return true
 }
 
-func hashPassword (password string) PasswordData{
-	hashed, err := newFromPassword(password, 10)
+func hashPassword (password string) string{
+	hashed, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 	if err != nil{
 		panic(err.Error())
 	}
-	d := PasswordData{hashed.hash, "123", hashed.salt}
+	n := bytes.Index(hashed, []byte{0})
+	return string(hashed[:n])
 }
 
 func CreateUser(db *sql.DB, username string, password string, email string){
@@ -63,8 +56,6 @@ func CreateUser(db *sql.DB, username string, password string, email string){
 		panic(err.Error()) // Have a proper error in production
 	}
 	defer addUser.Close()
-
-	afterHash:= hashPassword(password)
-	addUser.Exec(username, email, afterHash.Hash, afterHash.session, afterHash.salt)
+	addUser.Exec(username, email, hashPassword(password), "123")
 
 }
