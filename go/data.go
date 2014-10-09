@@ -53,18 +53,6 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, myString)
 }
 
-/*
-func ListingsHandler(w http.ResponseWriter, r *http.Request) {
-	// Generate user page
-}
-*/
-
-/*
-func ListingsHandler(w http.ResponseWriter, r *http.Request) {
-	// Create session cookie and redirect to Listings homepage
-}
-*/
-
 func main() {
 	http.HandleFunc("/go/l/", ListingsHandler)
 	http.ListenAndServe(":8080", nil)
