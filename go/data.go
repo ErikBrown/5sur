@@ -56,24 +56,33 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
-	}
-	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		fmt.Fprint(w, err.Error())
+		return
 	}
 	defer db.Close()
-	if gen.UnusedUsername(r.FormValue("Username")){
-		http.Redirect(w, r, "https://192.241.219.35/u=usernameTaken")
+
+	err = db.Ping()
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	defer db.Close()
+
+
+	if r.FormValue("Password") == "" || r.FormValue("Username") == "" {
+		fmt.Fprint(w, "enter a password/username")
 		return
 	}
 
-	if r.FormValue("password") == "" || r.FormValue("username") == "" {
-		panic(err.Error()) // Have a proper error in production
+	if gen.UnusedUsername(db, r.FormValue("Username")){
+		fmt.Fprint(w, "Username is taken")
+		// http.Redirect(w, r, "https://192.241.219.35/u=usernameTaken", 301)
+		return
 	}
 
 
-	gen.CreateUser(db, r.FormValue("username"), r.FormValue("password"))
-
+	gen.CreateUser(db, r.FormValue("Username"), r.FormValue("Password"), r.FormValue("Email"))
+	fmt.Fprint(w, "Success!")
 }
 
 func UsersHandler(w http.ResponseWriter, r *http.Request) {
