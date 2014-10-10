@@ -86,7 +86,28 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UsersHandler(w http.ResponseWriter, r *http.Request) {
+	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
+	if err != nil {
+		panic(err.Error())
+	}
 
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	if r.FormValue("Password") == "" || r.FormValue("Username") == "" {
+		fmt.Fprint(w, "enter a password/username")
+		return
+	}
+
+	if gen.CheckCredentials(db, r.FormValue("Username"), r.FormValue("Password")) {
+		fmt.Fprint(w, "You're a user!")
+	}else {
+		fmt.Fprint(w, "Your username/password was incorrect")
+	}
 
 }
 

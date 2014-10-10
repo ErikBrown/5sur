@@ -50,6 +50,8 @@ func CreateUser(db *sql.DB, username string, password string, email string){
 		INSERT INTO users (name, email, password, session)
 			VALUES (?, ?, ?, ?)
 		`)
+	defer stmt.Close()
+
 	if err != nil {
 		panic(err.Error() + ` THE ERROR IS ON LINE 56`)
 	}
@@ -63,4 +65,48 @@ func CreateUser(db *sql.DB, username string, password string, email string){
 		// Log the error
 	}
 	*/
+}
+
+func CheckCredentials(db *sql.DB, username string, password string) bool {
+	stmt, err := db.Prepare(`
+	SELECT users.password
+		FROM users
+		WHERE users.name = ?;
+		`)
+	
+	if err != nil {
+		panic(err.Error() + ` THE ERROR IS ON LINE 78`)
+	}
+	defer stmt.Close()
+
+	// db.Query() prepares, executes, and closes a prepared statement - three round
+	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
+	rows, err := stmt.Query(username)
+	if err != nil {
+		panic(err.Error() + ` THE ERROR IS ON LINE 86`)
+	}
+	// Always defer rows.Close(), even if you explicitly Close it at the end of the
+	// loop. The connection will have the chance to remain open otherwise.
+	defer rows.Close()
+
+	// The last rows.Next() call will encounter an EOF error and call rows.Close()
+	
+	var hashedPassword []byte;
+
+	for rows.Next() {
+		err := rows.Scan(&hashedPassword)
+		if err != nil {
+			panic(err.Error() + ` THE ERROR IS ON LINE 99`)
+		}
+	}
+
+	if hashedPassword == nil {
+		return false
+	}
+
+	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(password))
+	if err != nil {
+		return false
+	}
+	return true
 }
