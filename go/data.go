@@ -43,6 +43,16 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error()) // Have a proper error in production
 	}
 
+	// Check if user is logged in
+	sessionID, err := r.Cookie("RideChile")
+	if err != nil {
+		// Cookie doesn't exist
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	UsernameTest := util.CheckCookie(sessionID.Value, db)
+	fmt.Fprint(w, UsernameTest + " sdfsdf")
+
 	// Generate the html for the listings page
 	myString := gen.HeaderHtml("Listings Page")
 	myString += gen.ReturnFilter(db, query.Origin, query.Destination)
@@ -88,14 +98,13 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 func UsersHandler(w http.ResponseWriter, r *http.Request) {
 	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprint(w, "SQL ERROR")
+		return
 	}
-
 	defer db.Close()
-
 	err = db.Ping()
 	if err != nil {
-		panic(err.Error())
+		fmt.Fprint(w, "sdfsdfds")
 	}
 
 	if r.FormValue("Password") == "" || r.FormValue("Username") == "" {
@@ -104,9 +113,13 @@ func UsersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if gen.CheckCredentials(db, r.FormValue("Username"), r.FormValue("Password")) {
-		fmt.Fprint(w, "You're a user!")
+		myCookie := util.CreateCookie(r.FormValue("Username"), db) // This also stores a hashed cookie in the database
+		http.SetCookie(w, &myCookie)
+		fmt.Fprint(w, "You're logged in!")
+		return
 	}else {
 		fmt.Fprint(w, "Your username/password was incorrect")
+		return
 	}
 
 }

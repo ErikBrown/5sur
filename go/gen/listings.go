@@ -27,9 +27,9 @@ func ReturnFilter(db *sql.DB, o int, d int) string {
 
 	// Always prepare queries to be used multiple times. The parameter placehold is ?
 	stmt, err := db.Prepare(`
-SELECT * from cities
-	ORDER BY name;
-		`)
+		SELECT * from cities
+			ORDER BY name
+	`)
 	
 	if err != nil {
 		panic(err.Error()) // Have a proper error in production
@@ -91,7 +91,7 @@ func ReturnListings(db *sql.DB, o int, d int) string {
 			LEFT JOIN cities AS c2 ON l.destination = c2.id
 			WHERE l.origin = ? AND l.destination = ? AND DATE(l.date_leaving) >= '2012-10-01 12:30:00'
 			ORDER BY l.date_leaving
-			LIMIT 25;
+			LIMIT 25
 		`)
 	
 	if err != nil {

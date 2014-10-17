@@ -11,7 +11,7 @@ func UnusedUsername(db *sql.DB, username string) bool {
 	stmt, err := db.Prepare(`
 	SELECT users.name
 		FROM users
-		WHERE users.name = ?;
+		WHERE users.name = ?
 		`)
 	
 	if err != nil {
@@ -71,7 +71,7 @@ func CheckCredentials(db *sql.DB, username string, password string) bool {
 	stmt, err := db.Prepare(`
 	SELECT users.password
 		FROM users
-		WHERE users.name = ?;
+		WHERE users.name = ?
 		`)
 	
 	if err != nil {
