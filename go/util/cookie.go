@@ -102,5 +102,5 @@ func checkSession(s string, db *sql.DB) string{
 		}
 		
 	}
-	return "You are logged in as: " + name
+	return name
 }
