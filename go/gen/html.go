@@ -74,12 +74,12 @@ func FilterHTML(cities []City, o int, d int) string {
 			<span class="to">&#128343;</span>
 			<input type="text" name="Date" placeholder="Select date..." autocomplete="off" id="date_box" class="search_option">
 			<div id="calendar_wrapper">
+				<div id="month_wrapper">
+					<span id="month_left">&#9664;</span>
+					<span id="month_title"></span>
+					<span id="month_right">&#9654;</span>
+				</div>
 				<table id="calendar">
-					<div id="month_wrapper">
-						<span id="month_left">&#9664;</span>
-						<span id="month_title"></span>
-						<span id="month_right">&#9654;</span>
-					</div>
 					<thead>
 						<tr>
 							<th>lu</th>
