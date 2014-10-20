@@ -91,26 +91,120 @@ h1 {
 	text-align: center;
 }
 
-.city_select {
-	min-width: 150px;
+.search_option {
+	width: 150px;
 	height: 30px;
 	padding: 0 10px;
-}
-
-#city_wrapper {
-}
-
-#city_wrapper {
-	display: block;
-	margin: 0 auto;
-}
-
-#date_wrapper {
-	display: none;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 14px;
 }
 
 .blank_option {
 	display: none;
+}
+
+#date_box {
+	max-width: 100px;
+}
+
+#calendar_wrapper {
+	overflow: hidden;
+	height: 0px;
+	margin-top: 25px;
+	margin-left: auto;
+	margin-right: auto;
+	background: #ffffff;
+	opacity: 0;
+	box-shadow: 0px 5px 5px #888888;
+	-webkit-transition: .35s;
+	transition: .35s;
+}
+
+#calendar {
+	position: relative;
+	height: 457px;
+	color: #333333;
+}
+
+#month_wrapper {
+	font-family: 'Bitter', serif;
+	color: #ffffff;
+	height: 50px;
+	line-height: 50px;
+	text-align: center;
+	font-weight: 700;
+	-webkit-transition: .75s;
+	transition: .75s;
+}
+
+#month_wrapper > span {
+	padding: 0 10px;
+	cursor: pointer;
+	-webkit-transition: .2s;
+	transition: .2s;
+}
+
+#month_left:hover, #month_right:hover {
+	background: rgba(0, 0, 0, 0.5); 
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+#month_left {
+	float: left;
+}
+
+#month_right {
+	float: right;
+}
+
+#calendar thead {
+	border-bottom: 1px solid #cccccc;
+}
+
+#calendar tbody {
+	position: absolute;
+	left: 0;
+	-webkit-transition: left .75s;
+	transition: left .75s;
+}
+
+#calendar th {
+	font-family: 'Bitter', serif;
+	width: 65px;
+	height: 65px;
+	font-weight: 700;
+}
+
+#calendar td {
+	width: 65px;
+	height: 65px;
+	text-align: center;
+	-webkit-transition: .1s;
+	transition: .1s;
+}
+
+#calendar td:hover {
+	cursor: pointer;
+	color: #ffffff;
+	background: #5A6165;
+
+}
+
+.other_month {
+	color: #ACACAC;
+	background: #E2E6E7;
+}
+
+#search_submit {
+	height: 30px;
+	padding: 0 10px;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 15px;
+
 }
 
 .list_item {
@@ -187,6 +281,7 @@ h1 {
 .to {
 	color: #ACACAC;
 	padding: 0 10px;
+	font-family: 'Open Sans', sans-serif;
 }
 
 .fee {

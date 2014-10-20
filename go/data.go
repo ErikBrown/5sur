@@ -11,49 +11,132 @@ import (
 )
 
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
-	if r.FormValue("Origin") != "" {
-		http.Redirect(w, r, "https://192.241.219.35/go/l/?o=" + r.FormValue("Origin") + "&d=" + r.FormValue("Destination"), 301)
+	
+	// POST validation
+	if r.FormValue("Origin") != "" && r.FormValue("Destination") != "" && r.FormValue("Date") != "" {
+		http.Redirect(w, r, "https://192.241.219.35/go/l/?o=" + r.FormValue("Origin") + "&d=" + r.FormValue("Destination") + "&t=" + util.ConvertDate(r.FormValue("Date")), 301)
 		return
 	}
 
+	// Query string validation
 	u, err := url.Parse(r.URL.String())
 	if err != nil {
 		// panic
 	}
-	query, err := util.ValidQueryString(u)
+	query, err := util.ValidQueryString(u) // Returns util.QueryFields
 	if err != nil {
 		fmt.Fprint(w, gen.Error404())
 		return
 	}
-	// The db should be long lived. Do not recreate it unless accessing a different
-	// database. Do not Open() and Close() from a short lived function, just pass in
-	// the db object to the function
+
+	// Database initialization
 	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
 	if err != nil {
 		panic(err.Error()) // Have a proper error in production
 	}
 
-	// Defer Close() to be run at the end of main()
 	defer db.Close()
 
-	// sql.Open does not establish any connections to the database - To check if the
-	// database is available and accessable, use sql.Ping()
 	err = db.Ping()
 	if err != nil {
 		panic(err.Error()) // Have a proper error in production
 	}
 
-	// Generate the html for the listings page
-	myString := gen.HeaderHtml("Listings Page")
-	myString += gen.ReturnFilter(db, query.Origin, query.Destination)
-	myString += gen.ReturnListings(db, query.Origin, query.Destination)
-	myString += gen.FooterHtml()
+	// User authentication
+	user := ""
+	sessionID, err := r.Cookie("RideChile")
+	if err != nil {
+		// Cookie doesn't exist
+	} else {
+		user = util.CheckCookie(sessionID.Value, db)
+	}
 
-	// Print html
-	fmt.Fprint(w, myString)
+	// HTML generation
+	headerInfo := gen.Header {
+		Title: "Listings Page",
+		User: user,
+		Messages: 0,
+	}
+	cities := gen.ReturnFilter(db, query.Origin, query.Destination)
+	listings := gen.ReturnListings(db, query.Origin, query.Destination, query.Time)
+
+	listPage := gen.HeaderHtml(&headerInfo)
+	listPage += gen.FilterHTML(cities, query.Origin, query.Destination)
+	listPage += gen.ListingsHTML(listings)
+	listPage += gen.FooterHtml()
+
+	fmt.Fprint(w, listPage)
+}
+
+func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
+	// POST validation
+	if r.FormValue("Password") == "" || r.FormValue("Username") == "" {
+		fmt.Fprint(w, "enter a password/username")
+		return
+	}
+
+	// Database initialization
+	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	defer db.Close()
+
+	// Registration details validation
+	if gen.UnusedUsername(db, r.FormValue("Username")){
+		fmt.Fprint(w, "Username is taken")
+		// http.Redirect(w, r, "https://192.241.219.35/u=usernameTaken", 301)
+		return
+	}
+
+	// Create user
+	gen.CreateUser(db, r.FormValue("Username"), r.FormValue("Password"), r.FormValue("Email"))
+	
+	fmt.Fprint(w, "Success!")
+}
+
+func UsersHandler(w http.ResponseWriter, r *http.Request) {
+	// POST validation
+	if r.FormValue("Password") == "" || r.FormValue("Username") == "" {
+		fmt.Fprint(w, "enter a password/username")
+		return
+	}
+
+	// Database initialization
+	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
+	if err != nil {
+		fmt.Fprint(w, "SQL ERROR")
+		return
+	}
+	defer db.Close()
+	err = db.Ping()
+	if err != nil {
+		fmt.Fprint(w, "Can't establish database connection")
+	}
+
+	// User authentication
+	if gen.CheckCredentials(db, r.FormValue("Username"), r.FormValue("Password")) {
+		myCookie := util.CreateCookie(r.FormValue("Username"), db) // This also stores a hashed cookie in the database
+		http.SetCookie(w, &myCookie)
+		fmt.Fprint(w, "You're logged in!")
+		return
+	}else {
+		fmt.Fprint(w, "Your username/password was incorrect")
+		return
+	}
 }
 
 func main() {
 	http.HandleFunc("/go/l/", ListingsHandler)
+	http.HandleFunc("/go/u/", UsersHandler)
+	http.HandleFunc("/go/r/", RegistrationHandler)
 	http.ListenAndServe(":8080", nil)
 }
