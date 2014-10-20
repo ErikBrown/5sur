@@ -13,11 +13,10 @@ import (
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	
 	// POST validation
-	if r.FormValue("Origin") != "" || r.FormValue("Destination") != "" {
-		http.Redirect(w, r, "https://192.241.219.35/go/l/?o=" + r.FormValue("Origin") + "&d=" + r.FormValue("Destination"), 301)
+	if r.FormValue("Origin") != "" && r.FormValue("Destination") != "" && r.FormValue("Date") != "" {
+		http.Redirect(w, r, "https://192.241.219.35/go/l/?o=" + r.FormValue("Origin") + "&d=" + r.FormValue("Destination") + "&t=" + util.ConvertDate(r.FormValue("Date")), 301)
 		return
 	}
-
 
 	// Query string validation
 	u, err := url.Parse(r.URL.String())
@@ -59,7 +58,7 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 		Messages: 0,
 	}
 	cities := gen.ReturnFilter(db, query.Origin, query.Destination)
-	listings := gen.ReturnListings(db, query.Origin, query.Destination)
+	listings := gen.ReturnListings(db, query.Origin, query.Destination, query.Time)
 
 	listPage := gen.HeaderHtml(&headerInfo)
 	listPage += gen.FilterHTML(cities, query.Origin, query.Destination)

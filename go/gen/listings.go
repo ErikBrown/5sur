@@ -41,7 +41,7 @@ func ReturnFilter(db *sql.DB, o int, d int) []City {
 	return results
 } 
 
-func ReturnListings(db *sql.DB, o int, d int) []Listing {
+func ReturnListings(db *sql.DB, o int, d int, t string) []Listing {
 	results := make ([]Listing, 0)
 
 	// Always prepare queries to be used multiple times. The parameter placehold is ?
@@ -51,7 +51,7 @@ func ReturnListings(db *sql.DB, o int, d int) []Listing {
 			JOIN users AS u ON l.driver = u.id
 			JOIN cities AS c ON l.origin = c.id
 			LEFT JOIN cities AS c2 ON l.destination = c2.id
-			WHERE l.origin = ? AND l.destination = ? AND DATE(l.date_leaving) >= '2012-10-01 12:30:00'
+			WHERE l.origin = ? AND l.destination = ? AND DATE(l.date_leaving) >= ?
 			ORDER BY l.date_leaving
 			LIMIT 25
 		`)
@@ -63,7 +63,7 @@ func ReturnListings(db *sql.DB, o int, d int) []Listing {
 
 	// db.Query() prepares, executes, and closes a prepared statement - three round
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
-	rows, err := stmt.Query(o, d)
+	rows, err := stmt.Query(o, d, t)
 	if err != nil {
 		panic(err.Error()) // Have a proper error in production
 	}

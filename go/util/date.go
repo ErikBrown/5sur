@@ -14,7 +14,7 @@ type Date struct{
 var months = [12]string{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
 
 //FORM yyyy-mm-dd hh:mm:ss Drop the seconds. Parse the rest.
-func CustomDate (timestamp string) Date{
+func PrettyDate(timestamp string) Date {
 	var splits []string = strings.SplitAfter(timestamp, "")
 	var date Date
 	month := splits[5] + splits[6]
@@ -41,4 +41,13 @@ func CustomDate (timestamp string) Date{
 	date.Day = day
 	date.Time = splits[11] + splits[12] + ":" + splits[14] + splits[15]
 	return date
+}
+
+func ConvertDate(d string) string {
+	// We need to have a date validator somewhere
+	var splits []string = strings.Split(d, "/")
+	if len(splits[0]) == 1 {
+		splits[0] = "0" + splits[0]
+	}
+	return splits[2] + "-" + splits[1] + "-" + splits[0]
 }

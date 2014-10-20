@@ -56,24 +56,44 @@ func HeaderHtml(h *Header) string {
 
 func FilterHTML(cities []City, o int, d int) string {
 	temp := `
-			<div id="search_wrapper">
-			<form method="post" action="https://192.241.219.35/go/l/">
-				<div id="city_wrapper">
-				<select name="Origin" id="origin_select" class="city_select">`
+		<div id="search_wrapper">
+			<form method="post" action="https://192.241.219.35/go/l/" id="search_form">
+				<select name="Origin" id="origin_select" class="search_option">`
 	for i := range cities{
 		temp += optionHTML(cities[i], o)
 	}
 	temp += `
 			</select>
 			<span class="to">&#10132;</span>
-			<select name="Destination" id="destination_select" class="city_select">`
+			<select name="Destination" id="destination_select" class="search_option">`
 	for i := range cities{
 		temp += optionHTML(cities[i], d)
 	}
 	temp += `
 			</select>
+			<span class="to">&#128343;</span>
+			<input type="text" name="Date" placeholder="Select date..." autocomplete="off" id="date_box" class="search_option">
+			<div id="calendar_wrapper">
+				<table id="calendar">
+					<div id="month_wrapper">
+						<span id="month_left">&#9664;</span>
+						<span id="month_title"></span>
+						<span id="month_right">&#9654;</span>
+					</div>
+					<thead>
+						<tr>
+							<th>lu</th>
+							<th>ma</th>
+							<th>mi</th>
+							<th>ju</th>
+							<th>vi</th>
+							<th>sa</th>
+							<th>su</th>
+						</tr>
+					</thead>
+				</table>
 			</div>
-			<input type="submit" value="Go">
+			<input type="submit" name="FilterSubmit" value="Find a ride!" id="search_submit">
 		</form>
 	</div>`
 	return temp
@@ -91,7 +111,7 @@ func optionHTML(c City, i int) string {
 func ListingsHTML(l []Listing) string{
 	output := ""
 	for i := range l {
-	date := util.CustomDate(l[i].DateLeaving)
+	date := util.PrettyDate(l[i].DateLeaving)
 	output += `
 	<ul class="list_item">
 		<li class="listing_user">
@@ -122,7 +142,9 @@ func ListingsHTML(l []Listing) string{
 }
 
 func FooterHtml() string{
-return `</body>
+return `
+<script src="https://192.241.219.35/script.js"></script>
+</body>
 </html>`
 }
 
