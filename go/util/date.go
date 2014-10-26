@@ -46,8 +46,23 @@ func PrettyDate(timestamp string) Date {
 func ConvertDate(d string) string {
 	// We need to have a date validator somewhere
 	var splits []string = strings.Split(d, "/")
+	if len(splits) != 3 {
+		return ""
+	}
 	if len(splits[0]) == 1 {
 		splits[0] = "0" + splits[0]
 	}
 	return splits[2] + "-" + splits[1] + "-" + splits[0]
+}
+
+func ReverseConvertDate(d string) string {
+	// We need to have a date validator somewhere
+	var splits []string = strings.Split(d, "-")
+	if len(splits) != 3 {
+		return ""
+	}
+	if len(splits[0]) == 1 {
+		splits[0] = "0" + splits[0]
+	}
+	return splits[2] + "/" + splits[1] + "/" + splits[0]
 }

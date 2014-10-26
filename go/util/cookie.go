@@ -93,7 +93,7 @@ func checkSession(s string, db *sql.DB) string{
 
 	// The last rows.Next() call will encounter an EOF error and call rows.Close()
 
-	name := hashedStr
+	name := ""
 
 	for rows.Next() {
 		err := rows.Scan(&name)

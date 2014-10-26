@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
+	"encoding/json"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"data/gen"
@@ -11,9 +13,8 @@ import (
 )
 
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
-	
 	// POST validation
-	if r.FormValue("Origin") != "" && r.FormValue("Destination") != "" && r.FormValue("Date") != "" {
+	if r.FormValue("Origin") != "" && r.FormValue("Destination") != "" {
 		http.Redirect(w, r, "https://192.241.219.35/go/l/?o=" + r.FormValue("Origin") + "&d=" + r.FormValue("Destination") + "&t=" + util.ConvertDate(r.FormValue("Date")), 301)
 		return
 	}
@@ -57,15 +58,75 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 		User: user,
 		Messages: 0,
 	}
-	cities := gen.ReturnFilter(db, query.Origin, query.Destination)
+	cities := gen.ReturnFilter(db)
 	listings := gen.ReturnListings(db, query.Origin, query.Destination, query.Time)
 
 	listPage := gen.HeaderHtml(&headerInfo)
-	listPage += gen.FilterHTML(cities, query.Origin, query.Destination)
+	listPage += gen.FilterHTML(cities, query.Origin, query.Destination, util.ReverseConvertDate(query.Time))
 	listPage += gen.ListingsHTML(listings)
 	listPage += gen.FooterHtml()
 
 	fmt.Fprint(w, listPage)
+}
+
+func UserHandler(w http.ResponseWriter, r *http.Request) {
+	// Database initialization
+	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+
+	user := gen.ReturnUserInfo(db, r.URL.Path[6:])// Change to 3 later!
+	formatted, err := json.MarshalIndent(user, "", "    ")
+	if err != nil {
+		fmt.Fprint(w, "can't convert to json")
+		return
+	}
+	fmt.Fprint(w, string(formatted))
+}
+
+func AppHandler(w http.ResponseWriter, r *http.Request) {
+	u, err := url.Parse(r.URL.String())
+	if err != nil {
+		fmt.Fprint(w, "can't parse url query string")
+		return
+	}
+	query, err := util.ValidQueryString(u) // Returns util.QueryFields
+	if err != nil {
+		fmt.Fprint(w, "nonvalid query string")
+		return
+	}
+
+	// Database initialization
+	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
+	if err != nil {
+		fmt.Fprint(w, "database error 1")
+		return
+	}
+
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		fmt.Fprint(w, "database error 2")
+		return
+	}
+
+	listings := gen.ReturnListings(db, query.Origin, query.Destination, query.Time)
+	jsonListings, err := json.MarshalIndent(listings, "", "    ")
+	if err != nil {
+		fmt.Fprint(w, "convert to json failed")
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, string(jsonListings))
 }
 
 func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
@@ -103,7 +164,7 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Success!")
 }
 
-func UsersHandler(w http.ResponseWriter, r *http.Request) {
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// POST validation
 	if r.FormValue("Password") == "" || r.FormValue("Username") == "" {
 		fmt.Fprint(w, "enter a password/username")
@@ -126,7 +187,7 @@ func UsersHandler(w http.ResponseWriter, r *http.Request) {
 	if gen.CheckCredentials(db, r.FormValue("Username"), r.FormValue("Password")) {
 		myCookie := util.CreateCookie(r.FormValue("Username"), db) // This also stores a hashed cookie in the database
 		http.SetCookie(w, &myCookie)
-		fmt.Fprint(w, "You're logged in!")
+		http.Redirect(w, r, "https://192.241.219.35/", 301)
 		return
 	}else {
 		fmt.Fprint(w, "Your username/password was incorrect")
@@ -134,9 +195,30 @@ func UsersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	// Create gen.InvalidateCookie
+	authCookie := http.Cookie{
+		Name: "RideChile",
+		Value: "",
+		Path: "/",
+		Domain: "192.241.219.35", // Add domain name in the future
+		Expires: time.Now().Add(-1000), // One month from now
+		MaxAge: -1,
+		Secure: true, // SSL only
+		HttpOnly: true, // HTTP(S) only
+	}
+	http.SetCookie(w, &authCookie)
+
+	// CREATE DELETE SESSION FROM SERVER
+	http.Redirect(w, r, "https://192.241.219.35/", 301)
+}
+
 func main() {
 	http.HandleFunc("/go/l/", ListingsHandler)
-	http.HandleFunc("/go/u/", UsersHandler)
-	http.HandleFunc("/go/r/", RegistrationHandler)
+	http.HandleFunc("/go/u/", UserHandler)
+	http.HandleFunc("/go/a/", AppHandler)
+	http.HandleFunc("/go/login", LoginHandler)
+	http.HandleFunc("/go/register", RegistrationHandler)
+	http.HandleFunc("/go/logout", LogoutHandler)
 	http.ListenAndServe(":8080", nil)
 }

@@ -5,7 +5,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func ReturnFilter(db *sql.DB, o int, d int) []City {
+func ReturnFilter(db *sql.DB) []City {
 	results := make ([]City, 0)
 
 	// Always prepare queries to be used multiple times. The parameter placehold is ?

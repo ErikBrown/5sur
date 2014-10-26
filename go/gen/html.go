@@ -27,6 +27,24 @@ type Listing struct {
 	Fee float32
 }
 
+type User struct {
+	Name string
+	Picture string
+	Created string
+	RatingPositive int
+	RatingNegative int
+	RidesTaken int
+	RidesGiven int
+	FrequentPlaces []struct {
+		Origin string
+		Destination string
+	}
+	Comments []struct {
+		Rating int
+		Message string
+	}
+}
+
 func HeaderHtml(h *Header) string {
 	temp := `<!doctype html>
 	<html>
@@ -41,11 +59,11 @@ func HeaderHtml(h *Header) string {
 		<ul id="account_nav">`
 
 	if h.User == "" {
-		temp += `<li>Login</li>`
+		temp += `<li><a href="https://192.241.219.35/login.html">Login</a></li>`
 	} else {
 		temp += `<li>` + h.User + `</li>
 		<li>` + strconv.Itoa(h.Messages) + ` Msgs</li>
-		<li>Logout</li>`
+		<li><a href="https://192.241.219.35/go/logout">Logout</a></li>`
 	}	
 
 	temp += `</ul>
@@ -54,7 +72,7 @@ func HeaderHtml(h *Header) string {
 	return temp
 }
 
-func FilterHTML(cities []City, o int, d int) string {
+func FilterHTML(cities []City, o int, d int, t string) string {
 	temp := `
 		<div id="search_wrapper">
 			<form method="post" action="https://192.241.219.35/go/l/" id="search_form">
@@ -72,7 +90,7 @@ func FilterHTML(cities []City, o int, d int) string {
 	temp += `
 			</select>
 			<span class="to">&#128343;</span>
-			<input type="text" name="Date" placeholder="Select date..." autocomplete="off" id="date_box" class="search_option">
+			<input type="text" name="Date" placeholder="Select date..." autocomplete="off" value="` + t + `" id="date_box" class="search_option">
 			<div id="calendar_wrapper">
 				<div id="month_wrapper">
 					<span id="month_left">&#9664;</span>
