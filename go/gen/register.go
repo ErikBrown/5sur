@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"code.google.com/p/go.crypto/bcrypt"
+	"regexp"
 )
 
 func UnusedUsername(db *sql.DB, username string) bool {
@@ -66,7 +67,14 @@ func UnusedEmail(db *sql.DB, email string) bool {
 }
 
 func InvalidEmail(email string) bool {
-	
+	valid, err := regexp.Match("^[a-z0-9_-]{6,20}$", email)
+	if err!= nil {
+		panic(err.Error() + ` Error in the regexp checking email`)
+	}
+	if valid {
+		return false
+	}
+	return true
 }
 
 func hashPassword (password string) []byte{
