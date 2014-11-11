@@ -134,6 +134,10 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "enter a password/username")
 		return
 	}
+	if r.FormValue("Password") != r.FormValue("Password2"){
+		fmt.Fprint(w, "Passwords did not match")
+		return
+	}
 
 	// Database initialization
 	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
@@ -154,6 +158,16 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 	if gen.UnusedUsername(db, r.FormValue("Username")){
 		fmt.Fprint(w, "Username is taken")
 		// http.Redirect(w, r, "https://5sur.com/u=usernameTaken", 301)
+		return
+	}
+
+	if(gen.InvalidEmail(r.FormValue("Email")){
+		fmt.Fprint(w, "Email is an invalid form")
+		return
+	}
+
+	if gen.UnusedEmail(db, r.FormValue("Email")){
+		fmt.Fprint(w, "Email is already registered")
 		return
 	}
 
