@@ -67,7 +67,7 @@ func UnusedEmail(db *sql.DB, email string) bool {
 }
 
 func InvalidUsername(username string) bool {
-	valid, err := regexp.Match("^[a-zA-Z0-9_-]{6,20}$", []byte(username))
+	valid, err := regexp.Match("^[a-zA-Z0-9_-]{3,20}$", []byte(username))
 	if err!= nil {
 		panic(err.Error() + ` Error in the regexp checking username`)
 	}
