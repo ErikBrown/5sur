@@ -10,6 +10,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"data/gen"
 	"data/util"
+	"unicode/utf8"
 )
 
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
@@ -161,13 +162,18 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if(gen.InvalidEmail(r.FormValue("Email")){
-		fmt.Fprint(w, "Email is an invalid form")
+	if gen.InvalidUsername(r.FormValue("Username")){
+		fmt.Fprint(w, "Username is an invalid form")
 		return
 	}
 
 	if gen.UnusedEmail(db, r.FormValue("Email")){
 		fmt.Fprint(w, "Email is already registered")
+		return
+	}
+
+	if utf8.RuneCountInString(r.FormValue("Password")) < 6 {
+		fmt.Fprint(w, "Password is not long enough")
 		return
 	}
 

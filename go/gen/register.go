@@ -51,7 +51,7 @@ func UnusedEmail(db *sql.DB, email string) bool {
 
 	// db.Query() prepares, executes, and closes a prepared statement - three round
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
-	rows, err := stmt.Query(username)
+	rows, err := stmt.Query(email)
 	if err != nil {
 		panic(err.Error() + ` ERROR IN UNUSED EMAIL`)
 	}
@@ -66,10 +66,10 @@ func UnusedEmail(db *sql.DB, email string) bool {
 	return false
 }
 
-func InvalidEmail(email string) bool {
-	valid, err := regexp.Match("^[a-z0-9_-]{6,20}$", email)
+func InvalidUsername(username string) bool {
+	valid, err := regexp.Match("^[a-zA-Z0-9_-]{6,20}$", []byte(username))
 	if err!= nil {
-		panic(err.Error() + ` Error in the regexp checking email`)
+		panic(err.Error() + ` Error in the regexp checking username`)
 	}
 	if valid {
 		return false
