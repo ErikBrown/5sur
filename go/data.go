@@ -15,7 +15,7 @@ import (
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	// POST validation
 	if r.FormValue("Origin") != "" && r.FormValue("Destination") != "" {
-		http.Redirect(w, r, "https://192.241.219.35/go/l/?o=" + r.FormValue("Origin") + "&d=" + r.FormValue("Destination") + "&t=" + util.ConvertDate(r.FormValue("Date")), 301)
+		http.Redirect(w, r, "https://5sur.com/l/?o=" + r.FormValue("Origin") + "&d=" + r.FormValue("Destination") + "&t=" + util.ConvertDate(r.FormValue("Date")), 301)
 		return
 	}
 
@@ -26,8 +26,7 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	query, err := util.ValidQueryString(u) // Returns util.QueryFields
 	if err != nil {
-		fmt.Fprint(w, gen.Error404())
-		return
+		// INCORRECT QUERY STRING FORMAT
 	}
 
 	// Database initialization
@@ -83,7 +82,7 @@ func UserHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error()) // Have a proper error in production
 	}
 
-	user := gen.ReturnUserInfo(db, r.URL.Path[6:])// Change to 3 later!
+	user := gen.ReturnUserInfo(db, r.URL.Path[3:])
 	formatted, err := json.MarshalIndent(user, "", "    ")
 	if err != nil {
 		fmt.Fprint(w, "can't convert to json")
@@ -154,14 +153,14 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 	// Registration details validation
 	if gen.UnusedUsername(db, r.FormValue("Username")){
 		fmt.Fprint(w, "Username is taken")
-		// http.Redirect(w, r, "https://192.241.219.35/u=usernameTaken", 301)
+		// http.Redirect(w, r, "https://5sur.com/u=usernameTaken", 301)
 		return
 	}
 
 	// Create user
 	gen.CreateUser(db, r.FormValue("Username"), r.FormValue("Password"), r.FormValue("Email"))
 	
-	fmt.Fprint(w, "Success!")
+	http.Redirect(w, r, "https://5sur.com/l/", 301)
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -187,7 +186,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if gen.CheckCredentials(db, r.FormValue("Username"), r.FormValue("Password")) {
 		myCookie := util.CreateCookie(r.FormValue("Username"), db) // This also stores a hashed cookie in the database
 		http.SetCookie(w, &myCookie)
-		http.Redirect(w, r, "https://192.241.219.35/", 301)
+		http.Redirect(w, r, "https://5sur.com/l/", 301)
 		return
 	}else {
 		fmt.Fprint(w, "Your username/password was incorrect")
@@ -201,8 +200,8 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		Name: "RideChile",
 		Value: "",
 		Path: "/",
-		Domain: "192.241.219.35", // Add domain name in the future
-		Expires: time.Now().Add(-1000), // One month from now
+		Domain: "5sur.com", // Add domain name in the future
+		Expires: time.Now().Add(-1000), // Expire cookie
 		MaxAge: -1,
 		Secure: true, // SSL only
 		HttpOnly: true, // HTTP(S) only
@@ -210,15 +209,27 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &authCookie)
 
 	// CREATE DELETE SESSION FROM SERVER
-	http.Redirect(w, r, "https://192.241.219.35/", 301)
+	http.Redirect(w, r, "https://5sur.com/l/", 301)
+}
+
+func ReserveHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "This is the reserve handler")
+	return
+}
+
+func RootHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "https://5sur.com/l/", 301)
+	return
 }
 
 func main() {
-	http.HandleFunc("/go/l/", ListingsHandler)
-	http.HandleFunc("/go/u/", UserHandler)
-	http.HandleFunc("/go/a/", AppHandler)
-	http.HandleFunc("/go/login", LoginHandler)
-	http.HandleFunc("/go/register", RegistrationHandler)
-	http.HandleFunc("/go/logout", LogoutHandler)
+	http.HandleFunc("/l/", ListingsHandler)
+	http.HandleFunc("/u/", UserHandler)
+	http.HandleFunc("/a/", AppHandler)
+	http.HandleFunc("/login", LoginHandler)
+	http.HandleFunc("/register", RegistrationHandler)
+	http.HandleFunc("/logout", LogoutHandler)
+	http.HandleFunc("/reserve", ReserveHandler)
+	http.HandleFunc("/", RootHandler)
 	http.ListenAndServe(":8080", nil)
 }

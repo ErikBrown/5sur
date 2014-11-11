@@ -20,7 +20,7 @@ func CreateCookie(u string, db *sql.DB) http.Cookie {
 		Name: "RideChile",
 		Value: randValue,
 		Path: "/",
-		Domain: "192.241.219.35", // Add domain name in the future
+		Domain: "5sur.com", // Add domain name in the future
 		Expires: time.Now().AddDate(0,1,0), // One month from now
 		Secure: true, // SSL only
 		HttpOnly: true, // HTTP(S) only
