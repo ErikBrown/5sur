@@ -135,6 +135,12 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "enter a password/username")
 		return
 	}
+
+	if utf8.RuneCountInString(r.FormValue("Password")) < 6 {
+		fmt.Fprint(w, "Password is not long enough")
+		return
+	}
+
 	if r.FormValue("Password") != r.FormValue("Password2"){
 		fmt.Fprint(w, "Passwords did not match")
 		return
@@ -169,11 +175,6 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 
 	if gen.UnusedEmail(db, r.FormValue("Email")){
 		fmt.Fprint(w, "Email is already registered")
-		return
-	}
-
-	if utf8.RuneCountInString(r.FormValue("Password")) < 6 {
-		fmt.Fprint(w, "Password is not long enough")
 		return
 	}
 
