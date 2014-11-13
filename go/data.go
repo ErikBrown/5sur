@@ -11,6 +11,7 @@ import (
 	"data/gen"
 	"data/util"
 	"unicode/utf8"
+	"net/smtp"
 )
 
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
@@ -131,7 +132,7 @@ func AppHandler(w http.ResponseWriter, r *http.Request) {
 
 func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 	// POST validation
-	if r.FormValue("Password") == "" || r.FormValue("Username") == "" {
+	if r.FormValue("Password") == "" || r.FormValue("Username") == "" || r.FormValue("Password2") == "" || r.FormValue("Email") == "" {
 		fmt.Fprint(w, "enter a password/username")
 		return
 	}
@@ -180,8 +181,9 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Create user
 	gen.CreateUser(db, r.FormValue("Username"), r.FormValue("Password"), r.FormValue("Email"))
-	
-	http.Redirect(w, r, "https://5sur.com/l/", 301)
+
+
+	fmt.Fprint(w, "Confirmation email has been sent to" + r.FormValue("Email"))
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -230,7 +232,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &authCookie)
 
 	// CREATE DELETE SESSION FROM SERVER
-	http.Redirect(w, r, "https://5sur.com/l/", 301)
+	fmt.Fprint(w, "you SHOULD be logged out")
 }
 
 func ReserveHandler(w http.ResponseWriter, r *http.Request) {
@@ -243,6 +245,28 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func TestHandler(w http.ResponseWriter, r *http.Request) {
+	auth := smtp.PlainAuth(
+		"",
+		"AKIAI3MTLIJAEVOUAIYA",
+		"AlisQUtnMkwJD6Pqqt7U+IOebabAhMLSklErntsI2eH9",
+		"email-smtp.us-west-2.amazonaws.com",
+	)
+
+	err := smtp.SendMail(
+		"email-smtp.us-west-2.amazonaws.com:587",
+		auth,
+		"admin@5sur.com",
+		[]string{"iamerikbrown@gmail.com"},
+		[]byte("Confirmation code here"),
+	)
+
+	if err != nil {
+		fmt.Fprint(w, err)
+		return
+	fmt.Fprint(w, "Email should have sent")
+}
+
 func main() {
 	http.HandleFunc("/l/", ListingsHandler)
 	http.HandleFunc("/u/", UserHandler)
@@ -251,6 +275,7 @@ func main() {
 	http.HandleFunc("/register", RegistrationHandler)
 	http.HandleFunc("/logout", LogoutHandler)
 	http.HandleFunc("/reserve", ReserveHandler)
+	http.HandleFunc("/test", TestHandler)
 	http.HandleFunc("/", RootHandler)
 	http.ListenAndServe(":8080", nil)
 }
