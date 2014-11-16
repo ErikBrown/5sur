@@ -140,7 +140,6 @@ calendarWrapper.addEventListener('click', function(event) {
 
 
 searchWrapper.addEventListener('click', function() {
-	console.log(hideCalendar);
 	if (hideCalendar == true) {
 		calendarWrapper.style.height = '0px';
 		calendarWrapper.style.opacity = '.8';

@@ -55,6 +55,9 @@ func updateSession(v string, u string, db *sql.DB) {
 }
 
 func CheckCookie(session string, db *sql.DB) string {
+	if session == "" {
+		return ""
+	}
 	n := checkSession(session, db)
 
 	if n != "" { // Super super temporary

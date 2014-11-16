@@ -11,7 +11,6 @@ import (
 	"data/gen"
 	"data/util"
 	"unicode/utf8"
-	"net/smtp"
 )
 
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +25,7 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// panic
 	}
-	query, err := util.ValidQueryString(u) // Returns util.QueryFields
+	query, err := util.ValidListingQuery(u) // Returns util.QueryFields
 	if err != nil {
 		// INCORRECT QUERY STRING FORMAT
 	}
@@ -99,7 +98,7 @@ func AppHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "can't parse url query string")
 		return
 	}
-	query, err := util.ValidQueryString(u) // Returns util.QueryFields
+	query, err := util.ValidListingQuery(u) // Returns util.QueryFields
 	if err != nil {
 		fmt.Fprint(w, "nonvalid query string")
 		return
@@ -180,10 +179,9 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create user
-	gen.CreateUser(db, r.FormValue("Username"), r.FormValue("Password"), r.FormValue("Email"))
+	gen.UserAuth(db, r.FormValue("Username"), r.FormValue("Password"), r.FormValue("Email"))
 
-
-	fmt.Fprint(w, "Confirmation email has been sent to" + r.FormValue("Email"))
+	fmt.Fprint(w, "Confirmation email has been sent to " + r.FormValue("Email"))
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -235,6 +233,44 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "you SHOULD be logged out")
 }
 
+func AccountAuthHandler(w http.ResponseWriter, r *http.Request) {
+	// Query string validation
+	u, err := url.Parse(r.URL.String())
+	if err != nil {
+		// panic
+	}
+
+	token, err := util.ValidAuthQuery(u) // Returns util.QueryFields
+	if err != nil {
+		fmt.Fprint(w, "nonvalid query string")
+		return
+	}
+
+	// Database initialization
+	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	defer db.Close()
+
+	user, err := gen.CreateUser(db, token)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	fmt.Fprint(w, user + ", your accout is activated!")
+	return
+}
+
 func ReserveHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "This is the reserve handler")
 	return
@@ -245,37 +281,15 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func TestHandler(w http.ResponseWriter, r *http.Request) {
-	auth := smtp.PlainAuth(
-		"",
-		"AKIAI3MTLIJAEVOUAIYA",
-		"AlisQUtnMkwJD6Pqqt7U+IOebabAhMLSklErntsI2eH9",
-		"email-smtp.us-west-2.amazonaws.com",
-	)
-
-	err := smtp.SendMail(
-		"email-smtp.us-west-2.amazonaws.com:587",
-		auth,
-		"admin@5sur.com",
-		[]string{"iamerikbrown@gmail.com"},
-		[]byte("Confirmation code here"),
-	)
-
-	if err != nil {
-		fmt.Fprint(w, err)
-		return
-	fmt.Fprint(w, "Email should have sent")
-}
-
 func main() {
 	http.HandleFunc("/l/", ListingsHandler)
 	http.HandleFunc("/u/", UserHandler)
 	http.HandleFunc("/a/", AppHandler)
 	http.HandleFunc("/login", LoginHandler)
 	http.HandleFunc("/register", RegistrationHandler)
+	http.HandleFunc("/auth/", AccountAuthHandler)
 	http.HandleFunc("/logout", LogoutHandler)
 	http.HandleFunc("/reserve", ReserveHandler)
-	http.HandleFunc("/test", TestHandler)
 	http.HandleFunc("/", RootHandler)
 	http.ListenAndServe(":8080", nil)
 }
