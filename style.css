@@ -254,10 +254,6 @@ h4 {
 	float: left;
 }
 
-.list_item > li + li {
-	padding: 0 25px;
-}
-
 .list_item > li + li > span {
 	height: 100px;
 	display: table-cell;
@@ -306,6 +302,7 @@ h4 {
 }
 
 .city {
+	padding: 0 25px;
 	font-size: 26px;
 	font-weight: 700;
 }
@@ -346,6 +343,18 @@ h4 {
 
 .seats > span {
 	width: 100px;
+}
+
+.reserve {
+	width: 100px;
+	text-align: center;
+	line-height: 100px;
+}
+
+.reserve a {
+	display: block;
+	width: 100%;
+	height: 100%;
 }
 
 /****** USER PAGE ******/
@@ -494,7 +503,7 @@ h4 {
 	}
 }
 
-/***** LOGIN/REGISTER *****/
-#register_form, #login_form {
+/***** FORMS *****/
+#register_form, #login_form, #reserve_form {
 	padding-top: 45px;
 }

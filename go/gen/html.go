@@ -18,6 +18,7 @@ type City struct {
 }
 
 type Listing struct {
+	Id int
 	Driver int
 	Picture string
 	DateLeaving string
@@ -69,7 +70,7 @@ func HeaderHtml(h *Header) string {
 	return temp
 }
 
-func FilterHTML(cities []City, o int, d int, t string) string {
+func FilterHtml(cities []City, o int, d int, t string) string {
 	temp := `
 		<div id="search_wrapper">
 			<form method="post" action="https://5sur.com/l/" id="search_form">
@@ -79,7 +80,7 @@ func FilterHTML(cities []City, o int, d int, t string) string {
 					<option disabled selected class="blank_option"></option>`
 	}
 	for i := range cities{
-		temp += optionHTML(cities[i], o)
+		temp += optionHtml(cities[i], o)
 	}
 	temp += `
 				</select>
@@ -90,7 +91,7 @@ func FilterHTML(cities []City, o int, d int, t string) string {
 					<option disabled selected class="blank_option"></option>`
 	}
 	for i := range cities{
-		temp += optionHTML(cities[i], d)
+		temp += optionHtml(cities[i], d)
 	}
 	temp += `
 				</select>
@@ -122,7 +123,7 @@ func FilterHTML(cities []City, o int, d int, t string) string {
 	return temp
 }
 
-func optionHTML(c City, i int) string {
+func optionHtml(c City, i int) string {
 	selected := ""
 	if c.Id == i {
 		selected = " selected"
@@ -131,7 +132,7 @@ func optionHTML(c City, i int) string {
 					<option value="` + strconv.Itoa(c.Id) + `"` + selected + `>` + c.Name + `</option>`
 }
 
-func ListingsHTML(l []Listing) string{
+func ListingsHtml(l []Listing) string{
 	output := ""
 	for i := range l {
 	date := util.PrettyDate(l[i].DateLeaving)
@@ -157,6 +158,7 @@ func ListingsHTML(l []Listing) string{
 			<span>` + strconv.Itoa(l[i].Seats) + `</span>
 		</li>
 			<li class="fee"><span>$` + fmt.Sprintf("%.2f", l[i].Fee) + `</span>
+			<li class="reserve"><a href="https://5sur.com/reserve?l=` + strconv.Itoa(l[i].Id) + `">Resrv</a></li>
 		</li>
 	</ul>
 	`
@@ -164,6 +166,28 @@ func ListingsHTML(l []Listing) string{
 	return output
 }
 
+func ReserveHtml(l string) string {
+	output := `<form method="post" action="https://5sur.com/reserveSubmit" id="reserve_form">
+		<span>This input will be hidden:</span>
+		<input name="Listing" type="text" id="listing_id_input" value="` + l +`" readonly>
+		<br />
+		<span>Number of Seats</span>
+		<select name="Seats" id="seats_select" class="reserve_input">
+			<option selected value="1">1</option>
+			<option value="2">2</option>
+			<option value="3">3</option>
+			<option value="4">4</option>
+		</select>
+		<br />
+		<span>Message</span>
+		<input type="text" name="Message" id="message_input" class="reserve_input">
+		<br />
+		<input type="submit" value="Go">
+	</form>`
+	return output
+}
+
+// Move specific scrips to specific pages!
 func FooterHtml() string{
 return `
 <script src="https://5sur.com/script.js"></script>

@@ -86,6 +86,9 @@ func CheckUserInfo(db *sql.DB, username string, email string) error {
 	if(invalidUsername(username)){
 		return errors.New("Username is in an invalid format")
 	}
+	if(invalidEmail(email)){
+		return errors.New("Email is in an invalid format")
+	}
 	if(unusedUsername(db, username)){
 		return errors.New("Username is in use")
 	}
@@ -94,6 +97,17 @@ func CheckUserInfo(db *sql.DB, username string, email string) error {
 
 func invalidUsername(username string) bool {
 	valid, err := regexp.Match("^[a-zA-ZÁÉÍÓÑÚÜáéíóñúü0-9_-]{3,20}$", []byte(username))
+	if err!= nil {
+		panic(err.Error() + ` Error in the regexp checking username`)
+	}
+	if valid {
+		return false
+	}
+	return true
+}
+
+func invalidEmail(email string) bool {
+	valid, err := regexp.Match(`\S+\@\S+\.\S`, []byte(email))
 	if err!= nil {
 		panic(err.Error() + ` Error in the regexp checking username`)
 	}
@@ -314,7 +328,6 @@ func createUser(db *sql.DB, u unauthedUser) {
 		// Log the error
 	}
 	*/
-
 }
 
 func CheckCredentials(db *sql.DB, username string, password string) bool {

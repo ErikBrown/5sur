@@ -11,6 +11,7 @@ import (
 	"data/gen"
 	"data/util"
 	"unicode/utf8"
+	"strconv"
 )
 
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +50,7 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// Cookie doesn't exist
 	} else {
-		user = util.CheckCookie(sessionID.Value, db)
+		user, _ = util.CheckCookie(sessionID.Value, db)
 	}
 
 	// HTML generation
@@ -62,8 +63,8 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	listings := gen.ReturnListings(db, query.Origin, query.Destination, query.Time)
 
 	listPage := gen.HeaderHtml(&headerInfo)
-	listPage += gen.FilterHTML(cities, query.Origin, query.Destination, util.ReverseConvertDate(query.Time))
-	listPage += gen.ListingsHTML(listings)
+	listPage += gen.FilterHtml(cities, query.Origin, query.Destination, util.ReverseConvertDate(query.Time))
+	listPage += gen.ListingsHtml(listings)
 	listPage += gen.FooterHtml()
 
 	fmt.Fprint(w, listPage)
@@ -282,8 +283,142 @@ func AccountAuthHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func ReserveFormHandler(w http.ResponseWriter, r *http.Request) {
+	u, err := url.Parse(r.URL.String())
+	if err != nil {
+		fmt.Fprint(w, "Url parse error")
+		return
+	}
+	m, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		fmt.Fprint(w, "Url parse error")
+		return
+	}
+	if _,ok := m["l"]; !ok {
+		fmt.Fprint(w, "Missing listing id")
+		return
+	}
+	// Database initialization
+	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+
+	// User authentication
+	user := ""
+	sessionID, err := r.Cookie("RideChile")
+	if err != nil {
+		// Cookie doesn't exist
+	} else {
+		user, _ = util.CheckCookie(sessionID.Value, db)
+	}
+
+	if user == "" {
+		fmt.Fprint(w, "not logged in")
+		return
+	}
+	// HTML generation
+	headerInfo := gen.Header {
+		Title: "Reserve Page",
+		User: user,
+		Messages: 0,
+	}
+	reservePage := gen.HeaderHtml(&headerInfo)
+	reservePage += gen.ReserveHtml(m["l"][0])
+	reservePage += gen.FooterHtml()
+	fmt.Fprint(w, reservePage)
+}
+
 func ReserveHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "This is the reserve handler")
+	// Check POST
+	if r.FormValue("Seats") == "" || r.FormValue("Listing") == ""{
+		fmt.Fprint(w, "Missing required fields")
+		return
+	}
+	
+	listingId, err := strconv.Atoi(r.FormValue("Listing"))
+	if err != nil {
+		fmt.Fprint(w, "Invalid listing")
+		return
+	}
+	
+	seats, err := strconv.Atoi(r.FormValue("Seats"))
+	if err != nil {
+		fmt.Fprint(w, "Seat not an integer")
+		return
+	}
+
+	// Database initialization
+	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+
+	// User authentication
+	username := ""
+	var userId int
+	sessionID, err := r.Cookie("RideChile")
+	if err != nil {
+		// Cookie doesn't exist
+	} else {
+		username, userId = util.CheckCookie(sessionID.Value, db)
+	}
+
+	if username == "" {
+		fmt.Fprint(w, "not logged in")
+		return
+	}
+
+	ride, err := gen.ReturnIndividualListing(db, listingId)
+	if err != nil {
+		fmt.Fprint(w, "listing does not exist")
+		return
+	}
+
+	if seats > ride.Seats {
+		fmt.Fprint(w, "Not enough seats available")
+		return
+	}
+	
+	err = gen.ValidReservation(db, userId, listingId, ride.DateLeaving)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	err = gen.MakeReservation(db, listingId, seats, userId, r.FormValue("Message"))
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	// HTML generation
+	headerInfo := gen.Header {
+		Title: "Reserve Page",
+		User: username,
+		Messages: 0,
+	}
+
+	reservePage := gen.HeaderHtml(&headerInfo)
+	// Temp
+	reservePage += "<br /><br /><br /><br />Placed on the reservation queue!\r\nListing ID: " + strconv.Itoa(listingId) + "\r\nSeats: " + strconv.Itoa(seats) + "User: " + username + "\r\nMessage: " + r.FormValue("Message")
+	reservePage += gen.FooterHtml()
+
+	fmt.Fprint(w, reservePage)
 	return
 }
 
@@ -300,7 +435,8 @@ func main() {
 	http.HandleFunc("/register", RegistrationHandler)
 	http.HandleFunc("/auth/", AccountAuthHandler)
 	http.HandleFunc("/logout", LogoutHandler)
-	http.HandleFunc("/reserve", ReserveHandler)
+	http.HandleFunc("/reserveSubmit", ReserveHandler)
+	http.HandleFunc("/reserve", ReserveFormHandler)
 	http.HandleFunc("/", RootHandler)
 	http.ListenAndServe(":8080", nil)
 }

@@ -54,27 +54,27 @@ func updateSession(v string, u string, db *sql.DB) {
 	}
 }
 
-func CheckCookie(session string, db *sql.DB) string {
+func CheckCookie(session string, db *sql.DB) (string, int) {
 	if session == "" {
-		return ""
+		return "", 0
 	}
-	n := checkSession(session, db)
+	n, i := checkSession(session, db)
 
 	if n != "" { // Super super temporary
 		// You're logged in!
-		return n
+		return n, i
 	} else {
 		// Session ID is not valid
 	}
-	return n
+	return n, i
 }
 
-func checkSession(s string, db *sql.DB) string{
+func checkSession(s string, db *sql.DB) (string, int){
 	hashed := sha256.New()
 	hashed.Write([]byte(s))
 	hashedStr := hex.EncodeToString(hashed.Sum(nil))
 	stmt, err := db.Prepare(`
-	SELECT users.name
+	SELECT users.name, users.id
 		FROM users
 		WHERE users.session = ?
 		`)
@@ -97,13 +97,14 @@ func checkSession(s string, db *sql.DB) string{
 	// The last rows.Next() call will encounter an EOF error and call rows.Close()
 
 	name := ""
+	var id int
 
 	for rows.Next() {
-		err := rows.Scan(&name)
+		err := rows.Scan(&name, &id)
 		if err != nil {
 			panic(err.Error() + ` THE ERROR IS ON LINE 99`)
 		}
 		
 	}
-	return name
+	return name, id
 }

@@ -46,7 +46,7 @@ func ReturnListings(db *sql.DB, o int, d int, t string) []Listing {
 
 	// Always prepare queries to be used multiple times. The parameter placehold is ?
 	stmt, err := db.Prepare(`
-		SELECT u.id, u.picture, l.date_leaving, c.name, c2.name, l.seats, l.fee
+		SELECT l.id, u.id, u.picture, l.date_leaving, c.name, c2.name, l.seats, l.fee
 			FROM listings AS l
 			JOIN users AS u ON l.driver = u.id
 			JOIN cities AS c ON l.origin = c.id
@@ -74,11 +74,36 @@ func ReturnListings(db *sql.DB, o int, d int, t string) []Listing {
 	// The last rows.Next() call will encounter an EOF error and call rows.Close()
 	for rows.Next() {
 		var temp Listing
-		err := rows.Scan(&temp.Driver, &temp.Picture, &temp.DateLeaving, &temp.Origin, &temp.Destination, &temp.Seats, &temp.Fee)
+		err := rows.Scan(&temp.Id, &temp.Driver, &temp.Picture, &temp.DateLeaving, &temp.Origin, &temp.Destination, &temp.Seats, &temp.Fee)
 		if err != nil {
 			panic(err.Error()) // Have a proper error in production
 		}
 		results = append(results, temp)
 	}
 	return results
+}
+
+func ReturnIndividualListing(db *sql.DB, id int) (Listing, error) {
+	result :=Listing{}
+	stmt, err := db.Prepare(`
+		SELECT l.id, u.id, u.picture, l.date_leaving, c.name, c2.name, l.seats, l.fee
+			FROM listings AS l
+			JOIN users AS u ON l.driver = u.id
+			JOIN cities AS c ON l.origin = c.id
+			LEFT JOIN cities AS c2 ON l.destination = c2.id
+			WHERE l.id = ?
+		`)
+	
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+	defer stmt.Close()
+
+	// db.Query() prepares, executes, and closes a prepared statement - three round
+	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
+	err = stmt.QueryRow(id).Scan(&result.Id, &result.Driver, &result.Picture, &result.DateLeaving, &result.Origin, &result.Destination, &result.Seats, &result.Fee)
+	if err != nil {
+		return result, err
+	}
+	return result, nil
 }
