@@ -187,6 +187,38 @@ func ReserveHtml(l string) string {
 	return output
 }
 
+func CreateListingHtml(u string) string {
+	output := `<form method="post" action="https://5sur.com/createSubmit" id="create_listing_form">
+		<span>Date leaving: </span>
+		<input name="Leaving" type="text">
+		<br />
+		<span>Origin</span>
+		<select name="Origin" class="submit_input">
+			<option selected value="1">1</option>
+			<option value="2">2</option>
+			<option value="3">3</option>
+			<option value="4">4</option>
+		</select>
+		<br />
+		<span>Desination</span>
+		<select name="Destination" class="submit_input">
+			<option selected value="1">1</option>
+			<option value="2">2</option>
+			<option value="3">3</option>
+			<option value="4">4</option>
+		</select>
+		<br />
+		<span>Seats</span>
+		<input type="text" name="Seats" class="submit_input">
+		<br />
+		<span>Fee</span>
+		<input type="text" name="Fee" class="submit_input">
+		<br />
+		<input type="submit" value="Go">
+	</form>`
+	return output
+}
+
 // Move specific scrips to specific pages!
 func FooterHtml() string{
 return `
