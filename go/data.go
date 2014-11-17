@@ -70,6 +70,53 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, listPage)
 }
 
+func CreateListingHandler(w http.ResponseWriter, r *http.Request){
+	// Database initialization
+	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+
+	// User authentication
+	user := ""
+	sessionID, err := r.Cookie("RideChile")
+	if err != nil {
+		// Cookie doesn't exist
+	} else {
+		user, _ = util.CheckCookie(sessionID.Value, db)
+	}
+
+	if user == "" {
+		fmt.Fprint(w, "not logged in")
+		return
+	}
+	// HTML generation
+	headerInfo := gen.Header {
+		Title: "Create Listing Page",
+		User: user,
+		Messages: 0,
+	}
+	createListingsPage := gen.HeaderHtml(&headerInfo)
+	createListingsPage += gen.CreateListingHtml(user)
+	createListingsPage += gen.FooterHtml()
+	fmt.Fprint(w, createListingsPage)
+}
+
+func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
+	if r.FormValue("Password") == "" || r.FormValue("Username") == "" || r.FormValue("Email") == "" {
+		fmt.Fprint(w, "enter a password/username")
+		return
+	}
+	fmt.Fprint(w, "blahblah")
+}
+
 func UserHandler(w http.ResponseWriter, r *http.Request) {
 	// Database initialization
 	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
@@ -437,6 +484,8 @@ func main() {
 	http.HandleFunc("/logout", LogoutHandler)
 	http.HandleFunc("/reserveSubmit", ReserveHandler)
 	http.HandleFunc("/reserve", ReserveFormHandler)
+	http.HandleFunc("/create", CreateListingHandler)
+	http.HandleFunc("/createSubmit", CreateSubmitHandler)
 	http.HandleFunc("/", RootHandler)
 	http.ListenAndServe(":8080", nil)
 }
