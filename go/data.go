@@ -110,11 +110,72 @@ func CreateListingHandler(w http.ResponseWriter, r *http.Request){
 }
 
 func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
-	if r.FormValue("Password") == "" || r.FormValue("Username") == "" || r.FormValue("Email") == "" {
-		fmt.Fprint(w, "enter a password/username")
+		// Database initialization
+	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+
+	// User authentication
+	user := ""
+	var userId int
+	sessionID, err := r.Cookie("RideChile")
+	if err != nil {
+		// Cookie doesn't exist
+	} else {
+		user, userId = util.CheckCookie(sessionID.Value, db)
+	}
+
+	if user == "" {
+		fmt.Fprint(w, "not logged in")
 		return
 	}
-	fmt.Fprint(w, "blahblah")
+
+	originId, err := strconv.Atoi(r.FormValue("Origin"))
+	if err != nil {
+		fmt.Fprint(w, "Invalid origin")
+		return
+	}
+
+	destinationId, err := strconv.Atoi(r.FormValue("Destination"))
+	if err != nil {
+		fmt.Fprint(w, "Invalid destination")
+		return
+	}
+	seats, err := strconv.Atoi(r.FormValue("Seats"))
+	if err != nil {
+		fmt.Fprint(w, "Invalid number of seats")
+		return
+	}
+	fee, err := strconv.Atoi(r.FormValue("Fee"))
+	if err != nil {
+		fmt.Fprint(w, "Invalid fee amount")
+		return
+	}
+
+
+	if r.FormValue("Leaving") == "" || r.FormValue("Seats") == "" || r.FormValue("Fee") == "" {
+		fmt.Fprint(w, "Please fully fill out the form")
+		return
+	}
+	if r.FormValue("Origin") == r.FormValue("Destination") {
+		fmt.Fprint(w, "Please enter different origins and destinations")
+		return
+	}
+	err := gen.CreateListing(db, r.FormValue("Leaving"), userId, originId, destinationId, seats, fee)
+	if err!=nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	fmt.Fprint(w, "Created listing!")
 }
 
 func UserHandler(w http.ResponseWriter, r *http.Request) {

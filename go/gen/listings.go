@@ -83,6 +83,24 @@ func ReturnListings(db *sql.DB, o int, d int, t string) []Listing {
 	return results
 }
 
+func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, destination int, seats int, fee float64) error {
+	stmt, err := db.Prepare(`
+		INSERT INTO listings (date_leaving,driver,origin,destination,seats,fee,reserved)
+			VALUES (?, ?, ?, ?, ?, ?, false)
+		`)
+	defer stmt.Close()
+
+	if err != nil {
+		return errors.New(' Error preparing statement in CreateListing')
+	}
+	_, err = stmt.Exec(date_leaving, driver, origin, destination, seats, fee)
+	if err != nil {
+		return errors.New(" Error executing statement in CreateListing")
+	}
+
+	return nil
+}
+
 func ReturnIndividualListing(db *sql.DB, id int) (Listing, error) {
 	result :=Listing{}
 	stmt, err := db.Prepare(`
