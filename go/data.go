@@ -154,7 +154,7 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 		fmt.Fprint(w, "Invalid number of seats")
 		return
 	}
-	fee, err := strconv.Atoi(r.FormValue("Fee"))
+	fee, err := strconv.ParseFloat(r.FormValue("Fee"), 64)
 	if err != nil {
 		fmt.Fprint(w, "Invalid fee amount")
 		return
@@ -169,7 +169,7 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 		fmt.Fprint(w, "Please enter different origins and destinations")
 		return
 	}
-	err := gen.CreateListing(db, r.FormValue("Leaving"), userId, originId, destinationId, seats, fee)
+	err = gen.CreateListing(db, r.FormValue("Leaving"), userId, originId, destinationId, seats, fee)
 	if err!=nil {
 		fmt.Fprint(w, err.Error())
 		return

@@ -91,12 +91,11 @@ func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, dest
 	defer stmt.Close()
 
 	if err != nil {
-		return errors.New(' Error preparing statement in CreateListing')
+		return err
 	}
 	_, err = stmt.Exec(date_leaving, driver, origin, destination, seats, fee)
 	if err != nil {
-		return errors.New(" Error executing statement in CreateListing")
-	}
+		return err	}
 
 	return nil
 }
