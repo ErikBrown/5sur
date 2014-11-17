@@ -307,6 +307,7 @@ func createUser(db *sql.DB, u unauthedUser) {
 	if err != nil {
 		panic(err.Error() + ` THE ERROR IS ON LINE 60`)
 	}
+	deleteUserAuth(db, u.email)
 	/*
 	rowCnt, err := res.RowsAffected()
 	if err != nil {
