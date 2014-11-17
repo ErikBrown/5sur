@@ -283,7 +283,7 @@ func CreateUser(db *sql.DB, token string) (string, error){
 	}
 
 	// Always run this check before creating a user (which should only be here anyway)
-	if UnusedUsername(db, userInfo.name) == true {
+	if unusedUsername(db, userInfo.name) == true {
 		deleteUserAuth(db, userInfo.email)
 		e := errors.New("Username already taken")
 		return "", e
