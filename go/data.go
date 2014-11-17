@@ -161,22 +161,28 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
+	err = gen.CheckUserInfo(db, r.FormValue("Username"), r.FormValue("Email"))
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
 	// Registration details validation
-	if gen.UnusedUsername(db, r.FormValue("Username")){
-		fmt.Fprint(w, "Username is taken")
-		// http.Redirect(w, r, "https://5sur.com/u=usernameTaken", 301)
-		return
-	}
+	// if gen.UnusedUsername(db, r.FormValue("Username")){
+	// 	fmt.Fprint(w, "Username is taken")
+	// 	// http.Redirect(w, r, "https://5sur.com/u=usernameTaken", 301)
+	// 	return
+	// }
 
-	if gen.InvalidUsername(r.FormValue("Username")){
-		fmt.Fprint(w, "Username is an invalid form")
-		return
-	}
+	// if gen.InvalidUsername(r.FormValue("Username")){
+	// 	fmt.Fprint(w, "Username is an invalid form")
+	// 	return
+	// }
 
-	if gen.UnusedEmail(db, r.FormValue("Email")){
-		fmt.Fprint(w, "Email is already registered")
-		return
-	}
+	// if gen.UnusedEmail(db, r.FormValue("Email")){
+	// 	fmt.Fprint(w, "Email is already registered")
+	// 	return
+	// }
 
 	// Create user
 	gen.UserAuth(db, r.FormValue("Username"), r.FormValue("Password"), r.FormValue("Email"))

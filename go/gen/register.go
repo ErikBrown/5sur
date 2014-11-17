@@ -20,7 +20,7 @@ type unauthedUser struct {
 	auth string
 }
 
-func UnusedUsername(db *sql.DB, username string) bool {
+func unusedUsername(db *sql.DB, username string) bool {
 	// Always prepare queries to be used multiple times. The parameter placehold is ?
 	stmt, err := db.Prepare(`
 	SELECT users.name
@@ -50,7 +50,7 @@ func UnusedUsername(db *sql.DB, username string) bool {
 	return false
 }
 
-func UnusedEmail(db *sql.DB, email string) bool {
+func unusedEmail(db *sql.DB, email string) bool {
 	stmt, err := db.Prepare(`
 		SELECT users.name
 			FROM users
@@ -79,8 +79,21 @@ func UnusedEmail(db *sql.DB, email string) bool {
 	return false
 }
 
-func InvalidUsername(username string) bool {
-	valid, err := regexp.Match("^[a-zA-Z0-9_-]{3,20}$", []byte(username))
+func CheckUserInfo(db *sql.DB, username string, email string) error {
+	if(unusedEmail(db, email)){
+		return errors.New("Email is in use")
+	}
+	if(invalidUsername(username)){
+		return errors.New("Username is in an invalid format")
+	}
+	if(unusedUsername(db, username)){
+		return errors.New("Username is in use")
+	}
+	return nil
+}
+
+func invalidUsername(username string) bool {
+	valid, err := regexp.Match("^[a-zA-ZÁÉÍÓÑÚÜáéíóñúü0-9_-]{3,20}$", []byte(username))
 	if err!= nil {
 		panic(err.Error() + ` Error in the regexp checking username`)
 	}
