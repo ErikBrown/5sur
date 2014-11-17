@@ -131,7 +131,7 @@ func AppHandler(w http.ResponseWriter, r *http.Request) {
 
 func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 	// POST validation
-	if r.FormValue("Password") == "" || r.FormValue("Username") == "" || r.FormValue("Password2") == "" || r.FormValue("Email") == "" {
+	if r.FormValue("Password") == "" || r.FormValue("Username") == "" || r.FormValue("Email") == "" {
 		fmt.Fprint(w, "enter a password/username")
 		return
 	}
@@ -143,6 +143,11 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.FormValue("Password") != r.FormValue("Password2"){
 		fmt.Fprint(w, "Passwords did not match")
+		return
+	}
+
+	if r.FormValue("Email") != r.FormValue("Email2") {
+		fmt.Fprint(w, "Emails did not match");
 		return
 	}
 
