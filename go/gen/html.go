@@ -187,26 +187,26 @@ func ReserveHtml(l string) string {
 	return output
 }
 
-func CreateListingHtml(u string) string {
+func CreateListingHtml(u string, c []City) string {
 	output := `<form method="post" action="https://5sur.com/createSubmit" id="create_listing_form">
 		<span>Date leaving: </span>
 		<input name="Leaving" type="text">
 		<br />
 		<span>Origin</span>
 		<select name="Origin" class="submit_input">
-			<option selected value="1">1</option>
-			<option value="2">2</option>
-			<option value="3">3</option>
-			<option value="4">4</option>
+			<option disabled selected class="blank_option"></option>`
+		for i := range c{
+			output += optionHtml(c[i], 0)
+		}
+		output += `
 		</select>
-		<br />
 		<span>Desination</span>
 		<select name="Destination" class="submit_input">
-			<option selected value="1">1</option>
-			<option value="2">2</option>
-			<option value="3">3</option>
-			<option value="4">4</option>
-		</select>
+			<option disabled selected class="blank_option"></option>`
+		for i := range c{
+			output += optionHtml(c[i], 0)
+		}
+		output += `</select>
 		<br />
 		<span>Seats</span>
 		<input type="text" name="Seats" class="submit_input">
