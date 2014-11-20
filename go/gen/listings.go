@@ -3,6 +3,7 @@ package gen
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
+	"errors"
 )
 
 func ReturnFilter(db *sql.DB) []City {
