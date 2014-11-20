@@ -104,7 +104,8 @@ func CreateListingHandler(w http.ResponseWriter, r *http.Request){
 		Messages: 0,
 	}
 	createListingsPage := gen.HeaderHtml(&headerInfo)
-	createListingsPage += gen.CreateListingHtml(user)
+	cities := gen.ReturnFilter(db)
+ 	createListingsPage += gen.CreateListingHtml(user, cities)
 	createListingsPage += gen.FooterHtml()
 	fmt.Fprint(w, createListingsPage)
 }
@@ -169,6 +170,23 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 		fmt.Fprint(w, "Please enter different origins and destinations")
 		return
 	}
+
+	if fee > 100 {
+		fmt.Fprint(w, "Too high of a fee")
+		return
+	}
+
+	if seats > 8 {
+		fmt.Fprint(w, "Too many seats for a legit car")
+		return
+	}
+
+	err = gen.CheckNearbyListings(db, r.FormValue("Leaving"), userId)
+	if err !=nil {
+		fmt.Fprint(w, "You have another listing within an hour of this one.")
+		return
+	}
+
 	err = gen.CreateListing(db, r.FormValue("Leaving"), userId, originId, destinationId, seats, fee)
 	if err!=nil {
 		fmt.Fprint(w, err.Error())

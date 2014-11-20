@@ -41,6 +41,35 @@ func ReturnFilter(db *sql.DB) []City {
 	return results
 } 
 
+func CheckNearbyListings(db *sql.DB, date_leaving string, id int) error {
+	stmt, err := db.Prepare(`
+		SELECT * FROM listings 
+		WHERE date_leaving <= ? + INTERVAL 1 HOUR AND 
+		date_leaving >= ? - INTERVAL 1 HOUR AND
+		driver = ?
+	`)
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+	defer stmt.Close()
+
+	// db.Query() prepares, executes, and closes a prepared statement - three round
+	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
+	rows, err := stmt.Query(date_leaving, date_leaving, id)
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+	// Always defer rows.Close(), even if you explicitly Close it at the end of the
+	// loop. The connection will have the chance to remain open otherwise.
+	defer rows.Close()
+
+	for rows.Next() {
+		return errors.New("You have a listing near this date.")
+	}
+	return nil
+
+}
+
 func ReturnListings(db *sql.DB, o int, d int, t string) []Listing {
 	results := make ([]Listing, 0)
 
