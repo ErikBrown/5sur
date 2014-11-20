@@ -61,7 +61,7 @@ func CompareDate(d1 string, d2 string) error {
 	var splitsLeaving []string = strings.Split(d1, "/")
 	var splitsNow []string = strings.Split(d2, "/")
 	if len(splitsLeaving) != 3 && len(splitsNow) != 3 {
-		return errors.New(d2 + " & length of array: " + strconv.Itoa(len(splitsNow)))
+		return errors.New(d1 + " & length of array: " + strconv.Itoa(len(splitsLeaving)) + "\n" + d2 + " & length of array: " + strconv.Itoa(len(splitsNow)))
 	}
 	dateLeaving := 0.0
 	dateNow := 0.0
