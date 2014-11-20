@@ -171,6 +171,14 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
+	dateLeaving := util.ConvertDate(r.FormValue("Leaving"))
+	err = util.CompareDate(dateLeaving, time.Now().Local().Format(time.RFC3339))
+
+	if err != nil {
+		fmt.Fprint(w, err)
+		return
+	}
+
 	if fee > 100 {
 		fmt.Fprint(w, "Too high of a fee")
 		return

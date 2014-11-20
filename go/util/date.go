@@ -3,6 +3,8 @@ package util
 import (
 	"strings"
 	"strconv"
+	"errors"
+	"math"
 )
 
 type Date struct{
@@ -53,6 +55,32 @@ func ConvertDate(d string) string {
 		splits[0] = "0" + splits[0]
 	}
 	return splits[2] + "-" + splits[1] + "-" + splits[0]
+}
+
+func CompareDate(d1 string, d2 string) error {
+	var splitsLeaving []string = strings.Split(d1, "/")
+	var splitsNow []string = strings.Split(d2, "/")
+	if len(splitsLeaving) != 3 && len(splitsNow) != 3 {
+		return errors.New(d2 + " & length of array: " + strconv.Itoa(len(splitsNow)))
+	}
+	dateLeaving := 0.0
+	dateNow := 0.0
+	for i := range splitsLeaving {
+		leaving, err := strconv.ParseFloat(splitsLeaving[i],64)
+		if err != nil {
+			return err
+		}
+		now, err := strconv.ParseFloat(splitsNow[i],64)
+		if err != nil {
+			return err
+		}
+		dateLeaving += leaving * math.Pow(10,(math.Abs(float64(i)-2)*2))
+		dateNow += now * math.Pow(10,(math.Abs(float64(i)-2)*2))
+	}
+	if dateLeaving < dateNow {
+		return errors.New("Can't make a listing in the past joker")
+	}
+	return nil
 }
 
 func ReverseConvertDate(d string) string {

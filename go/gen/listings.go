@@ -68,7 +68,6 @@ func CheckNearbyListings(db *sql.DB, date_leaving string, id int) error {
 		return errors.New("You have a listing near this date.")
 	}
 	return nil
-
 }
 
 func ReturnListings(db *sql.DB, o int, d int, t string) []Listing {
