@@ -54,14 +54,15 @@ func ConvertDate(d string) string {
 	if len(splits[0]) == 1 {
 		splits[0] = "0" + splits[0]
 	}
-	return splits[2] + "-" + splits[1] + "-" + splits[0]
+	return splits[0] + "-" + splits[1] + "-" + splits[2]
 }
 
 func CompareDate(d1 string, d2 string) error {
-	var splitsLeaving []string = strings.Split(d1, "/")
-	var splitsNow []string = strings.Split(d2, "/")
+	var splitsLeaving []string = strings.Split(d1, "-")
+	var splitsTemp []string = strings.Split(d2, "T")
+	var splitsNow []string = strings.Split(splitsTemp[0], "-")
 	if len(splitsLeaving) != 3 && len(splitsNow) != 3 {
-		return errors.New(d1 + " & length of array: " + strconv.Itoa(len(splitsLeaving)) + "\n" + d2 + " & length of array: " + strconv.Itoa(len(splitsNow)))
+		return errors.New("Incorrect date format")
 	}
 	dateLeaving := 0.0
 	dateNow := 0.0
@@ -78,7 +79,7 @@ func CompareDate(d1 string, d2 string) error {
 		dateNow += now * math.Pow(10,(math.Abs(float64(i)-2)*2))
 	}
 	if dateLeaving < dateNow {
-		return errors.New("Can't make a listing in the past joker")
+		return errors.New("Can't make listings in the past joker")
 	}
 	return nil
 }
@@ -92,5 +93,5 @@ func ReverseConvertDate(d string) string {
 	if len(splits[0]) == 1 {
 		splits[0] = "0" + splits[0]
 	}
-	return splits[2] + "/" + splits[1] + "/" + splits[0]
+	return splits[0] + "/" + splits[1] + "/" + splits[2]
 }
