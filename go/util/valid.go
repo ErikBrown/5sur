@@ -5,7 +5,7 @@ import (
 )
 
 
-func ValidCreateSubmid(r *http.Request) err {
+func ValidCreateSubmid(r *http.Request) error {
 
 	//Check if the values that should be ints actually are. If not, return error.
 

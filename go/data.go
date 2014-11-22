@@ -14,6 +14,17 @@ import (
 	"strconv"
 )
 
+func openDb (dbType string, dbLogin string) (*sql.DB, error) {
+	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
+	if err != nil {
+		return db, err // Have a proper error in production
+	}
+	err = db.Ping()
+	if err != nil {
+		return db, err // Have a proper error in production
+	}
+}
+
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	// POST validation
 	if r.FormValue("Origin") != "" && r.FormValue("Destination") != "" {
@@ -32,17 +43,12 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Database initialization
-	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
-	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err)
+		return
 	}
-
 	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		panic(err.Error()) // Have a proper error in production
-	}
 
 	// User authentication
 	user := ""
@@ -72,17 +78,12 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 
 func CreateListingHandler(w http.ResponseWriter, r *http.Request){
 	// Database initialization
-	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
-	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err)
+		return
 	}
-
 	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		panic(err.Error()) // Have a proper error in production
-	}
 
 	// User authentication
 	user := ""
@@ -118,17 +119,13 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request){
 
 func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 		// Database initialization
-	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
-	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+	// Database initialization
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err)
+		return
 	}
-
 	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		panic(err.Error()) // Have a proper error in production
-	}
 
 	// User authentication
 	user := ""
@@ -145,38 +142,6 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	// originId, err := strconv.Atoi(r.FormValue("Origin"))
-	// if err != nil {
-	// 	fmt.Fprint(w, "Invalid origin")
-	// 	return
-	// }
-
-	// destinationId, err := strconv.Atoi(r.FormValue("Destination"))
-	// if err != nil {
-	// 	fmt.Fprint(w, "Invalid destination")
-	// 	return
-	// }
-	// seats, err := strconv.Atoi(r.FormValue("Seats"))
-	// if err != nil {
-	// 	fmt.Fprint(w, "Invalid number of seats")
-	// 	return
-	// }
-	// fee, err := strconv.ParseFloat(r.FormValue("Fee"), 64)
-	// if err != nil {
-	// 	fmt.Fprint(w, "Invalid fee amount")
-	// 	return
-	// }
-
-
-	// if r.FormValue("Leaving") == "" || r.FormValue("Seats") == "" || r.FormValue("Fee") == "" {
-	// 	fmt.Fprint(w, "Please fully fill out the form")
-	// 	return
-	// }
-	// if r.FormValue("Origin") == r.FormValue("Destination") {
-	// 	fmt.Fprint(w, "Please enter different origins and destinations")
-	// 	return
-	// }
-
 	err := ValidCreateSubmit(r)
 	if err != nil {
 		fmt.Fprint(w, err)
@@ -190,16 +155,6 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 		fmt.Fprint(w, err)
 		return
 	}
-
-	// if fee > 100 {
-	// 	fmt.Fprint(w, "Too high of a fee")
-	// 	return
-	// }
-
-	// if seats > 8 {
-	// 	fmt.Fprint(w, "Too many seats for a legit car")
-	// 	return
-	// }
 
 	err = gen.CheckNearbyListings(db, r.FormValue("Leaving"), userId)
 	if err !=nil {
@@ -218,17 +173,12 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 
 func UserHandler(w http.ResponseWriter, r *http.Request) {
 	// Database initialization
-	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
-	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err)
+		return
 	}
-
 	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		panic(err.Error()) // Have a proper error in production
-	}
 
 	user := gen.ReturnUserInfo(db, r.URL.Path[3:])
 	formatted, err := json.MarshalIndent(user, "", "    ")
@@ -252,19 +202,12 @@ func AppHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Database initialization
-	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
-	if err != nil {
-		fmt.Fprint(w, "database error 1")
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err)
 		return
 	}
-
 	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		fmt.Fprint(w, "database error 2")
-		return
-	}
 
 	listings := gen.ReturnListings(db, query.Origin, query.Destination, query.Time)
 	jsonListings, err := json.MarshalIndent(listings, "", "    ")
@@ -299,16 +242,9 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Database initialization
-	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
-	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		fmt.Fprint(w, err.Error())
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err)
 		return
 	}
 	defer db.Close()
@@ -350,16 +286,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Database initialization
-	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
-	if err != nil {
-		fmt.Fprint(w, "SQL ERROR")
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err)
 		return
 	}
 	defer db.Close()
-	err = db.Ping()
-	if err != nil {
-		fmt.Fprint(w, "Can't establish database connection")
-	}
 
 	// User authentication
 	if gen.CheckCredentials(db, r.FormValue("Username"), r.FormValue("Password")) {
@@ -405,16 +337,9 @@ func AccountAuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Database initialization
-	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
-	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		fmt.Fprint(w, err.Error())
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err)
 		return
 	}
 	defer db.Close()
@@ -445,17 +370,12 @@ func ReserveFormHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Database initialization
-	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
-	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err)
+		return
 	}
-
 	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		panic(err.Error()) // Have a proper error in production
-	}
 
 	// User authentication
 	user := ""
@@ -502,17 +422,12 @@ func ReserveHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Database initialization
-	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
-	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err)
+		return
 	}
-
 	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		panic(err.Error()) // Have a proper error in production
-	}
 
 	// User authentication
 	username := ""
