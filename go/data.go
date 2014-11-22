@@ -110,6 +110,12 @@ func CreateListingHandler(w http.ResponseWriter, r *http.Request){
 	fmt.Fprint(w, createListingsPage)
 }
 
+func DashListingsHandler(w http.ResponseWriter, r *http.Request){
+	// Database initialization
+
+	fmt.Fprint(w, "Dash Listings Handlerf")
+}
+
 func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 		// Database initialization
 	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
@@ -139,35 +145,41 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	originId, err := strconv.Atoi(r.FormValue("Origin"))
-	if err != nil {
-		fmt.Fprint(w, "Invalid origin")
-		return
-	}
+	// originId, err := strconv.Atoi(r.FormValue("Origin"))
+	// if err != nil {
+	// 	fmt.Fprint(w, "Invalid origin")
+	// 	return
+	// }
 
-	destinationId, err := strconv.Atoi(r.FormValue("Destination"))
-	if err != nil {
-		fmt.Fprint(w, "Invalid destination")
-		return
-	}
-	seats, err := strconv.Atoi(r.FormValue("Seats"))
-	if err != nil {
-		fmt.Fprint(w, "Invalid number of seats")
-		return
-	}
-	fee, err := strconv.ParseFloat(r.FormValue("Fee"), 64)
-	if err != nil {
-		fmt.Fprint(w, "Invalid fee amount")
-		return
-	}
+	// destinationId, err := strconv.Atoi(r.FormValue("Destination"))
+	// if err != nil {
+	// 	fmt.Fprint(w, "Invalid destination")
+	// 	return
+	// }
+	// seats, err := strconv.Atoi(r.FormValue("Seats"))
+	// if err != nil {
+	// 	fmt.Fprint(w, "Invalid number of seats")
+	// 	return
+	// }
+	// fee, err := strconv.ParseFloat(r.FormValue("Fee"), 64)
+	// if err != nil {
+	// 	fmt.Fprint(w, "Invalid fee amount")
+	// 	return
+	// }
 
 
-	if r.FormValue("Leaving") == "" || r.FormValue("Seats") == "" || r.FormValue("Fee") == "" {
-		fmt.Fprint(w, "Please fully fill out the form")
-		return
-	}
-	if r.FormValue("Origin") == r.FormValue("Destination") {
-		fmt.Fprint(w, "Please enter different origins and destinations")
+	// if r.FormValue("Leaving") == "" || r.FormValue("Seats") == "" || r.FormValue("Fee") == "" {
+	// 	fmt.Fprint(w, "Please fully fill out the form")
+	// 	return
+	// }
+	// if r.FormValue("Origin") == r.FormValue("Destination") {
+	// 	fmt.Fprint(w, "Please enter different origins and destinations")
+	// 	return
+	// }
+
+	err := ValidCreateSubmit(r)
+	if err != nil {
+		fmt.Fprint(w, err)
 		return
 	}
 
@@ -179,15 +191,15 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	if fee > 100 {
-		fmt.Fprint(w, "Too high of a fee")
-		return
-	}
+	// if fee > 100 {
+	// 	fmt.Fprint(w, "Too high of a fee")
+	// 	return
+	// }
 
-	if seats > 8 {
-		fmt.Fprint(w, "Too many seats for a legit car")
-		return
-	}
+	// if seats > 8 {
+	// 	fmt.Fprint(w, "Too many seats for a legit car")
+	// 	return
+	// }
 
 	err = gen.CheckNearbyListings(db, r.FormValue("Leaving"), userId)
 	if err !=nil {
@@ -573,6 +585,7 @@ func main() {
 	http.HandleFunc("/reserve", ReserveFormHandler)
 	http.HandleFunc("/create", CreateListingHandler)
 	http.HandleFunc("/createSubmit", CreateSubmitHandler)
+	http.HandleFunc("/dash/listings", DashListingsHandler)
 	http.HandleFunc("/", RootHandler)
 	http.ListenAndServe(":8080", nil)
 }
