@@ -14,7 +14,7 @@ import (
 	"strconv"
 )
 
-func openDb (dbType string, dbLogin string) (*sql.DB, error) {
+func openDb () (*sql.DB, error) {
 	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
 	if err != nil {
 		return db, err // Have a proper error in production
@@ -23,6 +23,7 @@ func openDb (dbType string, dbLogin string) (*sql.DB, error) {
 	if err != nil {
 		return db, err // Have a proper error in production
 	}
+	return db, nil
 }
 
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
@@ -142,7 +143,7 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	err := ValidCreateSubmit(r)
+	originId, destinationId, seats, fee, err := util.ValidCreateSubmit(r)
 	if err != nil {
 		fmt.Fprint(w, err)
 		return
@@ -152,7 +153,7 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 	err = util.CompareDate(dateLeaving, time.Now().Local().Format(time.RFC3339))
 
 	if err != nil {
-		fmt.Fprint(w, err)
+		fmt.Fprint(w, err.Error())
 		return
 	}
 
