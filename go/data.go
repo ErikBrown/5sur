@@ -221,24 +221,10 @@ func AppHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
-	// POST validation
-	if r.FormValue("Password") == "" || r.FormValue("Username") == "" || r.FormValue("Email") == "" {
-		fmt.Fprint(w, "enter a password/username")
-		return
-	}
 
-	if utf8.RuneCountInString(r.FormValue("Password")) < 6 {
-		fmt.Fprint(w, "Password is not long enough")
-		return
-	}
-
-	if r.FormValue("Password") != r.FormValue("Password2"){
-		fmt.Fprint(w, "Passwords did not match")
-		return
-	}
-
-	if r.FormValue("Email") != r.FormValue("Email2") {
-		fmt.Fprint(w, "Emails did not match");
+	err := util.ValidRegister()
+	if err != nil {
+		fmt.Fprint(w, err)
 		return
 	}
 
@@ -255,25 +241,7 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, err.Error())
 		return
 	}
-
-	// Registration details validation
-	// if gen.UnusedUsername(db, r.FormValue("Username")){
-	// 	fmt.Fprint(w, "Username is taken")
-	// 	// http.Redirect(w, r, "https://5sur.com/u=usernameTaken", 301)
-	// 	return
-	// }
-
-	// if gen.InvalidUsername(r.FormValue("Username")){
-	// 	fmt.Fprint(w, "Username is an invalid form")
-	// 	return
-	// }
-
-	// if gen.UnusedEmail(db, r.FormValue("Email")){
-	// 	fmt.Fprint(w, "Email is already registered")
-	// 	return
-	// }
-
-	// Create user
+	
 	gen.UserAuth(db, r.FormValue("Username"), r.FormValue("Password"), r.FormValue("Email"))
 
 	fmt.Fprint(w, "Confirmation email has been sent to " + r.FormValue("Email"))

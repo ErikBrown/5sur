@@ -7,6 +7,26 @@ import (
 )
 
 
+func ValidRegister(r *http.Request) error {
+		// POST validation
+	if r.FormValue("Password") == "" || r.FormValue("Username") == "" || r.FormValue("Email") == "" {
+		return errors.New("Enter a username and password")
+	}
+
+	if utf8.RuneCountInString(r.FormValue("Password")) < 6 {
+		return errors.New("Password not long enough")
+	}
+
+	if r.FormValue("Password") != r.FormValue("Password2"){
+		return errors.New("Enter the same username and password")
+	}
+
+	if r.FormValue("Email") != r.FormValue("Email2") {
+		return errors.New("Enter identical emails")
+	}
+	return nil
+}
+
 func ValidCreateSubmit(r *http.Request) (int, int, int, float64, error) {
 
 	//Check if the values that should be ints actually are. If not, return error.
