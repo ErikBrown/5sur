@@ -10,7 +10,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"data/gen"
 	"data/util"
-	"unicode/utf8"
 	"strconv"
 )
 
@@ -222,7 +221,7 @@ func AppHandler(w http.ResponseWriter, r *http.Request) {
 
 func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 
-	err := util.ValidRegister()
+	err := util.ValidRegister(r)
 	if err != nil {
 		fmt.Fprint(w, err)
 		return
