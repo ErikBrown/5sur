@@ -49,10 +49,11 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	// User authentication
 	user, _ := util.CheckCookie(r, db) // return "" if not logged in
 
-	// HTML generation
-	listPage, err := gen.ListingsPage(db, query, user, "Listings Page");
+	// HTML generation (also does listing-specific SQL calls)
+	listPage, err := gen.ListingsPage(db, query, user);
 	if err != nil {
 		fmt.Fprint(w, err.Error())
+		return
 	}
 
 	fmt.Fprint(w, listPage)
@@ -69,26 +70,23 @@ func CreateListingHandler(w http.ResponseWriter, r *http.Request){
 
 	// User authentication
 	user, _ := util.CheckCookie(r, db) // return "" if not logged in
-
 	if user == "" {
 		fmt.Fprint(w, "not logged in")
 		return
 	}
-	// HTML generation
-	headerInfo := gen.Header {
-		Title: "Create Listing Page",
-		User: user,
+
+	// HTML generation (also does listing-specific SQL calls)
+	createListingPage, err := gen.CreateListingPage(db, user);
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
 	}
-	createListingsPage := gen.HeaderHtml(&headerInfo)
-	cities := gen.ReturnFilter(db)
- 	createListingsPage += gen.CreateListingHtml(user, cities)
-	createListingsPage += gen.FooterHtml()
-	fmt.Fprint(w, createListingsPage)
+
+	fmt.Fprint(w, createListingPage)
 }
 
 func DashListingsHandler(w http.ResponseWriter, r *http.Request){
 	// Database initialization
-
 	fmt.Fprint(w, "Dash Listings Handlerf")
 }
 
@@ -103,19 +101,17 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 
 	// User authentication
 	user, userId := util.CheckCookie(r, db) // return "" if not logged in
-
 	if user == "" {
 		fmt.Fprint(w, "not logged in")
 		return
 	}
 
-	originId, destinationId, seats, fee, err := util.ValidCreateSubmit(r)
+	createFormPost, err := util.ValidCreateSubmit(r)
 	if err != nil {
 		fmt.Fprint(w, err)
 		return
 	}
 
-	// This is fucked
 	dateLeaving := util.ConvertDate(r.FormValue("Leaving"))
 	err = util.CompareDate(dateLeaving, time.Now().Local().Format(time.RFC3339))
 
@@ -130,7 +126,7 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	err = gen.CreateListing(db, r.FormValue("Leaving"), userId, originId, destinationId, seats, fee)
+	err = gen.CreateListing(db, dateLeaving, userId, createFormPost.Origin, createFormPost.Destination, createFormPost.Seats, createFormPost.Fee)
 	if err!=nil {
 		fmt.Fprint(w, err.Error())
 		return

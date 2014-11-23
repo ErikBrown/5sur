@@ -3,10 +3,87 @@ package util
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"strconv"
 	"unicode/utf8"
 )
 
+type ListingQueryFields struct {
+	Origin int
+	Destination int
+	Time string
+}
+
+type CreateSubmitPost struct {
+	Origin int
+	Destination int
+	Seats int
+	Fee float64
+	Date string
+}
+
+// CHANGE TO var := struct{}
+func ValidListingQuery(u *url.URL) (ListingQueryFields, error) {
+	// ParseQuery parses the URL-encoded query string and returns a map listing the values specified for each key.
+	// ParseQuery always returns a non-nil map containing all the valid query parameters found
+	urlParsed, err := url.Parse(u.String())
+	if err != nil {
+		// panic
+	}
+
+	m, err := url.ParseQuery(urlParsed.RawQuery)
+	if err != nil {
+		f := ListingQueryFields {0,0,""}
+		e := errors.New("Empty Field")
+		return f, e
+	}
+	if _,ok := m["o"]; !ok {
+		f := ListingQueryFields {0,0,""}
+		e := errors.New("Missing origin")
+		return f, e
+	}
+	if _,ok := m["d"]; !ok {
+		f := ListingQueryFields {0,0,""}
+		e := errors.New("Missing destination")
+		return f, e
+	}
+	if _,ok := m["t"]; !ok {
+		f := ListingQueryFields {0,0,""}
+		e := errors.New("Missing time")
+		return f, e
+	}
+	city1, err := strconv.Atoi(m["o"][0])
+	if err != nil{
+		f := ListingQueryFields {0,0,""}
+		e := errors.New("Origin is not an integer")
+		return f, e
+	}
+	city2, err := strconv.Atoi(m["d"][0])
+	if err != nil{
+		f := ListingQueryFields {0,0,""}
+		e := errors.New("Destination is not an integer")
+		// redirect to index to prevent sql injection and end function
+		return f, e
+	}
+	f := ListingQueryFields{city1, city2, m["t"][0]}
+	return f, nil
+}
+
+func ValidAuthQuery(u *url.URL) (string, error) {
+	m, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		f := ""
+		e := errors.New("Empty Field")
+		return f, e
+	}
+	if _,ok := m["t"]; !ok {
+		f := ""
+		e := errors.New("Missing token")
+		return f, e
+	}
+	f := m["t"][0]
+	return f, nil
+}
 
 func ValidRegister(r *http.Request) error {
 		// POST validation
@@ -28,45 +105,45 @@ func ValidRegister(r *http.Request) error {
 	return nil
 }
 
-func ValidCreateSubmit(r *http.Request) (int, int, int, float64, error) {
-
+func ValidCreateSubmit(r *http.Request) (CreateSubmitPost, error) {
 	//Check if the values that should be ints actually are. If not, return error.
 	//Check if values are empty.
+	values := CreateSubmitPost{}
 	if r.FormValue("Leaving") == "" || r.FormValue("Seats") == "" || r.FormValue("Fee") == "" {
-		return 0, 0, 0, 0, errors.New("Please fully fill out the form")
+		return values, errors.New("Please fully fill out the form")
 	}
-	originId, err := strconv.Atoi(r.FormValue("Origin"))
+	err := errors.New("")
+	values.Origin, err = strconv.Atoi(r.FormValue("Origin"))
 	if err != nil {
-		return 0, 0, 0, 0, errors.New("Invalid origin")
+		return values, errors.New("Invalid origin")
 	}
 
-	destinationId, err := strconv.Atoi(r.FormValue("Destination"))
+	values.Destination, err = strconv.Atoi(r.FormValue("Destination"))
 	if err != nil {
-		return 0, 0, 0, 0, errors.New("Invalid destination")
+		return values, errors.New("Invalid destination")
 	}
-	seats, err := strconv.Atoi(r.FormValue("Seats"))
+	values.Seats, err = strconv.Atoi(r.FormValue("Seats"))
 	if err != nil {
-		return 0, 0, 0, 0, errors.New("Invalid number of seats")
+		return values, errors.New("Invalid number of seats")
 	}
-	fee, err := strconv.ParseFloat(r.FormValue("Fee"), 64)
+	values.Fee, err = strconv.ParseFloat(r.FormValue("Fee"), 64)
 	if err != nil {
-		return 0, 0, 0, 0, errors.New("Invalid fee")
+		return values, errors.New("Invalid fee")
 	}
 
 
 	// Check if origin and destination are the same
 	if r.FormValue("Origin") == r.FormValue("Destination") {
-		return 0, 0, 0, 0, errors.New("Please enter different origin and destination")
+		return values, errors.New("Please enter different origin and destination")
 	}
 
-	if fee > 100 {
-		return 0, 0, 0, 0, errors.New("Fee is too high")
+	if values.Fee > 100 {
+		return values, errors.New("Fee is too high")
 	}
 
-	if seats > 8 {
-		return 0, 0, 0, 0, errors.New("Too many seats")
+	if values.Seats > 8 {
+		return values, errors.New("Too many seats")
 	}
 
-	return originId, destinationId, seats, fee, nil
-
+	return values, nil
 }
