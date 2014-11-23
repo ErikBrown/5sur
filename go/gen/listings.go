@@ -42,7 +42,7 @@ func ReturnFilter(db *sql.DB) []City {
 	return results
 } 
 
-func CheckNearbyListings(db *sql.DB, date_leaving string, id int) error {
+func checkNearbyListings(db *sql.DB, date_leaving string, id int) error {
 	stmt, err := db.Prepare(`
 		SELECT * FROM listings 
 		WHERE date_leaving <= ? + INTERVAL 1 HOUR AND 
@@ -113,6 +113,12 @@ func ReturnListings(db *sql.DB, o int, d int, t string) []Listing {
 }
 
 func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, destination int, seats int, fee float64) error {
+	// This needs to take in account the hour/minute!!! Concatinate the form values! CHANGE THIS
+	err := checkNearbyListings(db, date_leaving, driver)
+	if err !=nil {
+		return err
+	}
+
 	stmt, err := db.Prepare(`
 		INSERT INTO listings (date_leaving,driver,origin,destination,seats,fee,reserved)
 			VALUES (?, ?, ?, ?, ?, ?, false)
@@ -124,7 +130,8 @@ func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, dest
 	}
 	_, err = stmt.Exec(date_leaving, driver, origin, destination, seats, fee)
 	if err != nil {
-		return err	}
+		return err	
+	}
 
 	return nil
 }

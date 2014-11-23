@@ -31,6 +31,20 @@ func CreateCookie(u string, db *sql.DB) http.Cookie {
 	return authCookie
 }
 
+func DeleteCookie() http.Cookie {
+	expiredCookie := http.Cookie{
+		Name: "RideChile",
+		Value: "",
+		Path: "/",
+		Domain: "5sur.com", // Add domain name in the future
+		Expires: time.Now().Add(-1000), // Expire cookie
+		MaxAge: -1,
+		Secure: true, // SSL only
+		HttpOnly: true, // HTTP(S) only
+	}
+	return expiredCookie
+}
+
 func updateSession(v string, u string, db *sql.DB) {
 	// To save CPU cycles we'll use sha256; Bcrypt is an intentionally slow hash.
 	// We don't even need that secure of a hash function since our session ID is 
