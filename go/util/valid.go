@@ -22,6 +22,11 @@ type CreateSubmitPost struct {
 	Date string
 }
 
+type ReservationPost struct {
+	ListingId int
+	Seats int
+}
+
 // CHANGE TO var := struct{}
 func ValidListingQuery(u *url.URL) (ListingQueryFields, error) {
 	// ParseQuery parses the URL-encoded query string and returns a map listing the values specified for each key.
@@ -146,4 +151,38 @@ func ValidCreateSubmit(r *http.Request) (CreateSubmitPost, error) {
 	}
 
 	return values, nil
+}
+
+func ValidRegisterPost(r *http.Request) (ReservationPost, error) {
+	reservePost:= ReservationPost{}
+	err := errors.New("")
+	if r.FormValue("Seats") == "" || r.FormValue("Listing") == ""{
+		return reservePost, errors.New("Missing required fields")
+	}
+	
+	reservePost.ListingId, err = strconv.Atoi(r.FormValue("Listing"))
+	if err != nil {
+		return reservePost, errors.New("Invalid Listing")
+	}
+	
+	reservePost.Seats, err = strconv.Atoi(r.FormValue("Seats"))
+	if err != nil {
+		return reservePost, errors.New("Invalid number of seats")
+	}
+	return reservePost, nil
+}
+
+func ValidReserveURL(r *http.Request) (string, error) {
+	u, err := url.Parse(r.URL.String())
+	if err != nil {
+		return "", errors.New("Url parse error")
+	}
+	m, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		return "", errors.New("Url parse error")
+	}
+	if _,ok := m["l"]; !ok {
+		return "", errors.New("Missing listing ID")
+	}
+	return m["l"][0], nil
 }

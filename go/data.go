@@ -10,7 +10,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"data/gen"
 	"data/util"
-	"strconv"
 )
 
 func openDb () (*sql.DB, error) {
@@ -287,20 +286,7 @@ func AccountAuthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ReserveFormHandler(w http.ResponseWriter, r *http.Request) {
-	u, err := url.Parse(r.URL.String())
-	if err != nil {
-		fmt.Fprint(w, "Url parse error")
-		return
-	}
-	m, err := url.ParseQuery(u.RawQuery)
-	if err != nil {
-		fmt.Fprint(w, "Url parse error")
-		return
-	}
-	if _,ok := m["l"]; !ok {
-		fmt.Fprint(w, "Missing listing id")
-		return
-	}
+	l, err := util.ValidReserveURL(r)
 	// Database initialization
 	db, err := openDb()
 	if err!=nil {
@@ -316,35 +302,14 @@ func ReserveFormHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "not logged in")
 		return
 	}
-	// HTML generation
-	headerInfo := gen.Header {
-		Title: "Reserve Page",
-		User: user,
-	}
-	reservePage := gen.HeaderHtml(&headerInfo)
-	reservePage += gen.ReserveHtml(m["l"][0])
-	reservePage += gen.FooterHtml()
+
+	reservePage := gen.CreateReserveFormPage(l, user)
 	fmt.Fprint(w, reservePage)
 }
 
 func ReserveHandler(w http.ResponseWriter, r *http.Request) {
-	// Check POST
-	if r.FormValue("Seats") == "" || r.FormValue("Listing") == ""{
-		fmt.Fprint(w, "Missing required fields")
-		return
-	}
-	
-	listingId, err := strconv.Atoi(r.FormValue("Listing"))
-	if err != nil {
-		fmt.Fprint(w, "Invalid listing")
-		return
-	}
-	
-	seats, err := strconv.Atoi(r.FormValue("Seats"))
-	if err != nil {
-		fmt.Fprint(w, "Seat not an integer")
-		return
-	}
+	//Check POST data
+	values, err := util.ValidRegisterPost(r)
 
 	// Database initialization
 	db, err := openDb()
@@ -356,45 +321,18 @@ func ReserveHandler(w http.ResponseWriter, r *http.Request) {
 
 	// User authentication
 	user, userId := util.CheckCookie(r, db) // return "" if not logged in
-
 	if user == "" {
 		fmt.Fprint(w, "not logged in")
 		return
 	}
 
-	ride, err := gen.ReturnIndividualListing(db, listingId)
-	if err != nil {
-		fmt.Fprint(w, "listing does not exist")
-		return
-	}
-
-	if seats > ride.Seats {
-		fmt.Fprint(w, "Not enough seats available")
-		return
-	}
-	
-	err = gen.ValidReservation(db, userId, listingId, ride.DateLeaving)
+	err = gen.CreateReservation(db, userId, values.ListingId, values.Seats, r.FormValue("Message"))
 	if err != nil {
 		fmt.Fprint(w, err.Error())
 		return
 	}
 
-	err = gen.MakeReservation(db, listingId, seats, userId, r.FormValue("Message"))
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
-
-	// HTML generation
-	headerInfo := gen.Header {
-		Title: "Reserve Page",
-		User: user,
-	}
-
-	reservePage := gen.HeaderHtml(&headerInfo)
-	// Temp
-	reservePage += "<br /><br /><br /><br />Placed on the reservation queue!\r\nListing ID: " + strconv.Itoa(listingId) + "\r\nSeats: " + strconv.Itoa(seats) + "User: " + user + "\r\nMessage: " + r.FormValue("Message")
-	reservePage += gen.FooterHtml()
+	reservePage := gen.CreateReservePage(values.ListingId, values.Seats, user, r.FormValue("Message"))
 
 	fmt.Fprint(w, reservePage)
 	return

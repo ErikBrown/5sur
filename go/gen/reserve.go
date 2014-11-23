@@ -6,7 +6,29 @@ import (
 	"errors"
 )
 
-func ValidReservation(db *sql.DB, userId int, listingId int, date string) error {
+func CreateReservation(db *sql.DB, userId int, listingId int, seats int, message string) error {
+	ride, err := ReturnIndividualListing(db, listingId)
+	if err != nil {
+		return errors.New("Listing does not exist")
+	}
+
+	if seats > ride.Seats {
+		return errors.New("Not enough seats available")
+	}
+	
+	err = validReservation(db, userId, listingId, ride.DateLeaving)
+	if err != nil {
+		return err
+	}
+
+	err = makeReservation(db, listingId, seats, userId, message)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func validReservation(db *sql.DB, userId int, listingId int, date string) error {
 	stmt, err := db.Prepare(`
 		SELECT r.id
 			FROM reservation_queue as r
@@ -75,7 +97,7 @@ func ValidReservation(db *sql.DB, userId int, listingId int, date string) error 
 	return nil
 }
 
-func MakeReservation(db *sql.DB, listingId int, seats int, userId int, message string) error{
+func makeReservation(db *sql.DB, listingId int, seats int, userId int, message string) error{
 	stmt, err := db.Prepare(`
 		INSERT INTO reservation_queue (listing_id, seats, user_id, message)
 			VALUES (?, ?, ?, ?)

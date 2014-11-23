@@ -3,6 +3,7 @@ package gen
 import (
 	"data/util"
 	"database/sql"
+	"strconv"
 )
 
 func ListingsPage(db *sql.DB, query util.ListingQueryFields, user string) (string, error) {
@@ -35,4 +36,30 @@ func CreateListingPage(db *sql.DB, user string) (string, error) {
  	createListingPage += CreateListingHtml(user, cities)
 	createListingPage += FooterHtml()
 	return createListingPage, nil
+}
+
+func CreateReservePage(listingId int, seats int, user string, message string) string {
+		// HTML generation
+	headerInfo := Header {
+		Title: "Reserve Page",
+		User: user,
+	}
+
+	reservePage := HeaderHtml(&headerInfo)
+	// Temp
+	reservePage += "<br /><br /><br /><br />Placed on the reservation queue!\r\nListing ID: " + strconv.Itoa(listingId) + "\r\nSeats: " + strconv.Itoa(seats) + "User: " + user + "\r\nMessage: " + message
+	reservePage += FooterHtml()
+	return reservePage
+}
+
+func CreateReserveFormPage(l string, user string) string {
+		// HTML generation
+	headerInfo := Header {
+		Title: "Reserve Page",
+		User: user,
+	}
+	reservePage := HeaderHtml(&headerInfo)
+	reservePage += ReserveHtml(l)
+	reservePage += FooterHtml()
+	return reservePage
 }
