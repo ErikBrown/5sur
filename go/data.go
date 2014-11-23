@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"net/url"
 	"encoding/json"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
