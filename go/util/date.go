@@ -53,8 +53,10 @@ func ConvertDate(d string) string {
 	}
 	if len(splits[0]) == 1 {
 		splits[0] = "0" + splits[0]
+	} else if len(splits[0]) == 4 {
+		return d
 	}
-	return splits[0] + "-" + splits[1] + "-" + splits[2]
+	return splits[2] + "-" + splits[1] + "-" + splits[0]
 }
 
 func CompareDate(d1 string, d2 string) error {
