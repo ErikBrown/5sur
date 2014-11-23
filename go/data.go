@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"time"
 	"encoding/json"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
@@ -107,26 +106,12 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 
 	createFormPost, err := util.ValidCreateSubmit(r)
 	if err != nil {
-		fmt.Fprint(w, err)
-		return
-	}
-
-	dateLeaving := util.ConvertDate(r.FormValue("Leaving"))
-	err = util.CompareDate(dateLeaving, time.Now().Local().Format(time.RFC3339))
-
-	if err != nil {
 		fmt.Fprint(w, err.Error())
 		return
 	}
 
-	err = gen.CheckNearbyListings(db, r.FormValue("Leaving"), userId)
-	if err !=nil {
-		fmt.Fprint(w, "You have another listing within an hour of this one.")
-		return
-	}
-
-	err = gen.CreateListing(db, dateLeaving, userId, createFormPost.Origin, createFormPost.Destination, createFormPost.Seats, createFormPost.Fee)
-	if err!=nil {
+	err = gen.CreateListing(db, createFormPost.Date, userId, createFormPost.Origin, createFormPost.Destination, createFormPost.Seats, createFormPost.Fee)
+	if err != nil {
 		fmt.Fprint(w, err.Error())
 		return
 	}
@@ -153,12 +138,7 @@ func UserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AppHandler(w http.ResponseWriter, r *http.Request) {
-	u, err := url.Parse(r.URL.String())
-	if err != nil {
-		fmt.Fprint(w, "can't parse url query string")
-		return
-	}
-	query, err := util.ValidListingQuery(u) // Returns util.QueryFields
+	query, err := util.ValidListingQuery(r.URL) // Returns util.QueryFields
 	if err != nil {
 		fmt.Fprint(w, "nonvalid query string")
 		return
@@ -183,7 +163,6 @@ func AppHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
-
 	err := util.ValidRegister(r)
 	if err != nil {
 		fmt.Fprint(w, err)
@@ -238,30 +217,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Create gen.InvalidateCookie
-	authCookie := http.Cookie{
-		Name: "RideChile",
-		Value: "",
-		Path: "/",
-		Domain: "5sur.com", // Add domain name in the future
-		Expires: time.Now().Add(-1000), // Expire cookie
-		MaxAge: -1,
-		Secure: true, // SSL only
-		HttpOnly: true, // HTTP(S) only
-	}
-	http.SetCookie(w, &authCookie)
+	expiredCookie := util.DeleteCookie()
+	http.SetCookie(w, &expiredCookie)
 
-	// CREATE DELETE SESSION FROM SERVER
 	fmt.Fprint(w, "you SHOULD be logged out")
 }
 
 func AccountAuthHandler(w http.ResponseWriter, r *http.Request) {
 	// Query string validation
-	u, err := url.Parse(r.URL.String())
-	if err != nil {
-		// panic
-	}
-
-	token, err := util.ValidAuthQuery(u) // Returns util.QueryFields
+	token, err := util.ValidAuthQuery(r.URL) // Returns util.QueryFields
 	if err != nil {
 		fmt.Fprint(w, "nonvalid query string")
 		return
@@ -275,6 +239,7 @@ func AccountAuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
+	// Authenticate and create the user account
 	user, err := gen.CreateUser(db, token)
 	if err != nil {
 		fmt.Fprint(w, err.Error())

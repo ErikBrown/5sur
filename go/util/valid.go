@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strconv"
 	"unicode/utf8"
+	"time"
 )
 
 type ListingQueryFields struct {
@@ -148,6 +149,13 @@ func ValidCreateSubmit(r *http.Request) (CreateSubmitPost, error) {
 
 	if values.Seats > 8 {
 		return values, errors.New("Too many seats")
+	}
+
+	// Date leaving stuff
+	values.Date = ConvertDate(r.FormValue("Leaving"))
+	err = CompareDate(values.Date, time.Now().Local().Format(time.RFC3339))
+	if err != nil {
+		return values, err
 	}
 
 	return values, nil
