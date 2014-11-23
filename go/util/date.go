@@ -51,6 +51,7 @@ func PrettyDate(timestamp string) Date {
 // DD-MM-YYYY
 // and adds 0 to single digit months/days
 // This ugly code does not check for valid dates, only the format
+// Return empty if in incompatible format
 func ConvertDate(d string) string {
 	// We need to have a date validator somewhere
 	var splits []string = strings.Split(d, "/")
@@ -75,7 +76,7 @@ func ConvertDate(d string) string {
 				return splits[2] + "-" + splits[1] + "-" + splits[0] // Original format DD-MM-YYYY
 			}
 		} else {
-			return "" // should be error
+			return ""
 		}
 	}
 	if len(splits[0]) == 1 {
