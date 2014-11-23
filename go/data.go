@@ -319,7 +319,7 @@ func main() {
 	http.HandleFunc("/reserve", ReserveFormHandler)
 	http.HandleFunc("/create", CreateListingHandler)
 	http.HandleFunc("/createSubmit", CreateSubmitHandler)
-	http.HandleFunc("/dash/listings", DashListingsHandler)
+	http.HandleFunc("/dashboard/listings", DashListingsHandler)
 	http.HandleFunc("/", RootHandler)
 	http.ListenAndServe(":8080", nil)
 }
