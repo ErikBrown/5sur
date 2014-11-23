@@ -45,18 +45,54 @@ func PrettyDate(timestamp string) Date {
 	return date
 }
 
+// Normalizes the following to YYYY-MM-DD
+// YYYY/MM/DD
+// DD/MM/YYYY
+// DD-MM-YYYY
+// and adds 0 to single digit months/days
+// This ugly code does not check for valid dates, only the format
 func ConvertDate(d string) string {
 	// We need to have a date validator somewhere
 	var splits []string = strings.Split(d, "/")
 	if len(splits) != 3 {
-		return ""
+		var splits []string = strings.Split(d, "-")
+		if len(splits) == 3 {
+			if len(splits[0]) == 4 {
+				if len(splits[1]) == 1 {
+					splits[1] = "0" + splits[1]
+				}
+				if len(splits[2]) == 1 {
+					splits[2] = "0" + splits[2]
+				}
+				return splits[0] + "-" + splits[1] + "-" + splits[2] // Original format YYYY-MM-DD
+			} else {
+				if len(splits[0]) == 1 {
+					splits[0] = "0" + splits[0]
+				}
+				if len(splits[1]) == 1 {
+					splits[1] = "0" + splits[1]
+				}
+				return splits[2] + "-" + splits[1] + "-" + splits[0] // Original format DD-MM-YYYY
+			}
+		} else {
+			return "" // should be error
+		}
 	}
 	if len(splits[0]) == 1 {
 		splits[0] = "0" + splits[0]
 	} else if len(splits[0]) == 4 {
-		return d
+		if len(splits[1]) == 1 {
+			splits[1] = "0" + splits[1]
+		}
+		if len(splits[2]) == 1 {
+			splits[2] = "0" + splits[2]
+		}
+		return splits[0] + "-" + splits[1] + "-" + splits[2] // Original format YYYY/MM/DD
 	}
-	return splits[2] + "-" + splits[1] + "-" + splits[0]
+	if len(splits[1]) == 1 {
+		splits[1] = "0" + splits[1]
+	}
+	return splits[2] + "-" + splits[1] + "-" + splits[0] // Original format DD/MM/YYYY
 }
 
 func CompareDate(d1 string, d2 string) error {
@@ -86,6 +122,7 @@ func CompareDate(d1 string, d2 string) error {
 	return nil
 }
 
+// Changes YYYY-MM-DD to DD/MM/YYYY
 func ReverseConvertDate(d string) string {
 	// We need to have a date validator somewhere
 	var splits []string = strings.Split(d, "-")

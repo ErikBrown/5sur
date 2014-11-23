@@ -118,11 +118,10 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request){
 }
 
 func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
-		// Database initialization
 	// Database initialization
 	db, err := openDb()
 	if err!=nil {
-		fmt.Fprint(w, err)
+		fmt.Fprint(w, err.Error())
 		return
 	}
 	defer db.Close()
@@ -148,6 +147,7 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
+	// This is fucked
 	dateLeaving := util.ConvertDate(r.FormValue("Leaving"))
 	err = util.CompareDate(dateLeaving, time.Now().Local().Format(time.RFC3339))
 
