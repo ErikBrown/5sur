@@ -54,11 +54,12 @@ func updateSession(v string, u string, db *sql.DB) {
 	}
 }
 
-func CheckCookie(session string, db *sql.DB) (string, int) {
-	if session == "" {
+func CheckCookie(r *http.Request, db *sql.DB) (string, int) {
+	sessionID, err := r.Cookie("RideChile")
+	if err != nil {
 		return "", 0
 	}
-	n, i := checkSession(session, db)
+	n, i := checkSession(sessionID.Value, db)
 
 	if n != "" { // Super super temporary
 		// You're logged in!
@@ -67,6 +68,7 @@ func CheckCookie(session string, db *sql.DB) (string, int) {
 		// Session ID is not valid
 	}
 	return n, i
+
 }
 
 func checkSession(s string, db *sql.DB) (string, int){

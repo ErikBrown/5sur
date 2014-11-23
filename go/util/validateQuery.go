@@ -15,7 +15,12 @@ type ListingQueryFields struct {
 func ValidListingQuery(u *url.URL) (ListingQueryFields, error) {
 	// ParseQuery parses the URL-encoded query string and returns a map listing the values specified for each key.
 	// ParseQuery always returns a non-nil map containing all the valid query parameters found
-	m, err := url.ParseQuery(u.RawQuery)
+	urlParsed, err := url.Parse(u.String())
+	if err != nil {
+		// panic
+	}
+
+	m, err := url.ParseQuery(urlParsed.RawQuery)
 	if err != nil {
 		f := ListingQueryFields {0,0,""}
 		e := errors.New("Empty Field")

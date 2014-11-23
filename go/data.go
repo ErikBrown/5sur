@@ -33,11 +33,7 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Query string validation
-	u, err := url.Parse(r.URL.String())
-	if err != nil {
-		// panic
-	}
-	query, err := util.ValidListingQuery(u) // Returns util.QueryFields
+	query, err := util.ValidListingQuery(r.URL)
 	if err != nil {
 		// INCORRECT QUERY STRING FORMAT
 	}
@@ -51,27 +47,13 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	// User authentication
-	user := ""
-	sessionID, err := r.Cookie("RideChile")
-	if err != nil {
-		// Cookie doesn't exist
-	} else {
-		user, _ = util.CheckCookie(sessionID.Value, db)
-	}
+	user, _ := util.CheckCookie(r, db) // return "" if not logged in
 
 	// HTML generation
-	headerInfo := gen.Header {
-		Title: "Listings Page",
-		User: user,
-		Messages: 0,
+	listPage, err := gen.ListingsPage(db, query, user, "Listings Page");
+	if err != nil {
+		fmt.Fprint(w, err.Error())
 	}
-	cities := gen.ReturnFilter(db)
-	listings := gen.ReturnListings(db, query.Origin, query.Destination, query.Time)
-
-	listPage := gen.HeaderHtml(&headerInfo)
-	listPage += gen.FilterHtml(cities, query.Origin, query.Destination, util.ReverseConvertDate(query.Time))
-	listPage += gen.ListingsHtml(listings)
-	listPage += gen.FooterHtml()
 
 	fmt.Fprint(w, listPage)
 }
@@ -86,13 +68,7 @@ func CreateListingHandler(w http.ResponseWriter, r *http.Request){
 	defer db.Close()
 
 	// User authentication
-	user := ""
-	sessionID, err := r.Cookie("RideChile")
-	if err != nil {
-		// Cookie doesn't exist
-	} else {
-		user, _ = util.CheckCookie(sessionID.Value, db)
-	}
+	user, _ := util.CheckCookie(r, db) // return "" if not logged in
 
 	if user == "" {
 		fmt.Fprint(w, "not logged in")
@@ -102,7 +78,6 @@ func CreateListingHandler(w http.ResponseWriter, r *http.Request){
 	headerInfo := gen.Header {
 		Title: "Create Listing Page",
 		User: user,
-		Messages: 0,
 	}
 	createListingsPage := gen.HeaderHtml(&headerInfo)
 	cities := gen.ReturnFilter(db)
@@ -127,14 +102,7 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 	defer db.Close()
 
 	// User authentication
-	user := ""
-	var userId int
-	sessionID, err := r.Cookie("RideChile")
-	if err != nil {
-		// Cookie doesn't exist
-	} else {
-		user, userId = util.CheckCookie(sessionID.Value, db)
-	}
+	user, userId := util.CheckCookie(r, db) // return "" if not logged in
 
 	if user == "" {
 		fmt.Fprint(w, "not logged in")
@@ -346,13 +314,7 @@ func ReserveFormHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	// User authentication
-	user := ""
-	sessionID, err := r.Cookie("RideChile")
-	if err != nil {
-		// Cookie doesn't exist
-	} else {
-		user, _ = util.CheckCookie(sessionID.Value, db)
-	}
+	user, _ := util.CheckCookie(r, db) // return "" if not logged in
 
 	if user == "" {
 		fmt.Fprint(w, "not logged in")
@@ -362,7 +324,6 @@ func ReserveFormHandler(w http.ResponseWriter, r *http.Request) {
 	headerInfo := gen.Header {
 		Title: "Reserve Page",
 		User: user,
-		Messages: 0,
 	}
 	reservePage := gen.HeaderHtml(&headerInfo)
 	reservePage += gen.ReserveHtml(m["l"][0])
@@ -398,16 +359,9 @@ func ReserveHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	// User authentication
-	username := ""
-	var userId int
-	sessionID, err := r.Cookie("RideChile")
-	if err != nil {
-		// Cookie doesn't exist
-	} else {
-		username, userId = util.CheckCookie(sessionID.Value, db)
-	}
+	user, userId := util.CheckCookie(r, db) // return "" if not logged in
 
-	if username == "" {
+	if user == "" {
 		fmt.Fprint(w, "not logged in")
 		return
 	}
@@ -438,13 +392,12 @@ func ReserveHandler(w http.ResponseWriter, r *http.Request) {
 	// HTML generation
 	headerInfo := gen.Header {
 		Title: "Reserve Page",
-		User: username,
-		Messages: 0,
+		User: user,
 	}
 
 	reservePage := gen.HeaderHtml(&headerInfo)
 	// Temp
-	reservePage += "<br /><br /><br /><br />Placed on the reservation queue!\r\nListing ID: " + strconv.Itoa(listingId) + "\r\nSeats: " + strconv.Itoa(seats) + "User: " + username + "\r\nMessage: " + r.FormValue("Message")
+	reservePage += "<br /><br /><br /><br />Placed on the reservation queue!\r\nListing ID: " + strconv.Itoa(listingId) + "\r\nSeats: " + strconv.Itoa(seats) + "User: " + user + "\r\nMessage: " + r.FormValue("Message")
 	reservePage += gen.FooterHtml()
 
 	fmt.Fprint(w, reservePage)
