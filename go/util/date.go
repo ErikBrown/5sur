@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"errors"
 	"math"
+	"time"
 )
 
 type Date struct{
@@ -46,8 +47,6 @@ func PrettyDate(timestamp string, suffix bool) Date {
 	date.Time = splits[11] + splits[12] + ":" + splits[14] + splits[15]
 	return date
 }
-
-
 
 // Normalizes the following to YYYY-MM-DD
 // YYYY/MM/DD
@@ -138,4 +137,95 @@ func ReverseConvertDate(d string) string {
 		splits[0] = "0" + splits[0]
 	}
 	return splits[2] + "/" + splits[1] + "/" + splits[0]
+}
+
+func ValidDate(d string) error {
+	splitsLeaving := strings.Split(d, "-")
+	if len(splitsLeaving) != 3 {
+		return errors.New("Incorrect Date Format")
+	}
+	if len(splitsLeaving[0]) != 4 {
+		return errors.New("Invalid year")
+	}
+
+	yearLeaving, err := strconv.Atoi(splitsLeaving[0])
+	if err != nil {
+		return errors.New("Invalid year")
+	}
+
+	monthLeaving, err := strconv.Atoi(splitsLeaving[1])
+	if err != nil {
+		return errors.New("Invalid month")
+	}
+	if monthLeaving > 12 || monthLeaving < 1 {
+		return errors.New("Invalid month")
+	}
+
+	dayLeaving, err := strconv.Atoi(splitsLeaving[2])
+	if err != nil {
+		return errors.New("Invalid Day")
+	}
+	err = validDay(yearLeaving, monthLeaving, dayLeaving)
+	if err != nil {
+		return err
+	}
+
+	splitsTemp := strings.Split(time.Now().Local().AddDate(0,2,0).Format(time.RFC3339), "T")
+	splitsNow := strings.Split(splitsTemp[0], "-")
+	dateLeaving := 0.0
+	dateNow := 0.0
+	for i := range splitsLeaving {
+		leaving, err := strconv.ParseFloat(splitsLeaving[i],64)
+		if err != nil {
+			return err
+		}
+		now, err := strconv.ParseFloat(splitsNow[i],64)
+		if err != nil {
+			return err
+		}
+		dateLeaving += leaving * math.Pow(10,(math.Abs(float64(i)-2)*2))
+		dateNow += now * math.Pow(10,(math.Abs(float64(i)-2)*2))
+	}
+	if dateLeaving > dateNow {
+		return errors.New("Can't make listing later than two months in the future")
+	}
+	return nil
+}
+
+func validDay(y int, m int, d int) error {
+	if d < 1 {
+		return errors.New("Invalid day")
+	}
+	if m == 1 || m == 3 || m == 5 || m == 7 || m == 8 || m == 10 || m == 12 {
+		if d > 30 {
+			return errors.New("Invalid day")
+		}
+	} else {
+		if m == 2 { // leap day check
+			leapYear := false
+			if math.Mod(float64(y), 4) != 0 {
+				// Common year
+			} else if math.Mod(float64(y),100) != 0 {
+				leapYear = true
+			} else if math.Mod(float64(y),400) !=0 {
+				// Common year
+			} else {
+				leapYear = true
+			}
+			if leapYear {
+				if d > 29 {
+					return errors.New("Invalid day")
+				}
+			} else {
+				if d > 28 {
+					return errors.New("Invalid day")
+				}
+			}
+		} else {
+			if d > 30 {
+				return errors.New("Invalid day")
+			}
+		}
+	}
+	return nil
 }

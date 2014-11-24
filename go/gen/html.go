@@ -190,7 +190,9 @@ func ReserveHtml(l string) string {
 func CreateListingHtml(u string, c []City) string {
 	output := `<form method="post" action="https://5sur.com/createSubmit" id="create_listing_form">
 		<span>Date leaving: </span>
-		<input name="Leaving" type="text">
+		<input name="Date" type="text">
+		<span>Time leaving: </span>
+		<input name="Time" type="text">
 		<br />
 		<span>Origin</span>
 		<select name="Origin" class="submit_input">

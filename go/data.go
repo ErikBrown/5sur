@@ -23,6 +23,146 @@ func openDb() (*sql.DB, error) {
 	return db, nil
 }
 
+func AccountAuthHandler(w http.ResponseWriter, r *http.Request) {
+	// Query string validation
+	token, err := util.ValidAuthQuery(r.URL) // Returns util.QueryFields
+	if err != nil {
+		fmt.Fprint(w, "nonvalid query string")
+		return
+	}
+
+	// Database initialization
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err)
+		return
+	}
+	defer db.Close()
+
+	// Authenticate and create the user account
+	user, err := gen.CreateUser(db, token)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	fmt.Fprint(w, user + ", your accout is activated!")
+	return
+}
+
+func AppHandler(w http.ResponseWriter, r *http.Request) {
+	query, err := util.ValidListingQuery(r.URL) // Returns util.QueryFields
+	if err != nil {
+		fmt.Fprint(w, "nonvalid query string")
+		return
+	}
+
+	// Database initialization
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err)
+		return
+	}
+	defer db.Close()
+
+	listings := gen.ReturnListings(db, query.Origin, query.Destination, query.Time)
+	jsonListings, err := json.MarshalIndent(listings, "", "    ")
+	if err != nil {
+		fmt.Fprint(w, "convert to json failed")
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, string(jsonListings))
+}
+
+func CreateListingHandler(w http.ResponseWriter, r *http.Request){
+	// Database initialization
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err)
+		return
+	}
+	defer db.Close()
+
+	// User authentication
+	user, _ := util.CheckCookie(r, db) // return "" if not logged in
+	if user == "" {
+		fmt.Fprint(w, "not logged in")
+		return
+	}
+
+	// HTML generation (also does listing-specific SQL calls)
+	createListingPage, err := gen.CreateListingPage(db, user);
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	fmt.Fprint(w, createListingPage)
+}
+
+func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
+	// Database initialization
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	defer db.Close()
+
+	// User authentication
+	user, userId := util.CheckCookie(r, db) // return "" if not logged in
+	if user == "" {
+		fmt.Fprint(w, "not logged in")
+		return
+	}
+
+	createFormPost, err := util.ValidCreateSubmit(r)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	err = gen.CreateListing(db, createFormPost.Date, userId, createFormPost.Origin, createFormPost.Destination, createFormPost.Seats, createFormPost.Fee)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	fmt.Fprint(w, "Created listing!")
+}
+
+func DashListingsHandler(w http.ResponseWriter, r *http.Request){
+	// Database initialization
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	defer db.Close()
+
+	// User authentication
+	user, userId := util.CheckCookie(r, db) // return "" if not logged in
+
+	if user == "" {
+		fmt.Fprint(w, "not logged in")
+		return
+	}
+
+	dashListings, err := gen.GetDashListings(db, userId)
+
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	formatted, err := json.MarshalIndent(dashListings, "", "    ")
+	if err != nil {
+		fmt.Fprint(w, "can't convert to json")
+		return
+	}
+	fmt.Fprint(w, string(formatted))
+}
+
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	// Convert POST to GET
 	
@@ -60,163 +200,6 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, listPage)
 }
 
-func CreateListingHandler(w http.ResponseWriter, r *http.Request){
-	// Database initialization
-	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err)
-		return
-	}
-	defer db.Close()
-
-	// User authentication
-	user, _ := util.CheckCookie(r, db) // return "" if not logged in
-	if user == "" {
-		fmt.Fprint(w, "not logged in")
-		return
-	}
-
-	// HTML generation (also does listing-specific SQL calls)
-	createListingPage, err := gen.CreateListingPage(db, user);
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
-
-	fmt.Fprint(w, createListingPage)
-}
-
-func DashListingsHandler(w http.ResponseWriter, r *http.Request){
-	// Database initialization
-	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
-	defer db.Close()
-
-	// User authentication
-	user, userId := util.CheckCookie(r, db) // return "" if not logged in
-
-	if user == "" {
-		fmt.Fprint(w, "not logged in")
-		return
-	}
-
-	dashListings, err := gen.GetDashListings(db, userId)
-
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
-	formatted, err := json.MarshalIndent(dashListings, "", "    ")
-	if err != nil {
-		fmt.Fprint(w, "can't convert to json")
-		return
-	}
-	fmt.Fprint(w, string(formatted))
-}
-
-func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
-	// Database initialization
-	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
-	defer db.Close()
-
-	// User authentication
-	user, userId := util.CheckCookie(r, db) // return "" if not logged in
-	if user == "" {
-		fmt.Fprint(w, "not logged in")
-		return
-	}
-
-	createFormPost, err := util.ValidCreateSubmit(r)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
-
-	err = gen.CreateListing(db, createFormPost.Date, userId, createFormPost.Origin, createFormPost.Destination, createFormPost.Seats, createFormPost.Fee)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
-
-	fmt.Fprint(w, "Created listing!")
-}
-
-func UserHandler(w http.ResponseWriter, r *http.Request) {
-	// Database initialization
-	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err)
-		return
-	}
-	defer db.Close()
-
-	user := gen.ReturnUserInfo(db, r.URL.Path[3:])
-	formatted, err := json.MarshalIndent(user, "", "    ")
-	if err != nil {
-		fmt.Fprint(w, "can't convert to json")
-		return
-	}
-	fmt.Fprint(w, string(formatted))
-}
-
-func AppHandler(w http.ResponseWriter, r *http.Request) {
-	query, err := util.ValidListingQuery(r.URL) // Returns util.QueryFields
-	if err != nil {
-		fmt.Fprint(w, "nonvalid query string")
-		return
-	}
-
-	// Database initialization
-	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err)
-		return
-	}
-	defer db.Close()
-
-	listings := gen.ReturnListings(db, query.Origin, query.Destination, query.Time)
-	jsonListings, err := json.MarshalIndent(listings, "", "    ")
-	if err != nil {
-		fmt.Fprint(w, "convert to json failed")
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprint(w, string(jsonListings))
-}
-
-func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
-	err := util.ValidRegister(r)
-	if err != nil {
-		fmt.Fprint(w, err)
-		return
-	}
-
-	// Database initialization
-	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err)
-		return
-	}
-	defer db.Close()
-
-	err = gen.CheckUserInfo(db, r.FormValue("Username"), r.FormValue("Email"))
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
-	
-	gen.UserAuth(db, r.FormValue("Username"), r.FormValue("Password"), r.FormValue("Email"))
-
-	fmt.Fprint(w, "Confirmation email has been sent to " + r.FormValue("Email"))
-}
-
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// POST validation
 	if r.FormValue("Password") == "" || r.FormValue("Username") == "" {
@@ -252,11 +235,10 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "you SHOULD be logged out")
 }
 
-func AccountAuthHandler(w http.ResponseWriter, r *http.Request) {
-	// Query string validation
-	token, err := util.ValidAuthQuery(r.URL) // Returns util.QueryFields
+func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
+	err := util.ValidRegister(r)
 	if err != nil {
-		fmt.Fprint(w, "nonvalid query string")
+		fmt.Fprint(w, err)
 		return
 	}
 
@@ -268,15 +250,15 @@ func AccountAuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	// Authenticate and create the user account
-	user, err := gen.CreateUser(db, token)
+	err = gen.CheckUserInfo(db, r.FormValue("Username"), r.FormValue("Email"))
 	if err != nil {
 		fmt.Fprint(w, err.Error())
 		return
 	}
+	
+	gen.UserAuth(db, r.FormValue("Username"), r.FormValue("Password"), r.FormValue("Email"))
 
-	fmt.Fprint(w, user + ", your accout is activated!")
-	return
+	fmt.Fprint(w, "Confirmation email has been sent to " + r.FormValue("Email"))
 }
 
 func ReserveFormHandler(w http.ResponseWriter, r *http.Request) {
@@ -335,6 +317,24 @@ func ReserveHandler(w http.ResponseWriter, r *http.Request) {
 func RootHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "https://5sur.com/l/", 301)
 	return
+}
+
+func UserHandler(w http.ResponseWriter, r *http.Request) {
+	// Database initialization
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err)
+		return
+	}
+	defer db.Close()
+
+	user := gen.ReturnUserInfo(db, r.URL.Path[3:])
+	formatted, err := json.MarshalIndent(user, "", "    ")
+	if err != nil {
+		fmt.Fprint(w, "can't convert to json")
+		return
+	}
+	fmt.Fprint(w, string(formatted))
 }
 
 func main() {
