@@ -21,7 +21,6 @@ type CreateSubmitPost struct {
 	Seats int
 	Fee float64
 	Date string
-	Time string
 }
 
 type ReservationPost struct {
@@ -96,10 +95,11 @@ func ValidCreateSubmit(r *http.Request) (CreateSubmitPost, error) {
 		return values, err
 	}
 
-	values.Time, err = ConvertTime(r.FormValue("Time"))
+	time, err = ConvertTime(r.FormValue("Time"))
 	if err != nil {
 		return values, err
 	}
+	values.Date += " " + time
 
 	return values, nil
 }
