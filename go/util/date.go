@@ -229,3 +229,62 @@ func validDay(y int, m int, d int) error {
 	}
 	return nil
 }
+
+// Converts from hh:mm, hh, h, to hh:mm:ss
+func ConvertTime(time string) (string, error) {
+	if time == "" {
+		return "", errors.New("Please enter a time")
+	}
+	hourString := ""
+	minuteString := ""
+	if strings.Contains(time, ":") {
+		var splitsLeaving []string = strings.Split(time, ":")
+		if len(splitsLeaving) != 2 {
+			return "", errors.New("Invalid time")
+		}
+		if len(splitsLeaving[0]) > 2 {
+			return "", errors.New("Invalid time")
+		}
+		if len(splitsLeaving[1]) != 2 {
+			return "", errors.New("Invalid time")
+		}
+		hour, err := strconv.Atoi(splitsLeaving[0])
+		if err != nil {
+			return "", errors.New("Invalid time")
+		}
+		minute, err := strconv.Atoi(splitsLeaving[1])
+		if err != nil {
+			return "", errors.New("Invalid time")
+		}
+		if hour > 23 || minute > 59 {
+			return "", errors.New("Invalid time")
+		}
+		if hour < 0 || minute < 0 {
+			return "", errors.New("Invalid time")
+		}
+		if len(splitsLeaving[0]) == 1 {
+			hourString = "0" + splitsLeaving[0]
+		} else{
+			hourString = splitsLeaving[0]
+		}
+		minuteString = splitsLeaving[1]
+
+		return hourString + ":" + minuteString + ":00", nil
+	}
+	// no colon
+	if len(time) > 2 {
+		return "", errors.New("Invalid time")
+	}
+	hour, err := strconv.Atoi(time)
+	if err != nil {
+		return "", errors.New("Invalid time")
+	}
+	if hour > 23 || hour < 0{
+		return "", errors.New("Invalid time")
+	}
+
+	if hour < 10 {
+		return "0" + time + ":00:00", nil
+	}
+	return time + ":00:00", nil
+}
