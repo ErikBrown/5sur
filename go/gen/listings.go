@@ -14,9 +14,9 @@ func ReturnFilter(db *sql.DB) []City {
 		SELECT * from cities
 			ORDER BY name
 	`)
-	
+
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return results
 	}
 	defer stmt.Close()
 
@@ -24,7 +24,7 @@ func ReturnFilter(db *sql.DB) []City {
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	rows, err := stmt.Query()
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return results
 	}
 	// Always defer rows.Close(), even if you explicitly Close it at the end of the
 	// loop. The connection will have the chance to remain open otherwise.

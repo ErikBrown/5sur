@@ -8,22 +8,26 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"data/gen"
 	"data/util"
+	"log"
 )
 
-func openDb () (*sql.DB, error) {
+func openDb() (*sql.DB, error) {
 	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
 	if err != nil {
-		return db, err // Have a proper error in production
+		return db, err
 	}
 	err = db.Ping()
 	if err != nil {
-		return db, err // Have a proper error in production
+		return db, err
 	}
 	return db, nil
 }
 
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
-	// POST validation
+	// Convert POST to GET
+	
+	// log.Println("sdfsdf")
+
 	if r.FormValue("Origin") != "" && r.FormValue("Destination") != "" {
 		http.Redirect(w, r, "https://5sur.com/l/?o=" + r.FormValue("Origin") + "&d=" + r.FormValue("Destination") + "&t=" + util.ConvertDate(r.FormValue("Date")), 301)
 		return
@@ -334,6 +338,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	util.ConfigureLog()
 	http.HandleFunc("/l/", ListingsHandler)
 	http.HandleFunc("/u/", UserHandler)
 	http.HandleFunc("/a/", AppHandler)
