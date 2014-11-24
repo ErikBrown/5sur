@@ -97,6 +97,26 @@ func validReservation(db *sql.DB, userId int, listingId int, date string) error 
 	return nil
 }
 
+func CheckReservationQueue(db *sql.DB, listingId int) (bool, error) {
+	stmt, err := db.Prepare(`
+		SELECT * FROM reservation_queue 
+			WHERE listing_id = ?
+		`)
+	defer stmt.Close()
+	rows, err := stmt.Query(listingId)
+	if err != nil {
+		return true, errors.New("Failed accessing DB") 
+	}
+	// Always defer rows.Close(), even if you explicitly Close it at the end of the
+	// loop. The connection will have the chance to remain open otherwise.
+	defer rows.Close()
+
+	for rows.Next() {
+		return false, nil
+	}
+	return true, nil
+}
+
 func makeReservation(db *sql.DB, listingId int, seats int, userId int, message string) error{
 	stmt, err := db.Prepare(`
 		INSERT INTO reservation_queue (listing_id, seats, user_id, message)

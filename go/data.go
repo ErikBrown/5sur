@@ -84,7 +84,33 @@ func CreateListingHandler(w http.ResponseWriter, r *http.Request){
 
 func DashListingsHandler(w http.ResponseWriter, r *http.Request){
 	// Database initialization
-	fmt.Fprint(w, "Dash Listings Handlerf")
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	defer db.Close()
+
+	// User authentication
+	user, userId := util.CheckCookie(r, db) // return "" if not logged in
+
+	if user == "" {
+		fmt.Fprint(w, "not logged in")
+		return
+	}
+
+	dashListings, err := gen.GetDashListings(db, userId)
+
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	formatted, err := json.MarshalIndent(dashListings, "", "    ")
+	if err != nil {
+		fmt.Fprint(w, "can't convert to json")
+		return
+	}
+	fmt.Fprint(w, string(formatted))
 }
 
 func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
@@ -319,7 +345,7 @@ func main() {
 	http.HandleFunc("/reserve", ReserveFormHandler)
 	http.HandleFunc("/create", CreateListingHandler)
 	http.HandleFunc("/createSubmit", CreateSubmitHandler)
-	http.HandleFunc("/dash/listings", DashListingsHandler)
+	http.HandleFunc("/dashboard/listings", DashListingsHandler)
 	http.HandleFunc("/", RootHandler)
 	http.ListenAndServe(":8080", nil)
 }

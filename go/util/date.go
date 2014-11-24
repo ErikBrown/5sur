@@ -16,7 +16,7 @@ type Date struct{
 var months = [12]string{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
 
 //FORM yyyy-mm-dd hh:mm:ss Drop the seconds. Parse the rest.
-func PrettyDate(timestamp string) Date {
+func PrettyDate(timestamp string, suffix bool) Date {
 	var splits []string = strings.SplitAfter(timestamp, "")
 	var date Date
 	month := splits[5] + splits[6]
@@ -31,19 +31,23 @@ func PrettyDate(timestamp string) Date {
 	} else {
 		day = splits[8] + splits[9]
 	}
-	if splits[9]=="1" {
-		day+="st"
-	} else if splits[9]=="2" {
-		day+="nd"
-	} else if splits[9]=="3" {
-		day+="rd"
-	} else{
-		day+="th"
+	if suffix {
+		if splits[9]=="1" {
+			day+="st"
+		} else if splits[9]=="2" {
+			day+="nd"
+		} else if splits[9]=="3" {
+			day+="rd"
+		} else{
+			day+="th"
+		}
 	}
 	date.Day = day
 	date.Time = splits[11] + splits[12] + ":" + splits[14] + splits[15]
 	return date
 }
+
+
 
 // Normalizes the following to YYYY-MM-DD
 // YYYY/MM/DD
