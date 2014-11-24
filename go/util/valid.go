@@ -95,11 +95,11 @@ func ValidCreateSubmit(r *http.Request) (CreateSubmitPost, error) {
 		return values, err
 	}
 
-	time, err = ConvertTime(r.FormValue("Time"))
+	temp, err := ConvertTime(r.FormValue("Time"))
 	if err != nil {
 		return values, err
 	}
-	values.Date += " " + time
+	values.Date += " " + temp
 
 	return values, nil
 }
