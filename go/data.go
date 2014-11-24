@@ -8,7 +8,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"data/gen"
 	"data/util"
-	"log"
+	// "log"
 )
 
 func openDb() (*sql.DB, error) {
