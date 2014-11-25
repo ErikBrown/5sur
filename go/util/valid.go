@@ -204,3 +204,23 @@ func ValidReserveURL(r *http.Request) (string, error) {
 	}
 	return m["l"][0], nil
 }
+
+func ValidDashQuery(u *url.URL) (int, error) {
+	m, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		f := 0
+		e := errors.New("Empty Field")
+		return f, e
+	}
+	if _,ok := m["l"]; !ok {
+		f := 0
+		e := errors.New("Missing token")
+		return f, e
+	}
+	f := m["l"][0]
+	i, err := strconv.Atoi(f)
+	if err != nil {
+		return 0, err
+	}
+	return i, nil
+}

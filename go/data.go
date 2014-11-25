@@ -150,11 +150,25 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request){
 	}
 
 	dashListings, err := gen.GetDashListings(db, userId)
-
 	if err != nil {
 		fmt.Fprint(w, err.Error())
 		return
 	}
+	token, err := util.ValidDashQuery(r.URL)
+
+	if err == nil {
+		// DO SPECIFIC LISTING
+		listing, err := gen.SpecificDashListing(db, dashListings, token)
+		listingFormatted, err := json.MarshalIndent(listing, "", "    ")
+		if err != nil {
+			fmt.Fprint(w, "can't convert to json")
+			return
+		}
+		fmt.Fprint(w, string(listingFormatted))
+	}
+
+
+	
 	formatted, err := json.MarshalIndent(dashListings, "", "    ")
 	if err != nil {
 		fmt.Fprint(w, "can't convert to json")
@@ -286,6 +300,10 @@ func ReserveFormHandler(w http.ResponseWriter, r *http.Request) {
 func ReserveHandler(w http.ResponseWriter, r *http.Request) {
 	//Check POST data
 	values, err := util.ValidRegisterPost(r)
+	if err != nil {
+		fmt.Fprint(w, err)
+		return
+	}
 
 	// Database initialization
 	db, err := openDb()

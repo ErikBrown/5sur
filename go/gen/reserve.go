@@ -32,7 +32,7 @@ func validReservation(db *sql.DB, userId int, listingId int, date string) error 
 	stmt, err := db.Prepare(`
 		SELECT r.id
 			FROM reservation_queue as r
-			WHERE r.listing_id = ? AND r.user_id = ?
+			WHERE r.listing_id = ? AND r.passenger_id = ?
 	`)
 	
 	if err != nil {
@@ -119,7 +119,7 @@ func CheckReservationQueue(db *sql.DB, listingId int) (bool, error) {
 
 func makeReservation(db *sql.DB, listingId int, seats int, userId int, message string) error{
 	stmt, err := db.Prepare(`
-		INSERT INTO reservation_queue (listing_id, seats, user_id, message)
+		INSERT INTO reservation_queue (listing_id, seats, passenger_id, message)
 			VALUES (?, ?, ?, ?)
 		`)
 	defer stmt.Close()
