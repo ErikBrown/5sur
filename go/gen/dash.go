@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"errors"
+	"net/http"
+	"strconv"
 )
 
 type DashListing struct {
@@ -191,7 +193,7 @@ func getRegisteredUsers(db *sql.DB, listingId int) ([]RegisteredUser, error) {
 	return results, nil
 }
 
-func deleteFromQueue(db *sql.DB, userId int, listingId int, passenger_id int) (boolean, error) {
+func deleteFromQueue(db *sql.DB, userId int, listingId int, passenger_id int) (bool, error) {
 	stmt, err := db.Prepare(`
 		DELETE FROM reservation_queue 
 			WHERE passenger_id IN 
@@ -215,11 +217,11 @@ func deleteFromQueue(db *sql.DB, userId int, listingId int, passenger_id int) (b
 
 	// db.Query() prepares, executes, and closes a prepared statement - three round
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
-	affected, err = stmt.Exec(passenger_id, userId, listingId, listingId)
+	affected, err := stmt.Exec(passenger_id, userId, listingId, listingId)
 	if err != nil {
 		return false, err
 	}
-	rowsDeleted, err = affected.RowsAffected()
+	rowsDeleted, err := affected.RowsAffected()
 	if err != nil {
 		panic(err.Error())
 	}
@@ -249,7 +251,7 @@ func addToReservation(db *sql.DB, userId int, listingId int, passenger_id int) e
 
 	// db.Query() prepares, executes, and closes a prepared statement - three round
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
-	err = stmt.Exec(listingId, driver_id, passenger_id, listingId, driver_id, passenger_id)
+	_, err = stmt.Exec(listingId, userId, passenger_id, listingId, userId, passenger_id)
 	if err != nil {
 		return err
 	}
@@ -258,7 +260,7 @@ func addToReservation(db *sql.DB, userId int, listingId int, passenger_id int) e
 
 func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 	if r.FormValue("a") != "" {
-		add, err = strconv.Atoi(r.FormValue("a"))
+		add, err := strconv.Atoi(r.FormValue("a"))
 		if err != nil {
 			return errors.New("Invalid")
 		}
@@ -272,19 +274,21 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 				return err
 			}
 		}
+		return nil
 	}
 	if r.FormValue("r") != "" {
-		remove, err = strconv.Atoi(r.FormValue("r"))
+		remove, err := strconv.Atoi(r.FormValue("r"))
 		if err != nil {
 			return errors.New("Invalid")
 		}	
-		_, err := deleteFromQueue(db, userId, listingId, remove)
+		_, err = deleteFromQueue(db, userId, listingId, remove)
 		if err != nil {
 			return err
 		}
+		return nil
 	}
 	if r.FormValue("m") != "" {
-		message, err = strconv.Atoi(r.FormValue("m"))
+		_, err := strconv.Atoi(r.FormValue("m"))
 		if err != nil {
 			return errors.New("Invalid")
 		}

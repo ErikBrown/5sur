@@ -135,8 +135,9 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 
 func DashListingsHandler(w http.ResponseWriter, r *http.Request){
 	token, err := util.ValidDashQuery(r.URL)
+	specificListing := false
 	if err == nil {
-		specificListing := true
+		specificListing = true
 	} else {
 		token = 0
 	}
