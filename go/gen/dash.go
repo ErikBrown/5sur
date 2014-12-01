@@ -215,9 +215,16 @@ func deleteFromQueue(db *sql.DB, userId int, listingId int, passenger_id int) (b
 
 	// db.Query() prepares, executes, and closes a prepared statement - three round
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
-	err = stmt.Exec(passenger_id, userId, listingId, listingId)
+	affected, err = stmt.Exec(passenger_id, userId, listingId, listingId)
 	if err != nil {
 		return false, err
+	}
+	rowsDeleted, err = affected.RowsAffected()
+	if err != nil {
+		panic(err.Error())
+	}
+	if rowsDeleted == 0{
+		return false, nil
 	}
 	return true, nil
 }
@@ -256,8 +263,14 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 			return errors.New("Invalid")
 		}
 		deleted, err := deleteFromQueue(db, userId, listingId, add)
+		if err != nil {
+			return err
+		}
 		if deleted {
-			addToReservation(db, userId, listingId, add)
+			err := addToReservation(db, userId, listingId, add)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	if r.FormValue("r") != "" {
@@ -277,5 +290,6 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 		}
 		// Deal with messenging
 	}
+	return nil
 }
 
