@@ -234,18 +234,18 @@ func deleteFromQueue(db *sql.DB, userId int, listingId int, passenger_id int) (b
 func addToReservation(db *sql.DB, userId int, listingId int, passenger_id int) error {
 		stmt, err := db.Prepare(`
 		INSERT INTO reservations(listing_id, driver_id, passenger_id)
-			SELECT * FROM (SELECT ?, ?, ?) AS tmp
-			WHERE NOT EXISTS (
-				SELECT listing_id
-					FROM reservations
-					WHERE listing_id = ?
-					AND driver_id = ?
-					AND passenger_id = ?
-				) LIMIT 1;
+			 SELECT ? AS listing_id, ? AS driver_id, ? AS passenger_id FROM dual
+				 WHERE NOT EXISTS (
+		   		 SELECT listing_id
+		   			 FROM reservations
+		   			 WHERE listing_id = ?
+		   			 AND driver_id = ?
+		   			 AND passenger_id = ?
+		   	 ) LIMIT 1;
 		`)
 	
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return err // Have a proper error in production
 	}
 	defer stmt.Close()
 
