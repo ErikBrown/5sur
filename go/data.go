@@ -167,9 +167,36 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request){
 		fmt.Fprint(w, string(listingFormatted))
 	}
 
-
-	
 	formatted, err := json.MarshalIndent(dashListings, "", "    ")
+	if err != nil {
+		fmt.Fprint(w, "can't convert to json")
+		return
+	}
+	fmt.Fprint(w, string(formatted))
+}
+
+func DashMessagesHandler(w http.ResponseWriter, r *http.Request){
+	// Database initialization
+	db, err := openDb()
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	defer db.Close()
+
+	// User authentication
+	user, userId := util.CheckCookie(r, db) // return "" if not logged in
+
+	if user == "" {
+		fmt.Fprint(w, "not logged in")
+		return
+	}
+	dashMessages, err := gen.GetDashMessages(db, userId)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+	}
+
+	formatted, err := json.MarshalIndent(dashMessages, "", "    ")
 	if err != nil {
 		fmt.Fprint(w, "can't convert to json")
 		return
@@ -369,6 +396,7 @@ func main() {
 	http.HandleFunc("/create", CreateListingHandler)
 	http.HandleFunc("/createSubmit", CreateSubmitHandler)
 	http.HandleFunc("/dashboard/listings", DashListingsHandler)
+	http.HandleFunc("/dashboard/messages", DashMessagesHandler)
 	http.HandleFunc("/", RootHandler)
 	http.ListenAndServe(":8080", nil)
 }

@@ -19,6 +19,27 @@ type DashListing struct {
 	Time string
 }
 
+type DashMessages struct {
+	Id int
+	Name string
+	Picture string
+	Count int
+	Opened bool
+}
+
+type PendingUser struct {
+	Id int
+	Name string
+	Picture string
+	Message string
+}
+
+type RegisteredUser struct{
+	Id int
+	Name string
+	Picture string
+}
+
 type SpecificListing struct {
 	Day string
 	Month string
@@ -33,23 +54,10 @@ type SpecificListing struct {
 	RegisteredUsers []RegisteredUser
 }
 
-type PendingUser struct {
-		Id int
-		Name string
-		Picture string
-		Message string
-}
-
-type RegisteredUser struct{
-		Id int
-		Name string
-		Picture string
-}
-
 func GetDashListings(db *sql.DB, userId int) ([]DashListing, error) {
 	results := make ([]DashListing, 0)
 
-		// Always prepare queries to be used multiple times. The parameter placehold is ?
+	// Always prepare queries to be used multiple times. The parameter placehold is ?
 	stmt, err := db.Prepare(`
 		SELECT l.date_leaving, l.origin, l.destination, l.id, l.seats, l.fee
 			FROM listings AS l
@@ -89,7 +97,40 @@ func GetDashListings(db *sql.DB, userId int) ([]DashListing, error) {
 	}
 
 	return results, nil
+}
 
+func GetDashMessages(db *sql.DB, userId int) ([]DashMessages, error) {
+	var results []DashMessages
+
+	// Always prepare queries to be used multiple times. The parameter placehold is ?
+	stmt, err := db.Prepare(`
+		SELECT m.sender, u.name, u.picture, count(*), min(m.opened)
+			FROM messages as m 
+			JOIN users AS u 
+				ON u.id = m.sender 
+			WHERE m.receiver = ?
+			GROUP BY m.sender;
+		`)
+	if err != nil {
+		return results, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(userId)
+	if err != nil {
+		return results, err
+	}
+
+	for rows.Next() {
+		var temp DashMessages
+		err := rows.Scan(&temp.Id, &temp.Name, &temp.Picture, &temp.Count, &temp.Opened)
+		if err != nil {
+			return results, err
+		}
+		results = append(results, temp)
+	}
+
+	return results, nil
 }
 
 func SpecificDashListing(db *sql.DB, listings []DashListing, listingId int) (SpecificListing, error) {
