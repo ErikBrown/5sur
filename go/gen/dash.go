@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"errors"
+	"net/http"
+	"strconv"
 )
 
 type DashListing struct {
@@ -230,5 +232,109 @@ func getRegisteredUsers(db *sql.DB, listingId int) ([]RegisteredUser, error) {
 		results = append(results, temp)
 	}
 	return results, nil
+}
+
+func deleteFromQueue(db *sql.DB, userId int, listingId int, passenger_id int) (bool, error) {
+	stmt, err := db.Prepare(`
+		DELETE FROM reservation_queue 
+			WHERE passenger_id IN 
+				(SELECT * FROM
+					(SELECT r.passenger_id 
+					FROM reservation_queue AS r
+					JOIN listings as l 
+							ON l.id = r.listing_id 
+						JOIN users as u 
+							ON l.driver = u.id 
+						WHERE r.passenger_id = ? and u.id = ?
+						AND l.id = ?)
+				AS s) 
+			AND listing_id = ?;
+		`)
+	
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+	defer stmt.Close()
+
+	// db.Query() prepares, executes, and closes a prepared statement - three round
+	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
+	affected, err := stmt.Exec(passenger_id, userId, listingId, listingId)
+	if err != nil {
+		return false, err
+	}
+	rowsDeleted, err := affected.RowsAffected()
+	if err != nil {
+		panic(err.Error())
+	}
+	if rowsDeleted == 0{
+		return false, nil
+	}
+	return true, nil
+}
+
+func addToReservation(db *sql.DB, userId int, listingId int, passenger_id int) error {
+		stmt, err := db.Prepare(`
+		INSERT INTO reservations(listing_id, driver_id, passenger_id)
+			 SELECT ? AS listing_id, ? AS driver_id, ? AS passenger_id FROM dual
+				 WHERE NOT EXISTS (
+		   		 SELECT listing_id
+		   			 FROM reservations
+		   			 WHERE listing_id = ?
+		   			 AND driver_id = ?
+		   			 AND passenger_id = ?
+		   	 ) LIMIT 1;
+		`)
+	
+	if err != nil {
+		return err // Have a proper error in production
+	}
+	defer stmt.Close()
+
+	// db.Query() prepares, executes, and closes a prepared statement - three round
+	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
+	_, err = stmt.Exec(listingId, userId, passenger_id, listingId, userId, passenger_id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
+	if r.FormValue("a") != "" {
+		add, err := strconv.Atoi(r.FormValue("a"))
+		if err != nil {
+			return errors.New("Invalid")
+		}
+		deleted, err := deleteFromQueue(db, userId, listingId, add)
+		if err != nil {
+			return err
+		}
+		if deleted {
+			err := addToReservation(db, userId, listingId, add)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	if r.FormValue("r") != "" {
+		remove, err := strconv.Atoi(r.FormValue("r"))
+		if err != nil {
+			return errors.New("Invalid")
+		}	
+		_, err = deleteFromQueue(db, userId, listingId, remove)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	if r.FormValue("m") != "" {
+		_, err := strconv.Atoi(r.FormValue("m"))
+		if err != nil {
+			return errors.New("Invalid")
+		}
+		// Deal with messenging
+	}
+	return nil
 }
 

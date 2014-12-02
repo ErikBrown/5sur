@@ -8,6 +8,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"data/gen"
 	"data/util"
+	"os"
 	// "log"
 )
 
@@ -133,6 +134,13 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 }
 
 func DashListingsHandler(w http.ResponseWriter, r *http.Request){
+	token, err := util.ValidDashQuery(r.URL)
+	specificListing := false
+	if err == nil {
+		specificListing = true
+	} else {
+		token = 0
+	}
 	// Database initialization
 	db, err := openDb()
 	if err!=nil {
@@ -149,14 +157,23 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
+	// Check post data for if a button was clicked that directed the user here.
+	if specificListing {
+		err := gen.CheckPost(db, userId, r, token)
+		if err != nil {
+			fmt.Fprint(w, err.Error())
+			return
+		}
+	}
+
 	dashListings, err := gen.GetDashListings(db, userId)
 	if err != nil {
 		fmt.Fprint(w, err.Error())
 		return
 	}
-	token, err := util.ValidDashQuery(r.URL)
 
-	if err == nil {
+
+	if specificListing {
 		// DO SPECIFIC LISTING
 		listing, err := gen.SpecificDashListing(db, dashListings, token)
 		listingFormatted, err := json.MarshalIndent(listing, "", "    ")
@@ -382,6 +399,12 @@ func UserHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(formatted))
 }
 
+func EnvHandler(w http.ResponseWriter, r *http.Request) {
+	// Database initialization
+	
+	fmt.Fprint(w, "hi" + os.Getenv("TEST"))
+}
+
 func main() {
 	util.ConfigureLog()
 	http.HandleFunc("/l/", ListingsHandler)
@@ -397,6 +420,7 @@ func main() {
 	http.HandleFunc("/createSubmit", CreateSubmitHandler)
 	http.HandleFunc("/dashboard/listings", DashListingsHandler)
 	http.HandleFunc("/dashboard/messages", DashMessagesHandler)
+	http.HandleFunc("/env", EnvHandler)
 	http.HandleFunc("/", RootHandler)
 	http.ListenAndServe(":8080", nil)
 }
