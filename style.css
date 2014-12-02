@@ -54,6 +54,8 @@ a, a:hover, a:visited, a:active {
 html, body {
 	height: 100%;
 	font-family: 'Open Sans', sans-serif;
+	color: #323F43;
+	overflow: none;
 }
 
 h1 {
@@ -66,19 +68,18 @@ h1 {
 }
 
 h2 {
-	font-family: 'Bitter', serif;
-	font-weight: 300;
-	font-size: 45px;
-	padding: 20px;
-	color: #2F3237;
+	font-size: 25px;
+	font-weight: 200;
+	line-height: 100px;
+	text-align: center;
+	margin: 0 25px;
+	border-bottom: 1px solid rgba(0,0,0,.2);
 }
 
 h3 {
 	font-family: 'Bitter', serif;
-	font-weight: 300;
-	font-size: 36px;
-	text-align: center;
-	background: #27AF61;
+	font-size: 25px;
+	font-weight: 700;
 }
 
 h4 {
@@ -89,11 +90,19 @@ h4 {
 	padding: 20px 0;
 }
 
+h5 {
+	color: #ffffff;
+	font-size: 25px;
+	font-weight: 600;
+	margin-top: 50px;
+}
+
 h6 {
-	font-size: 20px;
-	font-weight: 400;
-	line-height: 45px;
-	border-bottom: 1px solid #CCD3D7;
+	font-family: 'Bitter', serif;
+	font-weight: 300;
+	font-size: 36px;
+	text-align: center;
+	background: #27AF61;
 }
 
 /** HEADER **/
@@ -515,161 +524,210 @@ h6 {
 }
 
 /*** DASHBOARD ***/
-#dashboard_sidebar {
-	position: fixed;
-	font-weight: 400;
-	font-size: 13px;
-	color: #454545;
-	line-height: 45px;
-	width: 225px;
-	height: 100%;
-	background: #EBEEF1;
-	box-shadow: 1px 0px 2px #999999;
-	z-index: 1;
-}
-
-#dashboard_sidebar img {
+.sidebar {
 	float: left;
-	width: 65px;
-	border-radius: 100%;
-	margin: 15px 0 15px 15px;
-	box-shadow: 1px 2px 2px #999999;
-}
-
-#sidebar_username {
-	float: left;
-	font-size: 14px;
+	min-height: 100%;
 	font-weight: 600;
-	line-height: 65px;
-	width: 120px;
-	margin: 15px 0 0 15px;
-	vertical-align: top;
-	overflow: hidden;
-	text-overflow: ellipsis;
 }
 
-#dashboard_sidebar li {
-	padding-left: 25px;
+.sidebar li {
+	width: 100%;
 }
 
-.dash_sidebar_title {
-	clear: left;
-	padding-left: 0px !important;
-	margin: 0 25px 10px 25px;
+#main_sidebar li:hover {
+	background-color: rgba(255,255,255,.1);
 }
 
-.dash_sidebar_title:hover {
-	cursor: default !important;
-	background: none !important;
+#main_sidebar {
+	width: 100px;
+	background: #2b2e37;
 }
 
-.sidebar_icon {
-	display: inline-block;
-	vertical-align: top;
-	width: 15px;
-	height: 45px;
-	margin-right: 15px;
-	background: url("https://5sur.com/tempIcon.png") no-repeat;
-	background-size: 15px;
+#main_sidebar li {
+	height: 100px;
+	background-repeat: no-repeat;
 	background-position: center;
 }
 
-.sidebar_text {
-	display: inline-block;
-	letter-spacing: .4px;
-	width: 159px;
-	-webkit-transition: .10s;
-	transition: .10s;
+.sidebar a {
+	display: block;
+	height: 100%;
+	width: 100%;
 }
 
-#dashboard_sidebar li:hover {
-	cursor: pointer;
-	background-color: #D2D9DF;
-}
+.message_icon{background-image: url("https://5sur.com/graphics/message.png");}
+.listings_icon{background-image: url("https://5sur.com/graphics/listings.png");}
+.reservation_icon{background-image: url("https://5sur.com/graphics/reservations.png");}
+.settings_icon{background-image: url("https://5sur.com/graphics/settings.png");}
 
-#sidebar_selected {
+.selected_dark {
+	background-color: rgba(255,255,255,.1);
+}
+.selected_light {
+	background-color: rgba(0,0,0,.08);
 	font-weight: 700;
-	background-color: #D2D9DF;
-	border-color: #D2D9DF !important;
 }
 
-#sidebar_selected:hover span {
+#sub_sidebar {
+	width: 350px;
+	font-weight: 400;
+	font-size: 16px;
+	box-shadow: 2px 5px 5px -2px #888888;
 }
 
-#sidebar_selected:hover {
-	background-color: #D2D9DF !important;
-	border-color: #D2D9DF !important;
+#sub_sidebar li {
+	height: 75px;
+	line-height: 75px;
 }
 
-#dash_listings_sidebar {
+#sub_sidebar li:hover {
+	background-color: rgba(0,0,0,.08);
+}
+
+
+#sub_sidebar li > a > * {
 	float: left;
-	color: #454545;
-	min-height: 100%;
-	width: 250px;
-	margin-left: 225px;
-	background: #F1F3F5;
-	box-shadow: 1px 0px 2px #999999;
-	overflow: hidden;
-	z-index: 0;
 }
 
-#dash_listings_sidebar_title {
-	margin: 15px 15px;
-}
-
-#dash_listings_sidebar_title > h6 {
-}
-
-#dash_listings_sidebar > li+li {
-	height: 50px;
-	padding-left: 15px;
-}
-
-#dash_listings_sidebar > li > span {
-	line-height: 50px;
-	margin-left: 10px;
-}
-
-#dash_listings_sidebar > li+li:hover {
-	cursor: pointer;
-	background-color: #D2D9DF;
-}
-
-.dash_listings_sidebar_date {
-	float: left;
-	width: 30px;
-	height: 30px;
-	text-align: center;
-	background: #ffffff;
+.calendar_icon {
+	width: 35px;
+	height: 35px;
+	margin-top: 20px;
+	margin-left: 25px;
+	margin-right: 25px;
 	border-radius: 20%;
 	overflow: hidden;
-	line-height: 0;
-	margin-top: 10px;
-	box-shadow: 1px 0px 2px #999999;
+	line-height: 80px;
+	font-weight: 600;
+	text-align: center;
+	box-shadow: 2px 2px 5px -2px #888888;
 }
 
-.dash_listings_sidebar_month {
-	font-weight: 600;
+.calendar_icon_month {
 	display: block;
+	background: #E26865;
 	font-size: 10px;
-	background: #8A94A2;
 	color: #ffffff;
-	line-height: 14px;
+	line-height: 15px;
 }
 
-.dash_listings_sidebar_day {
-	font-weight: 600;
+.calendar_icon_day {
+	display: block;
+	height: 100%;
+	background: #ffffff;
 	font-size: 12px;
-	line-height: 16px;
+	line-height: 19px;
 }
 
-#dash_listings {
-	width: 100%;
+/* Add max-width to sidebar_text */
+
+.sidebar_alert {
+	float: right !important;
+	width: 20px;
+	margin-top: 27px;
+	margin-right: 25px;
+	background: #ED4141;
+	border-radius: 100%;
+	line-height: 20px;
+	font-weight: 700;
+	color: #ffffff;
+	text-align: center;
+}
+
+#dash_content {
+	overflow: hidden;
 	min-height: 100%;
-	height: 200px;
+}
+
+#dash_title {
+	line-height: 100px;
+	padding: 0 25px;
+}
+
+.passengers {
+	float: left;
+	width: 400px;
+	margin: 0 25px;
+	margin-bottom: 25px;
+	border-radius: 5px;
+	box-shadow: 1px 1px 5px -2px #888888;
+	overflow: hidden;
+}
+
+.passengers > span {
+	display: block;
+	padding: 0 25px;
+	line-height: 75px;
+	font-family: 'Montserrat', sans-serif;
+	font-size: 18px;
+	font-weight: 700;
+	color: #ffffff;
+	background: #2b2e37;
+}
+
+.passengers > ul > li {
+	padding: 0 25px;
+}
+
+.passengers li {
+	display: inline-block;
+	width: 100%;
+	height: 75px;
+	font-weight: 600;
+	font-size: 14px;
+}
+
+.passengers li+li {
+	border-top: 1px solid rgba(0,0,0,.1);
+}
+
+.passengers img {
+	float: left;
+	margin-top: 12px;
+	margin-right: 25px;
+	width: 50px;
+	height: 50px;
+	border-radius: 100%;
+}
+
+.passengers li > span {
+	line-height: 75px;
+}
+
+.passenger_seats {
+	float: right;
+}
+
+.passenger_form {
+	display: inline-block;
+	float: right;
+	margin-left: 10px;
+	line-height: 75px;
+	font-size: 0;
+}
+
+.passenger_form > input {
+	vertical-align: middle;
+	width: 20px;
+	height: 20px;
+	font-size: 0;
+	border: 0;
+	cursor: pointer;
+}
+
+.passenger_form > input+input {
+	margin-left: 5px;
+}
+
+#passenger_accept {
+	background: url("https://5sur.com/graphics/check.png");
+}
+
+#passenger_reject {
+	background: url("https://5sur.com/graphics/x.png");
 }
 
 /***** Margin for the fixed header *****/
-#register_form, #login_form, #reserve_form, #create_listing_form, #dash_listings_sidebar, #dashboard_sidebar, #dash_listings {
+#register_form, #login_form, #reserve_form, #create_listing_form, .sidebar, #dash_content {
 	padding-top: 55px;
 }

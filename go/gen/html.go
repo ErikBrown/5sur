@@ -221,6 +221,127 @@ func CreateListingHtml(u string, c []City) string {
 	return output
 }
 
+func DashHtml(dashListing []DashListing, listing SpecificListing) string {
+	output := `<div class="sidebar" id="main_sidebar">
+	<ul>
+		<li class="message_icon">
+			<a href="https://5sur.com/dashboard/messages"></a>
+		</li>
+		<li class="listings_icon selected_dark">
+			<a href="https://5sur.com/dashboard/listings"></a>
+		</li>
+		<li class="reservation_icon">
+			<a href="https://5sur.com/dashboard/reservations"></a>
+		</li>
+		<li class="settings_icon">
+			<a href="https://5sur.com/dashboard/settings"></a>
+		</li>
+	</ul>
+</div>
+
+<div class="sidebar" id="sub_sidebar">
+	<h2>Listings</h2>
+	<ul>`
+	for i := range dashListing{
+		output += sidebarListing(dashListing[i], listing.ListingId)
+	}
+	output +=
+	`
+	</ul>
+</div>`
+
+if listing.ListingId == 0 {
+	return output
+}
+
+output += dashSpecificListing(listing)
+
+return output
+}
+
+func sidebarListing(d DashListing, l int) string {
+	output := ""
+	if d.ListingId == l {
+		output += `<li class="selected_light">`
+	} else {
+		output += `<li>`
+	}
+	output += `
+			<a href="https://5sur.com/dashboard/listings?l=` + strconv.Itoa(d.ListingId) + `">
+				<div class="calendar_icon">
+					<span class="calendar_icon_month">` + d.Month + `</span>
+					<span class="calendar_icon_day">` + d.Day + `</span>
+				</div>
+				<span class="sidebar_text">` + d.Origin + ` &#10132; ` + d.Destination + `</span>
+				`
+	if d.Alert {
+		output += `<span class="sidebar_alert">!</span>`
+	}
+	output += `			
+			</a>
+		</li>`
+	return output
+}
+
+func dashSpecificListing(l SpecificListing) string {
+	output := `<div id="dash_content" class="dash_listings">
+	<div id="dash_title">
+		<h3>` + l.Origin + ` &#10132; ` + l.Destination + `</h3>
+	</div>
+	<div id="registered_passengers" class="passengers">
+		<span>Registered</span>
+		<ul>`
+		for i := range l.RegisteredUsers {
+			output += dashRegisteredPassenger(l.RegisteredUsers[i], l.ListingId)
+		}
+		output += `
+		</ul>
+	</div>
+	<div id="pending_passengers" class="passengers">
+		<span>Pending</span>
+		<ul>`
+		for i := range l.PendingUsers {
+			output += dashAcceptedPassenger(l.PendingUsers[i], l.ListingId)
+		}
+		output += `
+		</ul>
+	</div>
+</div>
+`
+return output
+}
+
+func dashRegisteredPassenger(u RegisteredUser, l int) string {
+	output := `<li>
+				<img src="https://5sur.com/` + u.Picture + `" alt="usr image">
+				<span>` + u.Name + `</span>
+				<form class="passenger_form" method="POST" action="https://5sur.com/dashboard/listings?l=` + strconv.Itoa(l) + `">
+					<input name="asd" value="` + strconv.Itoa(u.Id) + `" id="passenger_reject" type="submit">
+					<!--
+					<input name="m" value="` + strconv.Itoa(u.Id) + `" id="passenger_message" type="submit">
+					-->
+				</form>
+				<span class="passenger_seats">1 Seat</span>
+			</li>`
+	return output
+}
+
+func dashAcceptedPassenger(u PendingUser, l int) string {
+	output := `<li>
+				<img src="https://5sur.com/` + u.Picture + `" alt="usr image">
+				<span>` + u.Name + `</span>
+				<form class="passenger_form" method="POST" action="https://5sur.com/dashboard/listings?l=` + strconv.Itoa(l) + `">
+					<input name="a" value="` + strconv.Itoa(u.Id) + `" id="passenger_accept" type="submit">
+					<input name="r" value="` + strconv.Itoa(u.Id) + `" id="passenger_reject" type="submit">
+					<!--
+					<input name="m" value="` + strconv.Itoa(u.Id) + `" id="passenger_message" type="submit">
+					-->
+				</form>
+				<span class="passenger_seats">1 Seat</span>
+			</li>`
+	return output
+}
+
 // Move specific scrips to specific pages!
 func FooterHtml() string{
 return `

@@ -6,6 +6,19 @@ import (
 	"strconv"
 )
 
+func DashListingsPage(dashListings []DashListing, listing SpecificListing, user string) (string, error) {
+	title := "Dashboard - Listings"
+	headerInfo := Header {
+		Title: title,
+		User: user,
+	}
+
+	dashListingsPage := HeaderHtml(&headerInfo)
+	dashListingsPage += DashHtml(dashListings, listing)
+	dashListingsPage += FooterHtml()
+	return dashListingsPage, nil
+}
+
 func ListingsPage(db *sql.DB, query util.ListingQueryFields, user string) (string, error) {
 	title := "Listings"
 	cities := ReturnFilter(db)

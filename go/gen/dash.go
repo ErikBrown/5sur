@@ -12,8 +12,8 @@ import (
 type DashListing struct {
 	Day string
 	Month string
-	Origin int
-	Destination int
+	Origin string
+	Destination string
 	Alert bool
 	ListingId int
 	Seats int
@@ -45,8 +45,8 @@ type RegisteredUser struct{
 type SpecificListing struct {
 	Day string
 	Month string
-	Origin int
-	Destination int
+	Origin string
+	Destination string
 	Alert bool
 	ListingId int
 	Seats int
@@ -61,8 +61,10 @@ func GetDashListings(db *sql.DB, userId int) ([]DashListing, error) {
 
 	// Always prepare queries to be used multiple times. The parameter placehold is ?
 	stmt, err := db.Prepare(`
-		SELECT l.date_leaving, l.origin, l.destination, l.id, l.seats, l.fee
+		SELECT l.date_leaving, c.name, c2.name, l.id, l.seats, l.fee
 			FROM listings AS l
+			JOIN cities as c ON l.origin = c.id
+			LEFT JOIN cities as c2 ON l.destination = c2.id
 			WHERE l.date_leaving >= NOW() AND l.driver = ?
 			ORDER BY l.date_leaving
 			LIMIT 25

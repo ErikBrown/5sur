@@ -172,24 +172,20 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-
+	var listing gen.SpecificListing
 	if specificListing {
 		// DO SPECIFIC LISTING
-		listing, err := gen.SpecificDashListing(db, dashListings, token)
-		listingFormatted, err := json.MarshalIndent(listing, "", "    ")
-		if err != nil {
-			fmt.Fprint(w, "can't convert to json")
-			return
-		}
-		fmt.Fprint(w, string(listingFormatted))
+		listing, err = gen.SpecificDashListing(db, dashListings, token)
 	}
 
-	formatted, err := json.MarshalIndent(dashListings, "", "    ")
+	// HTML generation
+	dashListingsPage, err := gen.DashListingsPage(dashListings, listing, user);
 	if err != nil {
-		fmt.Fprint(w, "can't convert to json")
+		fmt.Fprint(w, err.Error())
 		return
 	}
-	fmt.Fprint(w, string(formatted))
+
+	fmt.Fprint(w, dashListingsPage)
 }
 
 func DashMessagesHandler(w http.ResponseWriter, r *http.Request){
