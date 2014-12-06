@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"data/util"
 	"fmt"
+	"time"
 )
 
 type Header struct {
@@ -53,7 +54,7 @@ func HeaderHtml(h *Header) string {
 		</head>
 	<body>
 	<div id="header">
-		<h1><a href="https://5sur.com/l/">RideChile</a></h1>
+		<h1><a href="https://5sur.com/">RideChile</a></h1>
 		<ul id="account_nav">`
 
 	if h.User == "" {
@@ -70,33 +71,41 @@ func HeaderHtml(h *Header) string {
 	return temp
 }
 
-func FilterHtml(cities []City, o int, d int, t string) string {
+func FilterHtml(cities []City, query util.ListingQueryFields) string {
 	temp := `
 		<div id="search_wrapper">
-			<form method="post" action="https://5sur.com/l/" id="search_form">
+			<form method="POST" action="https://5sur.com/l/" id="search_form">
 				<select name="Origin" id="origin_select" class="search_option">`
-	if o == 0 {
+	if query.Origin == 0 {
 		temp += `
 					<option disabled selected class="blank_option"></option>`
 	}
 	for i := range cities{
-		temp += optionHtml(cities[i], o)
+		temp += optionHtml(cities[i], query.Origin)
 	}
 	temp += `
 				</select>
 				<span class="to">&#10132;</span>
 				<select name="Destination" id="destination_select" class="search_option">`
-	if d == 0 {
+	if query.Destination == 0 {
 		temp += `
 					<option disabled selected class="blank_option"></option>`
 	}
 	for i := range cities{
-		temp += optionHtml(cities[i], d)
+		temp += optionHtml(cities[i], query.Destination)
 	}
 	temp += `
 				</select>
 				<span class="to">&#128343;</span>
-				<input type="text" name="Date" placeholder="Select date..." autocomplete="off" value="` + t + `" id="date_box" class="search_option">
+				<input type="text" name="Date" placeholder="Select date..." autocomplete="off" value="`
+	// The error for this should have already been checked
+	convertedDate, convertedTime, _ := util.ReturnTimeString(true, query.Date, query.Time)
+	temp += convertedDate
+	temp += `" id="date_box" class="search_option">
+
+				<input type="text" name="Time" placeholder="Select time..." autocomplete="off" value="`
+	temp += convertedTime
+	temp += `" id="time_box" class="search_option">
 				<div id="calendar_wrapper">
 					<div id="month_wrapper">
 						<span id="month_left">&#9664;</span>

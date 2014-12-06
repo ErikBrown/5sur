@@ -3,8 +3,6 @@ package util
 import (
 	"strings"
 	"strconv"
-	"errors"
-	"math"
 	"time"
 )
 
@@ -15,6 +13,100 @@ type Date struct{
 }
 
 var months = [12]string{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
+
+// Determines time layout for the following:
+// YYYY-MM-DD, MM-DD-YYYY, MM-DD-YY (the punctuation is variable)
+// Month and Day can be single digits
+// The punctuation (-,/,_,etc) is determined by the second parameter
+func parseTimeLayout(s []string, p string) string {
+	if len(s) == 3 {
+		if len(s[0]) - 1 == 4 {
+			return "2006" + p + "1" + p + "_2"
+		} else {
+			if len(s[2]) == 4 {
+				return "_2" + p + "1" + p + "2006"
+			} else if len(s[2])== 2 {
+				return "_2" + p + "1" + p + "06"
+			}
+		}
+	}
+	return ""
+}
+
+// Returns time layout for time.Parse
+func returnTimeLayout(t string) string {
+	splits := strings.SplitAfter(t, "/")
+	layout := parseTimeLayout(splits, "/")
+	if layout == "" {
+		splits = strings.SplitAfter(t, "-")
+		layout = parseTimeLayout(splits, "-")
+	}
+	if layout == "" {
+		return "1-_2-2006"
+	} else {
+		return layout
+	}
+}
+
+// Takes year/month/day (in a variety of formats) and HH:MM parameters
+// Checks if the time is valid and returns error if it is not
+// Parses in the location of Santiago
+func ReturnTime(d string, t string) (time.Time, error) {
+	loc, err := time.LoadLocation("America/Santiago")
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	layout := returnTimeLayout(d)
+	splits := strings.SplitAfter(t, ":")
+	if len(splits) == 1 {
+		layout += " 15"
+	} else {
+		layout += " 15:04"
+	}
+
+	timeVar, err := time.ParseInLocation(layout, d + " " + t, loc)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return timeVar, nil
+}
+
+// Normalizes time format to one of two layouts (machine or human readable)
+// Checks if the time is valid and returns error if it is not
+// Parses in the location of Santiago
+func ReturnTimeString(humanReadable bool, d string, t string) (string, string, error) {
+	const (
+		layoutHuman = "2/1/2006"
+		layoutMachine = "2006-01-02"
+	)
+	loc, err := time.LoadLocation("America/Santiago")
+	if err != nil {
+		return "", "", err
+	}
+
+	layout := returnTimeLayout(d)
+	splits := strings.SplitAfter(t, ":")
+	if len(splits) == 1 {
+		layout += " 15"
+	} else {
+		layout += " 15:04"
+	}
+	timeVar, err := time.ParseInLocation(layout, d + " " + t, loc)
+	if err != nil {
+		return "", "", err
+	}
+	if humanReadable {
+		return timeVar.Format(layoutHuman), timeVar.Format("15:04"), nil
+	} else {
+		return timeVar.Format(layoutMachine), timeVar.Format("15:04"), nil
+	}
+}
+
+func ReturnCurrentTimeString() (string, string) {
+	return time.Now().Local().Format("2006-01-02"), time.Now().Local().Format("15:04")
+}
 
 //FORM yyyy-mm-dd hh:mm:ss Drop the seconds. Parse the rest.
 func PrettyDate(timestamp string, suffix bool) Date {
@@ -46,245 +138,4 @@ func PrettyDate(timestamp string, suffix bool) Date {
 	date.Day = day
 	date.Time = splits[11] + splits[12] + ":" + splits[14] + splits[15]
 	return date
-}
-
-// Normalizes the following to YYYY-MM-DD
-// YYYY/MM/DD
-// DD/MM/YYYY
-// DD-MM-YYYY
-// and adds 0 to single digit months/days
-// This ugly code does not check for valid dates, only the format
-// Return empty if in incompatible format
-func ConvertDate(d string) string {
-	// We need to have a date validator somewhere
-	var splits []string = strings.Split(d, "/")
-	if len(splits) != 3 {
-		var splits []string = strings.Split(d, "-")
-		if len(splits) == 3 {
-			if len(splits[0]) == 4 {
-				if len(splits[1]) == 1 {
-					splits[1] = "0" + splits[1]
-				}
-				if len(splits[2]) == 1 {
-					splits[2] = "0" + splits[2]
-				}
-				return splits[0] + "-" + splits[1] + "-" + splits[2] // Original format YYYY-MM-DD
-			} else {
-				if len(splits[0]) == 1 {
-					splits[0] = "0" + splits[0]
-				}
-				if len(splits[1]) == 1 {
-					splits[1] = "0" + splits[1]
-				}
-				return splits[2] + "-" + splits[1] + "-" + splits[0] // Original format DD-MM-YYYY
-			}
-		} else {
-			return ""
-		}
-	}
-	if len(splits[0]) == 1 {
-		splits[0] = "0" + splits[0]
-	} else if len(splits[0]) == 4 {
-		if len(splits[1]) == 1 {
-			splits[1] = "0" + splits[1]
-		}
-		if len(splits[2]) == 1 {
-			splits[2] = "0" + splits[2]
-		}
-		return splits[0] + "-" + splits[1] + "-" + splits[2] // Original format YYYY/MM/DD
-	}
-	if len(splits[1]) == 1 {
-		splits[1] = "0" + splits[1]
-	}
-	return splits[2] + "-" + splits[1] + "-" + splits[0] // Original format DD/MM/YYYY
-}
-
-func CompareDate(d1 string, d2 string) error {
-	var splitsLeaving []string = strings.Split(d1, "-")
-	var splitsTemp []string = strings.Split(d2, "T")
-	var splitsNow []string = strings.Split(splitsTemp[0], "-")
-	if len(splitsLeaving) != 3 && len(splitsNow) != 3 {
-		return errors.New("Incorrect date format")
-	}
-	dateLeaving := 0.0
-	dateNow := 0.0
-	for i := range splitsLeaving {
-		leaving, err := strconv.ParseFloat(splitsLeaving[i],64)
-		if err != nil {
-			return err
-		}
-		now, err := strconv.ParseFloat(splitsNow[i],64)
-		if err != nil {
-			return err
-		}
-		dateLeaving += leaving * math.Pow(10,(math.Abs(float64(i)-2)*2))
-		dateNow += now * math.Pow(10,(math.Abs(float64(i)-2)*2))
-	}
-	if dateLeaving < dateNow {
-		return errors.New("Can't make listings in the past joker")
-	}
-	return nil
-}
-
-// Changes YYYY-MM-DD to DD/MM/YYYY
-func ReverseConvertDate(d string) string {
-	// We need to have a date validator somewhere
-	var splits []string = strings.Split(d, "-")
-	if len(splits) != 3 {
-		return ""
-	}
-	if len(splits[0]) == 1 {
-		splits[0] = "0" + splits[0]
-	}
-	return splits[2] + "/" + splits[1] + "/" + splits[0]
-}
-
-func ValidDate(d string) error {
-	splitsLeaving := strings.Split(d, "-")
-	if len(splitsLeaving) != 3 {
-		return errors.New("Incorrect Date Format")
-	}
-	if len(splitsLeaving[0]) != 4 {
-		return errors.New("Invalid year")
-	}
-
-	yearLeaving, err := strconv.Atoi(splitsLeaving[0])
-	if err != nil {
-		return errors.New("Invalid year")
-	}
-
-	monthLeaving, err := strconv.Atoi(splitsLeaving[1])
-	if err != nil {
-		return errors.New("Invalid month")
-	}
-	if monthLeaving > 12 || monthLeaving < 1 {
-		return errors.New("Invalid month")
-	}
-
-	dayLeaving, err := strconv.Atoi(splitsLeaving[2])
-	if err != nil {
-		return errors.New("Invalid Day")
-	}
-	err = validDay(yearLeaving, monthLeaving, dayLeaving)
-	if err != nil {
-		return err
-	}
-
-	splitsTemp := strings.Split(time.Now().Local().AddDate(0,2,0).Format(time.RFC3339), "T")
-	splitsNow := strings.Split(splitsTemp[0], "-")
-	dateLeaving := 0.0
-	dateNow := 0.0
-	for i := range splitsLeaving {
-		leaving, err := strconv.ParseFloat(splitsLeaving[i],64)
-		if err != nil {
-			return err
-		}
-		now, err := strconv.ParseFloat(splitsNow[i],64)
-		if err != nil {
-			return err
-		}
-		dateLeaving += leaving * math.Pow(10,(math.Abs(float64(i)-2)*2))
-		dateNow += now * math.Pow(10,(math.Abs(float64(i)-2)*2))
-	}
-	if dateLeaving > dateNow {
-		return errors.New("Can't make listing later than two months in the future")
-	}
-	return nil
-}
-
-func validDay(y int, m int, d int) error {
-	if d < 1 {
-		return errors.New("Invalid day")
-	}
-	if m == 1 || m == 3 || m == 5 || m == 7 || m == 8 || m == 10 || m == 12 {
-		if d > 30 {
-			return errors.New("Invalid day")
-		}
-	} else {
-		if m == 2 { // leap day check
-			leapYear := false
-			if math.Mod(float64(y), 4) != 0 {
-				// Common year
-			} else if math.Mod(float64(y),100) != 0 {
-				leapYear = true
-			} else if math.Mod(float64(y),400) !=0 {
-				// Common year
-			} else {
-				leapYear = true
-			}
-			if leapYear {
-				if d > 29 {
-					return errors.New("Invalid day")
-				}
-			} else {
-				if d > 28 {
-					return errors.New("Invalid day")
-				}
-			}
-		} else {
-			if d > 30 {
-				return errors.New("Invalid day")
-			}
-		}
-	}
-	return nil
-}
-
-// Converts from hh:mm, hh, h, to hh:mm:ss
-func ConvertTime(time string) (string, error) {
-	if time == "" {
-		return "", errors.New("Please enter a time")
-	}
-	hourString := ""
-	minuteString := ""
-	if strings.Contains(time, ":") {
-		var splitsLeaving []string = strings.Split(time, ":")
-		if len(splitsLeaving) != 2 {
-			return "", errors.New("Invalid time")
-		}
-		if len(splitsLeaving[0]) > 2 {
-			return "", errors.New("Invalid time")
-		}
-		if len(splitsLeaving[1]) != 2 {
-			return "", errors.New("Invalid time")
-		}
-		hour, err := strconv.Atoi(splitsLeaving[0])
-		if err != nil {
-			return "", errors.New("Invalid time")
-		}
-		minute, err := strconv.Atoi(splitsLeaving[1])
-		if err != nil {
-			return "", errors.New("Invalid time")
-		}
-		if hour > 23 || minute > 59 {
-			return "", errors.New("Invalid time")
-		}
-		if hour < 0 || minute < 0 {
-			return "", errors.New("Invalid time")
-		}
-		if len(splitsLeaving[0]) == 1 {
-			hourString = "0" + splitsLeaving[0]
-		} else{
-			hourString = splitsLeaving[0]
-		}
-		minuteString = splitsLeaving[1]
-
-		return hourString + ":" + minuteString + ":00", nil
-	}
-	// no colon
-	if len(time) > 2 {
-		return "", errors.New("Invalid time")
-	}
-	hour, err := strconv.Atoi(time)
-	if err != nil {
-		return "", errors.New("Invalid time")
-	}
-	if hour > 23 || hour < 0{
-		return "", errors.New("Invalid time")
-	}
-
-	if hour < 10 {
-		return "0" + time + ":00:00", nil
-	}
-	return time + ":00:00", nil
 }

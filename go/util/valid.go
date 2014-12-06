@@ -12,6 +12,7 @@ import (
 type ListingQueryFields struct {
 	Origin int
 	Destination int
+	Date string
 	Time string
 }
 
@@ -85,21 +86,21 @@ func ValidCreateSubmit(r *http.Request) (CreateSubmitPost, error) {
 	}
 
 	// Date leaving stuff
-	values.Date = ConvertDate(r.FormValue("Date"))
-	err = ValidDate(values.Date)
-	if err != nil {
-		return values, err
-	}
-	err = CompareDate(values.Date, time.Now().Local().Format(time.RFC3339))
+	timeVar, err := ReturnTime(r.FormValue("Date"), r.FormValue("Time"))
 	if err != nil {
 		return values, err
 	}
 
-	temp, err := ConvertTime(r.FormValue("Time"))
-	if err != nil {
-		return values, err
+	// THIS WILL CHANGE A BIT ONCE WE HAVE THE HH:MM FILTER IN PLACE
+	if timeVar.Before(time.Now().Local()) {
+		return values, errors.New("Can't make listings in the past, silly")
 	}
-	values.Date += " " + temp
+
+	if timeVar.After(time.Now().Local().AddDate(0,2,0)) {
+		return values, errors.New("Can't make listings this far into the future, silly")
+	}
+
+	values.Date = timeVar.Format("2006-01-02 15:04:05")
 
 	return values, nil
 }
@@ -115,39 +116,51 @@ func ValidListingQuery(u *url.URL) (ListingQueryFields, error) {
 
 	m, err := url.ParseQuery(urlParsed.RawQuery)
 	if err != nil {
-		f := ListingQueryFields {0,0,""}
 		e := errors.New("Empty Field")
-		return f, e
+		return ListingQueryFields{}, e
 	}
 	if _,ok := m["o"]; !ok {
-		f := ListingQueryFields {0,0,""}
 		e := errors.New("Missing origin")
-		return f, e
+		return ListingQueryFields{}, e
 	}
 	if _,ok := m["d"]; !ok {
-		f := ListingQueryFields {0,0,""}
 		e := errors.New("Missing destination")
-		return f, e
+		return ListingQueryFields{}, e
 	}
 	if _,ok := m["t"]; !ok {
-		f := ListingQueryFields {0,0,""}
+		e := errors.New("Missing date")
+		return ListingQueryFields{}, e
+	}
+	if _,ok := m["h"]; !ok {
 		e := errors.New("Missing time")
-		return f, e
+		return ListingQueryFields{}, e
 	}
 	city1, err := strconv.Atoi(m["o"][0])
 	if err != nil{
-		f := ListingQueryFields {0,0,""}
 		e := errors.New("Origin is not an integer")
-		return f, e
+		return ListingQueryFields{}, e
 	}
 	city2, err := strconv.Atoi(m["d"][0])
 	if err != nil{
-		f := ListingQueryFields {0,0,""}
 		e := errors.New("Destination is not an integer")
-		// redirect to index to prevent sql injection and end function
-		return f, e
+		return ListingQueryFields{}, e
 	}
-	f := ListingQueryFields{city1, city2, m["t"][0]}
+
+	timeVar, err := ReturnTime(m["t"][0], m["h"][0])
+	if err != nil {
+		return ListingQueryFields{}, err
+	}
+
+	// THIS WILL CHANGE A BIT ONCE WE HAVE THE HH:MM FILTER IN PLACE
+	if timeVar.Before(time.Now().Local().Add(time.Minute*-2)) {
+		return ListingQueryFields{}, errors.New("Can't search for listings in the past, silly")
+	}
+
+	if timeVar.After(time.Now().Local().AddDate(0,2,0)) {
+		return ListingQueryFields{}, errors.New("Listings don't exist this far into the future, silly")
+	}
+
+	f := ListingQueryFields{city1, city2, timeVar.Format("2006-01-02"), timeVar.Format("15:04")}
 	return f, nil
 }
 

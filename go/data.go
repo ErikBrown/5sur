@@ -130,7 +130,7 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	fmt.Fprint(w, "Created listing!")
+	fmt.Fprint(w, "listing created!")
 }
 
 func DashListingsHandler(w http.ResponseWriter, r *http.Request){
@@ -218,19 +218,39 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request){
 }
 
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
-	// Convert POST to GET
-	
 	// log.Println("sdfsdf")
-
+	
+	// Convert POST to GET (also does a time validation)
 	if r.FormValue("Origin") != "" && r.FormValue("Destination") != "" {
-		http.Redirect(w, r, "https://5sur.com/l/?o=" + r.FormValue("Origin") + "&d=" + r.FormValue("Destination") + "&t=" + util.ConvertDate(r.FormValue("Date")), 301)
+		convertedDate := ""
+		convertedTime := ""
+		var err error
+		if r.FormValue("Date") == "" {
+			convertedDate, convertedTime = util.ReturnCurrentTimeString()
+		} else if r.FormValue("Time") == "" {
+			convertedDate, _, err = util.ReturnTimeString(false, r.FormValue("Date"), "00:00")
+			currentDate, currentTime := util.ReturnCurrentTimeString()
+			if currentDate == convertedDate {
+				convertedTime = currentTime
+			} else {
+				convertedTime = "00:00"
+			}
+		} else {
+			convertedDate, convertedTime, err = util.ReturnTimeString(false, r.FormValue("Date"), r.FormValue("Time"))
+			if err != nil {
+				fmt.Fprint(w, err)
+				return
+			}
+		}
+		http.Redirect(w, r, "https://5sur.com/l/?o=" + r.FormValue("Origin") + "&d=" + r.FormValue("Destination") + "&t=" + convertedDate + "&h=" + convertedTime, 301)
 		return
 	}
 
 	// Query string validation
 	query, err := util.ValidListingQuery(r.URL)
 	if err != nil {
-		// INCORRECT QUERY STRING FORMAT
+		fmt.Fprint(w, err.Error())
+		return
 	}
 
 	// Database initialization
@@ -373,7 +393,25 @@ func ReserveHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func RootHandler(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "https://5sur.com/l/", 301)
+	// Database initialization
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err)
+		return
+	}
+	defer db.Close()
+
+	// User authentication
+	user, _ := util.CheckCookie(r, db) // return "" if not logged in
+
+	// HTML generation (also does listing-specific SQL calls)
+	homePage, err := gen.HomePage(db, user);
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	fmt.Fprint(w, homePage)
 	return
 }
 

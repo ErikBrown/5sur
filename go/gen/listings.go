@@ -125,9 +125,11 @@ func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, dest
 		`)
 	defer stmt.Close()
 
+	_, err = stmt.Exec(date_leaving, driver, origin, destination, seats, fee)
 	if err != nil {
 		return err
-		}
+	}
+	
 	return nil
 }
 

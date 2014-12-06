@@ -19,6 +19,22 @@ func DashListingsPage(dashListings []DashListing, listing SpecificListing, user 
 	return dashListingsPage, nil
 }
 
+func HomePage(db *sql.DB, user string) (string, error) {
+	title := "5Sur"
+	cities := ReturnFilter(db)
+
+	headerInfo := Header {
+		Title: title,
+		User: user,
+	}
+
+	homePage := HeaderHtml(&headerInfo)
+	homePage += FilterHtml(cities, util.ListingQueryFields{})
+	homePage += FooterHtml()
+
+	return homePage, nil
+}
+
 func ListingsPage(db *sql.DB, query util.ListingQueryFields, user string) (string, error) {
 	title := "Listings"
 	cities := ReturnFilter(db)
@@ -30,7 +46,7 @@ func ListingsPage(db *sql.DB, query util.ListingQueryFields, user string) (strin
 	}
 
 	listPage := HeaderHtml(&headerInfo)
-	listPage += FilterHtml(cities, query.Origin, query.Destination, util.ReverseConvertDate(query.Time))
+	listPage += FilterHtml(cities, query)
 	listPage += ListingsHtml(listings)
 	listPage += FooterHtml()
 
