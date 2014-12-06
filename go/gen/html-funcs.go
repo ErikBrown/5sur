@@ -38,7 +38,7 @@ func HomePage(db *sql.DB, user string) (string, error) {
 func ListingsPage(db *sql.DB, query util.ListingQueryFields, user string) (string, error) {
 	title := "Listings"
 	cities := ReturnFilter(db)
-	listings := ReturnListings(db, query.Origin, query.Destination, query.Time)
+	listings := ReturnListings(db, query.Origin, query.Destination, query.Date + " " + query.Time)
 
 	headerInfo := Header {
 		Title: title,
@@ -81,8 +81,8 @@ func CreateReservePage(listingId int, seats int, user string, message string) st
 	return reservePage
 }
 
-func CreateReserveFormPage(l string, user string) string {
-		// HTML generation
+func CreateReserveFormPage(l Listing, user string) string {
+	// HTML generation
 	headerInfo := Header {
 		Title: "Reserve Page",
 		User: user,

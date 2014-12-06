@@ -34,12 +34,14 @@ type PendingUser struct {
 	Name string
 	Picture string
 	Message string
+	Seats int
 }
 
 type RegisteredUser struct{
 	Id int
 	Name string
 	Picture string
+	Seats int
 }
 
 type SpecificListing struct {
@@ -54,6 +56,14 @@ type SpecificListing struct {
 	Time string
 	PendingUsers []PendingUser
 	RegisteredUsers []RegisteredUser
+}
+
+type SpecificMessage struct {
+	Id int
+	Name string
+	Picture string
+	Date string
+	Message string
 }
 
 func GetDashListings(db *sql.DB, userId int) ([]DashListing, error) {
@@ -137,6 +147,47 @@ func GetDashMessages(db *sql.DB, userId int) ([]DashMessages, error) {
 	return results, nil
 }
 
+func SpecificDashMessage(db *sql.DB, messages []DashMessages, messageId int) (SpecificMessage, error) {
+	found := false
+	message := SpecificMessage{}
+	for i := range messages{
+		if messages[i].Id == messageId {
+			message.Id = messages[i].Id
+			message.Name = messages[i].Name
+			message.Picture = messages[i].Picture
+			found = true
+			break
+		}
+	}
+	if !found {
+		return SpecificMessage{}, errors.New("Could not find specific message")
+	}
+
+	stmt, err := db.Prepare(`
+		SELECT m.message
+			FROM messages as m 
+			WHERE m.id = ?;
+		`)
+	if err != nil {
+		return SpecificMessage{}, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(messageId)
+	if err != nil {
+		return SpecificMessage{}, err
+	}
+
+	for rows.Next() {
+		err := rows.Scan(&message.Message)
+		if err != nil {
+			return SpecificMessage{}, err
+		}
+	}
+
+	return message, nil
+}
+
 func SpecificDashListing(db *sql.DB, listings []DashListing, listingId int) (SpecificListing, error) {
 	found := false
 	var err error
@@ -176,7 +227,7 @@ func SpecificDashListing(db *sql.DB, listings []DashListing, listingId int) (Spe
 
 func getPendingUsers(db *sql.DB, listingId int) ([]PendingUser, error) {
 	stmt, err := db.Prepare(`
-		SELECT r.message, u.id, u.name, u.picture
+		SELECT r.message, u.id, u.name, u.picture, r.seats
 			FROM reservation_queue as r
 			JOIN users AS u ON r.passenger_id = u.id
 			WHERE r.listing_id = ?;
@@ -197,7 +248,7 @@ func getPendingUsers(db *sql.DB, listingId int) ([]PendingUser, error) {
 	var results []PendingUser
 	for rows.Next() {
 		var temp PendingUser
-		err := rows.Scan(&temp.Message, &temp.Id, &temp.Name, &temp.Picture)
+		err := rows.Scan(&temp.Message, &temp.Id, &temp.Name, &temp.Picture, &temp.Seats)
 		if err != nil {
 			panic(err.Error()) // Have a proper error in production
 		}
@@ -206,9 +257,30 @@ func getPendingUsers(db *sql.DB, listingId int) ([]PendingUser, error) {
 	return results, nil
 }
 
+func getPendingUser(db *sql.DB, listingId int, pendingUserId int) (PendingUser, error) {
+	stmt, err := db.Prepare(`
+		SELECT r.message, u.id, u.name, u.picture, r.seats
+			FROM reservation_queue as r
+			JOIN users AS u ON r.passenger_id = u.id
+			WHERE r.listing_id = ? AND u.id = ?;
+	`)
+	
+	if err != nil {
+		return PendingUser{}, err
+	}
+	defer stmt.Close()
+
+	pendingUser := PendingUser{}
+	err = stmt.QueryRow(listingId, pendingUserId).Scan(&pendingUser.Message, &pendingUser.Id, &pendingUser.Name, &pendingUser.Picture, &pendingUser.Seats)
+	if err != nil {
+		return pendingUser, err
+	}
+	return pendingUser, nil
+}
+
 func getRegisteredUsers(db *sql.DB, listingId int) ([]RegisteredUser, error) {
 	stmt, err := db.Prepare(`
-		SELECT u.id, u.name, u.picture
+		SELECT u.id, u.name, u.picture, r.seats
 			FROM reservations as r
 			JOIN users AS u ON r.passenger_id = u.id
 			WHERE r.listing_id = ?;
@@ -227,7 +299,7 @@ func getRegisteredUsers(db *sql.DB, listingId int) ([]RegisteredUser, error) {
 	var results []RegisteredUser
 	for rows.Next() {
 		var temp RegisteredUser
-		err := rows.Scan( &temp.Id, &temp.Name, &temp.Picture)
+		err := rows.Scan( &temp.Id, &temp.Name, &temp.Picture, &temp.Seats)
 		if err != nil {
 			panic(err.Error()) // Have a proper error in production
 		}
@@ -274,10 +346,10 @@ func deleteFromQueue(db *sql.DB, userId int, listingId int, passenger_id int) (b
 	return true, nil
 }
 
-func addToReservation(db *sql.DB, userId int, listingId int, passenger_id int) error {
+func addToReservation(db *sql.DB, userId int, listingId int, passenger_id int, seats int) error {
 		stmt, err := db.Prepare(`
-		INSERT INTO reservations(listing_id, driver_id, passenger_id)
-			 SELECT ? AS listing_id, ? AS driver_id, ? AS passenger_id FROM dual
+		INSERT INTO reservations(listing_id, driver_id, passenger_id, seats)
+			 SELECT ? AS listing_id, ? AS driver_id, ? AS passenger_id, ? AS seats FROM dual
 				 WHERE NOT EXISTS (
 		   		 SELECT listing_id
 		   			 FROM reservations
@@ -294,7 +366,7 @@ func addToReservation(db *sql.DB, userId int, listingId int, passenger_id int) e
 
 	// db.Query() prepares, executes, and closes a prepared statement - three round
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
-	_, err = stmt.Exec(listingId, userId, passenger_id, listingId, userId, passenger_id)
+	_, err = stmt.Exec(listingId, userId, passenger_id, seats, listingId, userId, passenger_id)
 	if err != nil {
 		return err
 	}
@@ -303,16 +375,20 @@ func addToReservation(db *sql.DB, userId int, listingId int, passenger_id int) e
 
 func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 	if r.FormValue("a") != "" {
-		add, err := strconv.Atoi(r.FormValue("a"))
+		passengerId, err := strconv.Atoi(r.FormValue("a"))
 		if err != nil {
 			return errors.New("Invalid")
 		}
-		deleted, err := deleteFromQueue(db, userId, listingId, add)
+		pendingUser, err := getPendingUser(db, listingId, passengerId)
+		if err != nil {
+			return err
+		}
+		deleted, err := deleteFromQueue(db, userId, listingId, passengerId)
 		if err != nil {
 			return err
 		}
 		if deleted {
-			err := addToReservation(db, userId, listingId, add)
+			err := addToReservation(db, userId, listingId, passengerId, pendingUser.Seats)
 			if err != nil {
 				return err
 			}

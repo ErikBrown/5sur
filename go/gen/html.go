@@ -4,7 +4,6 @@ import (
 	"strconv"
 	"data/util"
 	"fmt"
-	"time"
 )
 
 type Header struct {
@@ -175,17 +174,18 @@ func ListingsHtml(l []Listing) string{
 	return output
 }
 
-func ReserveHtml(l string) string {
+func ReserveHtml(l Listing) string {
 	output := `<form method="post" action="https://5sur.com/reserveSubmit" id="reserve_form">
 		<span>This input will be hidden:</span>
-		<input name="Listing" type="text" id="listing_id_input" value="` + l +`" readonly>
+		<input name="Listing" type="text" id="listing_id_input" value="` + strconv.Itoa(l.Id) +`" readonly>
 		<br />
 		<span>Number of Seats</span>
 		<select name="Seats" id="seats_select" class="reserve_input">
-			<option selected value="1">1</option>
-			<option value="2">2</option>
-			<option value="3">3</option>
-			<option value="4">4</option>
+			`
+	for i := 1; i <= l.Seats; i++ {
+		output += reserveSeats(i)
+	}
+	output +=`
 		</select>
 		<br />
 		<span>Message</span>
@@ -194,6 +194,15 @@ func ReserveHtml(l string) string {
 		<input type="submit" value="Go">
 	</form>`
 	return output
+}
+
+func reserveSeats(s int) string {
+	temp := strconv.Itoa(s)
+	if s == 1 {
+		return `<option selected value="1">1</option>`
+	} else {
+		return `<option selected value="`+ temp + `">` + temp + `</option>`
+	}
 }
 
 func CreateListingHtml(u string, c []City) string {
@@ -276,7 +285,7 @@ func sidebarListing(d DashListing, l int) string {
 		output += `<li>`
 	}
 	output += `
-			<a href="https://5sur.com/dashboard/listings?l=` + strconv.Itoa(d.ListingId) + `">
+			<a href="https://5sur.com/dashboard/listings?i=` + strconv.Itoa(d.ListingId) + `">
 				<div class="calendar_icon">
 					<span class="calendar_icon_month">` + d.Month + `</span>
 					<span class="calendar_icon_day">` + d.Day + `</span>
@@ -324,13 +333,13 @@ func dashRegisteredPassenger(u RegisteredUser, l int) string {
 	output := `<li>
 				<img src="https://5sur.com/` + u.Picture + `" alt="usr image">
 				<span>` + u.Name + `</span>
-				<form class="passenger_form" method="POST" action="https://5sur.com/dashboard/listings?l=` + strconv.Itoa(l) + `">
+				<form class="passenger_form" method="POST" action="https://5sur.com/dashboard/listings?i=` + strconv.Itoa(l) + `">
 					<input name="asd" value="` + strconv.Itoa(u.Id) + `" id="passenger_reject" type="submit">
 					<!--
 					<input name="m" value="` + strconv.Itoa(u.Id) + `" id="passenger_message" type="submit">
 					-->
 				</form>
-				<span class="passenger_seats">1 Seat</span>
+				<span class="passenger_seats">` + strconv.Itoa(u.Seats) + `</span>
 			</li>`
 	return output
 }
@@ -339,14 +348,14 @@ func dashAcceptedPassenger(u PendingUser, l int) string {
 	output := `<li>
 				<img src="https://5sur.com/` + u.Picture + `" alt="usr image">
 				<span>` + u.Name + `</span>
-				<form class="passenger_form" method="POST" action="https://5sur.com/dashboard/listings?l=` + strconv.Itoa(l) + `">
+				<form class="passenger_form" method="POST" action="https://5sur.com/dashboard/listings?i=` + strconv.Itoa(l) + `">
 					<input name="a" value="` + strconv.Itoa(u.Id) + `" id="passenger_accept" type="submit">
 					<input name="r" value="` + strconv.Itoa(u.Id) + `" id="passenger_reject" type="submit">
 					<!--
 					<input name="m" value="` + strconv.Itoa(u.Id) + `" id="passenger_message" type="submit">
 					-->
 				</form>
-				<span class="passenger_seats">1 Seat</span>
+				<span class="passenger_seats">` + strconv.Itoa(u.Seats) + `</span>
 			</li>`
 	return output
 }

@@ -209,12 +209,30 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request){
 		fmt.Fprint(w, err.Error())
 	}
 
+	message := gen.SpecificMessage{}
+	token, err := util.ValidDashQuery(r.URL)
+	if err == nil {
+		message, err = gen.SpecificDashMessage(db, dashMessages, token)
+		if err != nil {
+			fmt.Fprint(w, err.Error())
+			return
+		}
+	}
+
 	formatted, err := json.MarshalIndent(dashMessages, "", "    ")
 	if err != nil {
 		fmt.Fprint(w, "can't convert to json")
 		return
 	}
 	fmt.Fprint(w, string(formatted))
+	if token != 0 {
+		formatted, err = json.MarshalIndent(message, "", "    ")
+		if err != nil {
+			fmt.Fprint(w, "can't convert to json")
+			return
+		}
+		fmt.Fprint(w, string(formatted))
+	}
 }
 
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
@@ -352,8 +370,9 @@ func ReserveFormHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "not logged in")
 		return
 	}
+	listing, err := gen.ReturnIndividualListing(db, l)
 
-	reservePage := gen.CreateReserveFormPage(l, user)
+	reservePage := gen.CreateReserveFormPage(listing, user)
 	fmt.Fprint(w, reservePage)
 }
 

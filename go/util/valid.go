@@ -91,7 +91,6 @@ func ValidCreateSubmit(r *http.Request) (CreateSubmitPost, error) {
 		return values, err
 	}
 
-	// THIS WILL CHANGE A BIT ONCE WE HAVE THE HH:MM FILTER IN PLACE
 	if timeVar.Before(time.Now().Local()) {
 		return values, errors.New("Can't make listings in the past, silly")
 	}
@@ -203,34 +202,36 @@ func ValidRegisterPost(r *http.Request) (ReservationPost, error) {
 	return reservePost, nil
 }
 
-func ValidReserveURL(r *http.Request) (string, error) {
+func ValidReserveURL(r *http.Request) (int, error) {
 	u, err := url.Parse(r.URL.String())
 	if err != nil {
-		return "", errors.New("Url parse error")
+		return 0, errors.New("Url parse error")
 	}
 	m, err := url.ParseQuery(u.RawQuery)
 	if err != nil {
-		return "", errors.New("Url parse error")
+		return 0, errors.New("Url parse error")
 	}
 	if _,ok := m["l"]; !ok {
-		return "", errors.New("Missing listing ID")
+		return 0, errors.New("Missing listing ID")
 	}
-	return m["l"][0], nil
+	listingId, err := strconv.Atoi(m["l"][0])
+	if err != nil {
+		return 0, errors.New("Invalid listing ID")
+	}
+	return listingId, nil
 }
 
 func ValidDashQuery(u *url.URL) (int, error) {
 	m, err := url.ParseQuery(u.RawQuery)
 	if err != nil {
-		f := 0
 		e := errors.New("Empty Field")
-		return f, e
+		return 0, e
 	}
-	if _,ok := m["l"]; !ok {
-		f := 0
+	if _,ok := m["i"]; !ok {
 		e := errors.New("Missing token")
-		return f, e
+		return 0, e
 	}
-	f := m["l"][0]
+	f := m["i"][0]
 	i, err := strconv.Atoi(f)
 	if err != nil {
 		return 0, err
