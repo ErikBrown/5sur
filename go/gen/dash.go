@@ -445,7 +445,7 @@ func deleteFromQueue(db *sql.DB, userId int, listingId int, passenger_id int) (b
 	return true, nil
 }
 
-func deleteFromResevations(db *sql.DB, userId int, listingId int, passengerId int) (bool, error) {
+func deleteFromReservations(db *sql.DB, userId int, listingId int, passengerId int) (bool, error) {
 	stmt, err := db.Prepare(`
 		DELETE FROM reservations
 			WHERE driver_id = ?
@@ -533,7 +533,7 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 			return err
 		}
 		if deleted == false {
-			_, err := deleteFromResevations(db, userId, listingId, remove)
+			_, err := deleteFromReservations(db, userId, listingId, remove)
 			if err != nil {
 				return err
 			}
