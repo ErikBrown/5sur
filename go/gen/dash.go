@@ -29,6 +29,15 @@ type DashMessages struct {
 	Opened bool
 }
 
+type DashReservation struct {
+	ListingId int
+	Time string
+	Origin string
+	Destination string
+	Seats string
+	Fee string
+}
+
 type PendingUser struct {
 	Id int
 	Name string
@@ -42,6 +51,18 @@ type RegisteredUser struct{
 	Name string
 	Picture string
 	Seats int
+}
+
+type Reservation struct {
+	Time string
+	Origin string
+	Destination string
+	Seats string
+	Fee string
+	ListingId int
+	DriverId int
+	DriverName string
+	DriverPicture string
 }
 
 type SpecificListing struct {
@@ -76,8 +97,7 @@ func GetDashListings(db *sql.DB, userId int) ([]DashListing, error) {
 			JOIN cities as c ON l.origin = c.id
 			LEFT JOIN cities as c2 ON l.destination = c2.id
 			WHERE l.date_leaving >= NOW() AND l.driver = ?
-			ORDER BY l.date_leaving
-			LIMIT 25
+			ORDER BY l.date_leaving;
 		`)
 
 	if err != nil {
@@ -107,6 +127,39 @@ func GetDashListings(db *sql.DB, userId int) ([]DashListing, error) {
 			return results, err
 		}
 		// Also find if there are any new messages.
+		results = append(results, temp)
+	}
+
+	return results, nil
+}
+
+func GetDashReservations(db *sql.DB, userId int) ([]DashReservation, error) {
+	results := make ([]DashReservation, 0)
+	stmt, err := db.Prepare(`
+		SELECT l.id, l.date_leaving, l.origin, l.destination, l.seats, l.fee
+			FROM listings AS l
+			JOIN reservations as r ON l.id = r.listing_id
+			WHERE r.passenger_id = ?
+			ORDER BY l.date_leaving;
+		`)
+
+	if err != nil {
+		return results, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(userId)
+	if err != nil {
+		return results, err
+	}
+
+		// The last rows.Next() call will encounter an EOF error and call rows.Close()
+	for rows.Next() {
+		temp := DashReservation{}
+		err := rows.Scan(&temp.ListingId, &temp.Time, &temp.Origin, &temp.Destination, &temp.Seats, &temp.Fee)
+		if err != nil {
+			return results, err
+		}
 		results = append(results, temp)
 	}
 
@@ -199,6 +252,7 @@ func SpecificDashListing(db *sql.DB, listings []DashListing, listingId int) (Spe
 			break
 		}
 	}
+
 	if !found {
 		return SpecificListing{}, errors.New("Could not find specific listing")
 	}
@@ -222,7 +276,52 @@ func SpecificDashListing(db *sql.DB, listings []DashListing, listingId int) (Spe
 		return result, err
 	}
 	return result, nil
+}
 
+func SpecificDashReservation(db *sql.DB, reservations []DashReservation, listingId int) (Reservation, error) {
+	found := false
+	results := Reservation{}
+	for i := range reservations{
+		if reservations[i].ListingId == listingId {
+			results.Time = reservations[i].Time
+			results.Origin = reservations[i].Origin
+			results.Destination = reservations[i].Destination
+			results.Seats = reservations[i].Seats
+			results.Fee = reservations[i].Fee
+			results.ListingId = reservations[i].ListingId
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return Reservation{}, errors.New("Could not find specific reservation")
+	}
+
+	stmt, err := db.Prepare(`
+		SELECT u.id, u.name, u.picture
+			FROM users as u
+			LEFT JOIN reservations as r ON u.id = r.driver_id
+			WHERE r.listing_id = ?
+		`)
+	if err != nil {
+		return Reservation{}, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(listingId)
+	if err != nil {
+		return Reservation{}, err
+	}
+
+	for rows.Next() {
+		err := rows.Scan(&results.DriverId, &results.DriverName, &results.DriverPicture)
+		if err != nil {
+			return Reservation{}, err
+		}
+	}
+
+	return results, nil
 }
 
 func getPendingUsers(db *sql.DB, listingId int) ([]PendingUser, error) {
@@ -316,10 +415,10 @@ func deleteFromQueue(db *sql.DB, userId int, listingId int, passenger_id int) (b
 					(SELECT r.passenger_id 
 					FROM reservation_queue AS r
 					JOIN listings as l 
-							ON l.id = r.listing_id 
-						JOIN users as u 
-							ON l.driver = u.id 
-						WHERE r.passenger_id = ? and u.id = ?
+						ON l.id = r.listing_id 
+					JOIN users as u 
+						ON l.driver = u.id 
+					WHERE r.passenger_id = ? and u.id = ?
 						AND l.id = ?)
 				AS s) 
 			AND listing_id = ?;
@@ -346,7 +445,36 @@ func deleteFromQueue(db *sql.DB, userId int, listingId int, passenger_id int) (b
 	return true, nil
 }
 
-func addToReservation(db *sql.DB, userId int, listingId int, passenger_id int, seats int) error {
+func deleteFromResevations(db *sql.DB, userId int, listingId int, passengerId int) (bool, error) {
+	stmt, err := db.Prepare(`
+		DELETE FROM reservations
+			WHERE driver_id = ?
+				AND listing_id = ?
+				AND passenger_id = ?
+		`)
+	
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+	defer stmt.Close()
+
+	// db.Query() prepares, executes, and closes a prepared statement - three round
+	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
+	affected, err := stmt.Exec(userId, listingId, passengerId)
+	if err != nil {
+		return false, err
+	}
+	rowsDeleted, err := affected.RowsAffected()
+	if err != nil {
+		panic(err.Error())
+	}
+	if rowsDeleted == 0{
+		return false, nil
+	}
+	return true, nil
+}
+
+func addToReservation(db *sql.DB, userId int, listingId int, passengerId int, seats int) error {
 		stmt, err := db.Prepare(`
 		INSERT INTO reservations(listing_id, driver_id, passenger_id, seats)
 			 SELECT ? AS listing_id, ? AS driver_id, ? AS passenger_id, ? AS seats FROM dual
@@ -366,7 +494,7 @@ func addToReservation(db *sql.DB, userId int, listingId int, passenger_id int, s
 
 	// db.Query() prepares, executes, and closes a prepared statement - three round
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
-	_, err = stmt.Exec(listingId, userId, passenger_id, seats, listingId, userId, passenger_id)
+	_, err = stmt.Exec(listingId, userId, passengerId, seats, listingId, userId, passengerId)
 	if err != nil {
 		return err
 	}
@@ -399,10 +527,16 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 		remove, err := strconv.Atoi(r.FormValue("r"))
 		if err != nil {
 			return errors.New("Invalid")
-		}	
-		_, err = deleteFromQueue(db, userId, listingId, remove)
+		}
+		deleted, err := deleteFromQueue(db, userId, listingId, remove)
 		if err != nil {
 			return err
+		}
+		if deleted == false {
+			_, err := deleteFromResevations(db, userId, listingId, remove)
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	}

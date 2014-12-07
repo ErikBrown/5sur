@@ -201,7 +201,7 @@ func reserveSeats(s int) string {
 	if s == 1 {
 		return `<option selected value="1">1</option>`
 	} else {
-		return `<option selected value="`+ temp + `">` + temp + `</option>`
+		return `<option value="`+ temp + `">` + temp + `</option>`
 	}
 }
 
@@ -334,7 +334,7 @@ func dashRegisteredPassenger(u RegisteredUser, l int) string {
 				<img src="https://5sur.com/` + u.Picture + `" alt="usr image">
 				<span>` + u.Name + `</span>
 				<form class="passenger_form" method="POST" action="https://5sur.com/dashboard/listings?i=` + strconv.Itoa(l) + `">
-					<input name="asd" value="` + strconv.Itoa(u.Id) + `" id="passenger_reject" type="submit">
+					<input name="r" value="` + strconv.Itoa(u.Id) + `" id="passenger_reject" type="submit">
 					<!--
 					<input name="m" value="` + strconv.Itoa(u.Id) + `" id="passenger_message" type="submit">
 					-->

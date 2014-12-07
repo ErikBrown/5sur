@@ -235,6 +235,55 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request){
 	}
 }
 
+func DashReservationsHandler(w http.ResponseWriter, r *http.Request){
+	// Database initialization
+	db, err := openDb()
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	defer db.Close()
+
+	// User authentication
+	_, userId := util.CheckCookie(r, db) // return "",0 if not logged in
+
+	if userId == 0 {
+		fmt.Fprint(w, "not logged in")
+		return
+	}
+
+	dashReservations, err := gen.GetDashReservations(db, userId)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+	}
+	
+	reservation := gen.Reservation{}
+	token, err := util.ValidDashQuery(r.URL)
+	if err == nil {
+		reservation, err = gen.SpecificDashReservation(db, dashReservations, token)
+		if err != nil {
+			fmt.Fprint(w, err.Error())
+			return
+		}
+	}
+
+	formatted, err := json.MarshalIndent(dashReservations, "", "    ")
+	if err != nil {
+		fmt.Fprint(w, "can't convert to json")
+		return
+	}
+	fmt.Fprint(w, string(formatted))
+	if token != 0 {
+		formatted, err = json.MarshalIndent(reservation, "", "    ")
+		if err != nil {
+			fmt.Fprint(w, "can't convert to json")
+			return
+		}
+		fmt.Fprint(w, string(formatted))
+	}
+
+}
+
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	// log.Println("sdfsdf")
 	
@@ -473,6 +522,7 @@ func main() {
 	http.HandleFunc("/createSubmit", CreateSubmitHandler)
 	http.HandleFunc("/dashboard/listings", DashListingsHandler)
 	http.HandleFunc("/dashboard/messages", DashMessagesHandler)
+	http.HandleFunc("/dashboard/reservations", DashReservationsHandler)
 	http.HandleFunc("/env", EnvHandler)
 	http.HandleFunc("/", RootHandler)
 	http.ListenAndServe(":8080", nil)
