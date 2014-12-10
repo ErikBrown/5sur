@@ -598,7 +598,7 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 }
 
 func SendMessage(db *sql.DB, sender int, receiver int, message string) error {
-		stmt, err := db.Prepare(`
+	stmt, err := db.Prepare(`
 		INSERT INTO messages(sender, receiver, message)
 			SELECT ? AS sender, ? AS receiver, ? AS message FROM dual
 				WHERE EXISTS (
@@ -616,12 +616,12 @@ func SendMessage(db *sql.DB, sender int, receiver int, message string) error {
 
 	// db.Query() prepares, executes, and closes a prepared statement - three round
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
-	res, err := stmt.Exec(sender, receiver, message, seats, sender, receiver, receiver, sender)
+	res, err := stmt.Exec(sender, receiver, message, sender, receiver, receiver, sender)
 	if err != nil {
 		return err
 	}
 
-	_, err = affected.RowsAffected()
+	_, err = res.RowsAffected()
 	if err != nil {
 		return err
 	}
