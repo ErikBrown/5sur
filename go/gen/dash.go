@@ -616,9 +616,15 @@ func SendMessage(db *sql.DB, sender int, receiver int, message string) error {
 
 	// db.Query() prepares, executes, and closes a prepared statement - three round
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
-	_, err := stmt.Exec(sender, receiver, message, seats, sender, receiver, receiver, sender)
+	res, err := stmt.Exec(sender, receiver, message, seats, sender, receiver, receiver, sender)
 	if err != nil {
 		return err
 	}
+
+	_, err = affected.RowsAffected()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
