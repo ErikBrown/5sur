@@ -16,7 +16,7 @@ func CreateReservation(db *sql.DB, userId int, listingId int, seats int, message
 		return errors.New("Not enough seats available")
 	}
 
-	if seats <= ride.Seats {
+	if seats <= 0 {
 		return errors.New("Have to register for at least one seat")
 	}
 	

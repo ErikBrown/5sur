@@ -478,7 +478,7 @@ func addToReservation(db *sql.DB, userId int, listingId int, passengerId int, se
 		stmt, err := db.Prepare(`
 		INSERT INTO reservations(listing_id, driver_id, passenger_id, seats)
 			SELECT ? AS listing_id, ? AS driver_id, ? AS passenger_id, ? AS seats FROM dual
-				 HERE NOT EXISTS (
+				WHERE NOT EXISTS (
 					SELECT listing_id
 						FROM reservations
 						WHERE listing_id = ?
