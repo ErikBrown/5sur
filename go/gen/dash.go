@@ -477,14 +477,14 @@ func deleteFromReservations(db *sql.DB, userId int, listingId int, passengerId i
 func addToReservation(db *sql.DB, userId int, listingId int, passengerId int, seats int) error {
 		stmt, err := db.Prepare(`
 		INSERT INTO reservations(listing_id, driver_id, passenger_id, seats)
-			 SELECT ? AS listing_id, ? AS driver_id, ? AS passenger_id, ? AS seats FROM dual
-				 WHERE NOT EXISTS (
-		   		 SELECT listing_id
-		   			 FROM reservations
-		   			 WHERE listing_id = ?
-		   			 AND driver_id = ?
-		   			 AND passenger_id = ?
-		   	 ) LIMIT 1;
+			SELECT ? AS listing_id, ? AS driver_id, ? AS passenger_id, ? AS seats FROM dual
+				 HERE NOT EXISTS (
+					SELECT listing_id
+						FROM reservations
+						WHERE listing_id = ?
+						AND driver_id = ?
+						AND passenger_id = ?
+				) LIMIT 1;
 		`)
 	
 	if err != nil {
@@ -550,3 +550,28 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 	return nil
 }
 
+func SendMessage(db *sql.DB, sender int, receiver int, message string) error {
+		stmt, err := db.Prepare(`
+		INSERT INTO messages(sender, receiver, message)
+			SELECT ? AS sender, ? AS receiver, ? AS message FROM dual
+				WHERE EXISTS (
+					SELECT listing_id
+						FROM reservations
+						WHERE (sender = ? AND receiver = ?)
+					OR (receiver = ? AND sender = ?)
+			) LIMIT 1;
+		`)
+	
+	if err != nil {
+		return err // Have a proper error in production
+	}
+	defer stmt.Close()
+
+	// db.Query() prepares, executes, and closes a prepared statement - three round
+	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
+	_, err := stmt.Exec(sender, receiver, message, seats, sender, receiver, receiver, sender)
+	if err != nil {
+		return err
+	}
+	return nil
+}
