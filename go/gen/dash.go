@@ -501,6 +501,41 @@ func addToReservation(db *sql.DB, userId int, listingId int, passengerId int, se
 	return nil
 }
 
+func updateSeats(db *sql.DB, userId int, listingId int, seats int) error {
+	stmt, err := db.Prepare(`
+		UPDATE listings
+			SET seats = seats + ?
+			WHERE id = ?
+				AND driver = ?;
+			`)
+	if err != nil {
+		return err // Have a proper error in production
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(seats, listingId, userId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func findSeats(db *sql.DB, listingId int, toRemove int) (int, error) {
+	stmt, err := db.Prepare(`
+		SELECT seats FROM reservations
+			WHERE passenger_id = ? AND listing_id = ?
+	`)
+	if err != nil {
+		panic(err.Error()) // Have a proper error in production
+	}
+	defer stmt.Close()
+	var seats int
+	err = stmt.QueryRow(toRemove, listingId).Scan(&seats)
+	if err != nil {
+		return seats, err
+	}
+	return seats, nil
+}
+
 func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 	if r.FormValue("a") != "" {
 		passengerId, err := strconv.Atoi(r.FormValue("a"))
@@ -520,6 +555,10 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 			if err != nil {
 				return err
 			}
+			err = updateSeats(db, userId, listingId, (pendingUser.Seats * -1))
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	}
@@ -533,7 +572,15 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 			return err
 		}
 		if deleted == false {
-			_, err := deleteFromReservations(db, userId, listingId, remove)
+			seats, err := findSeats(db, listingId, remove)
+			if err != nil {
+				return err
+			}
+			_, err = deleteFromReservations(db, userId, listingId, remove)
+			if err != nil {
+				return err
+			}
+			err = updateSeats(db, userId, listingId, seats)
 			if err != nil {
 				return err
 			}
