@@ -12,6 +12,10 @@ func CreateReservation(db *sql.DB, userId int, listingId int, seats int, message
 		return errors.New("Listing does not exist")
 	}
 
+	if userId == ride.Driver {
+		return errors.New("Cannot register for a ride you own")
+	}
+
 	if seats > ride.Seats {
 		return errors.New("Not enough seats available")
 	}
