@@ -260,9 +260,13 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request){
 		}
 	}
 
-	err = gen.CheckReservePost(db, userId, r, token)
+	url, err := gen.CheckReservePost(db, userId, r, token)
 	if err != nil {
-		fmt.Fprint(w, "failed")
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	if url != "" {
+		http.Redirect(w, r, url, 301)
 		return
 	}
 	// HTML generation
