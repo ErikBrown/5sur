@@ -267,6 +267,12 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request){
 		}
 	}
 
+	err := gen.CheckReservePost(db, userId, r, token)
+	if err != nil {
+		fmt.Fprint(w, "failed")
+		return
+	}
+
 	formatted, err := json.MarshalIndent(dashReservations, "", "    ")
 	if err != nil {
 		fmt.Fprint(w, "can't convert to json")

@@ -445,7 +445,7 @@ func deleteFromQueue(db *sql.DB, userId int, listingId int, passenger_id int) (b
 	return true, nil
 }
 
-func deleteFromReservations(db *sql.DB, userId int, listingId int, passengerId int) (bool, error) {
+func deleteFromReservations(db *sql.DB, driverId int, listingId int, passengerId int) (bool, error) {
 	stmt, err := db.Prepare(`
 		DELETE FROM reservations
 			WHERE driver_id = ?
@@ -460,7 +460,7 @@ func deleteFromReservations(db *sql.DB, userId int, listingId int, passengerId i
 
 	// db.Query() prepares, executes, and closes a prepared statement - three round
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
-	affected, err := stmt.Exec(userId, listingId, passengerId)
+	affected, err := stmt.Exec(driverId, listingId, passengerId)
 	if err != nil {
 		return false, err
 	}
@@ -534,6 +534,36 @@ func findSeats(db *sql.DB, listingId int, toRemove int) (int, error) {
 		return seats, err
 	}
 	return seats, nil
+}
+
+// userId in this case is passengerId because this is for a user removing themself from the reservation list
+// or messenging the driver of the ride.
+func CheckReservePost(db *sql.DB, userId int, r *http.Request, listingId int) error {
+	if r.FormValue("d") != "" {
+		// Handle deleting this reservation
+		driverId, err := strconv.Atoi(r.FormValue("d"))
+		if err != nil {
+			return errors.New("Invalid")
+		}
+		pendingUser, err := getPendingUser(db, listingId, userId)
+		if err != nil {
+			return err
+		}
+		deleted, err := deleteUserReservation(db, driverId, listingId, userId)
+		if err != nil {
+			return err
+		}
+		if deleted {
+			err = updateSeats(db, userId, listingId, pendingUser.Seats)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	if r.FormValue("m") != "" {
+		// We are messenging the user with id equal to the post request data.
+	}
 }
 
 func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
