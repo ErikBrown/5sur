@@ -14,9 +14,33 @@ func DashListingsPage(dashListings []DashListing, listing SpecificListing, user 
 	}
 
 	dashListingsPage := HeaderHtml(&headerInfo)
-	dashListingsPage += DashHtml(dashListings, listing)
+	dashListingsPage += DashListingsHtml(dashListings, listing)
 	dashListingsPage += FooterHtml()
 	return dashListingsPage, nil
+}
+
+func DashMessagesPage(dashMessages []DashMessages, dashMessage SpecificMessage, user string) (string, error) {
+	title := "Dashboard - Messages"
+	headerInfo := Header {
+		Title: title,
+		User: user,
+	}
+	dashMessagesPage := HeaderHtml(&headerInfo)
+	dashMessagesPage += DashMessagesHtml(dashMessages, dashMessage)
+	dashMessagesPage += FooterHtml()
+	return dashMessagesPage, nil
+}
+
+func DashReservationsPage(dashReservations []DashReservation, reservation Reservation, user string) (string, error) {
+	title := "Dashboard - Reservations"
+	headerInfo := Header {
+		Title: title,
+		User: user,
+	}
+	dashReservationsPage := HeaderHtml(&headerInfo)
+	dashReservationsPage += DashReservationsHtml(dashReservations, reservation)
+	dashReservationsPage += FooterHtml()
+	return dashReservationsPage, nil
 }
 
 func HomePage(db *sql.DB, user string) (string, error) {

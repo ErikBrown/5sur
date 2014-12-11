@@ -219,20 +219,13 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request){
 		}
 	}
 
-	formatted, err := json.MarshalIndent(dashMessages, "", "    ")
+	// HTML generation
+	dashMessagesPage, err := gen.DashMessagesPage(dashMessages, message, user);
 	if err != nil {
-		fmt.Fprint(w, "can't convert to json")
+		fmt.Fprint(w, err.Error())
 		return
 	}
-	fmt.Fprint(w, string(formatted))
-	if token != 0 {
-		formatted, err = json.MarshalIndent(message, "", "    ")
-		if err != nil {
-			fmt.Fprint(w, "can't convert to json")
-			return
-		}
-		fmt.Fprint(w, string(formatted))
-	}
+	fmt.Fprint(w, dashMessagesPage)
 }
 
 func DashReservationsHandler(w http.ResponseWriter, r *http.Request){
@@ -245,7 +238,7 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request){
 	defer db.Close()
 
 	// User authentication
-	_, userId := util.CheckCookie(r, db) // return "",0 if not logged in
+	user, userId := util.CheckCookie(r, db) // return "",0 if not logged in
 
 	if userId == 0 {
 		fmt.Fprint(w, "not logged in")
@@ -267,20 +260,13 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request){
 		}
 	}
 
-	formatted, err := json.MarshalIndent(dashReservations, "", "    ")
+	// HTML generation
+	dashReservationsPage, err := gen.DashReservationsPage(dashReservations, reservation, user);
 	if err != nil {
-		fmt.Fprint(w, "can't convert to json")
+		fmt.Fprint(w, err.Error())
 		return
 	}
-	fmt.Fprint(w, string(formatted))
-	if token != 0 {
-		formatted, err = json.MarshalIndent(reservation, "", "    ")
-		if err != nil {
-			fmt.Fprint(w, "can't convert to json")
-			return
-		}
-		fmt.Fprint(w, string(formatted))
-	}
+	fmt.Fprint(w, dashReservationsPage)
 
 }
 
