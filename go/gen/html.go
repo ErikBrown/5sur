@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"data/util"
 	"fmt"
+	"time"
 )
 
 type Header struct {
@@ -239,7 +240,7 @@ func CreateListingHtml(u string, c []City) string {
 	return output
 }
 
-func DashHtml(dashListing []DashListing, listing SpecificListing) string {
+func DashListingsHtml(dashListing []DashListing, listing SpecificListing) string {
 	output := `<div class="sidebar" id="main_sidebar">
 	<ul>
 		<li class="message_icon">
@@ -358,6 +359,161 @@ func dashAcceptedPassenger(u PendingUser, l int) string {
 				<span class="passenger_seats">` + strconv.Itoa(u.Seats) + `</span>
 			</li>`
 	return output
+}
+
+//Message page
+func DashMessagesHtml(dashMessages []DashMessages, dashMessage SpecificMessage) string {
+	output := `<div class="sidebar" id="main_sidebar">
+	<ul>
+		<li class="message_icon selected_dark">
+			<a href="https://5sur.com/dashboard/messages"></a>
+		</li>
+		<li class="listings_icon">
+			<a href="https://5sur.com/dashboard/listings"></a>
+		</li>
+		<li class="reservation_icon">
+			<a href="https://5sur.com/dashboard/reservations"></a>
+		</li>
+		<li class="settings_icon">
+			<a href="https://5sur.com/dashboard/settings"></a>
+		</li>
+	</ul>
+</div>
+
+<div class="sidebar" id="sub_sidebar">
+	<h2>Messages</h2>
+	<ul>`
+	for i := range dashMessages{
+		output += sidebarMessage(dashMessages[i], dashMessage.Id)
+	}
+	output +=
+	`
+	</ul>
+</div>`
+
+	if dashMessage.Id == 0 {
+		return output
+	}
+
+	output += dashSpecificMessage(dashMessage)
+
+	return output
+}
+
+func sidebarMessage(d DashMessages, m int) string {
+	output := ""
+	if d.Id == m {
+		output += `<li class="selected_light">`
+	} else {
+		output += `<li>`
+	}
+	output += `
+			<a href="https://5sur.com/dashboard/messages?i=` + strconv.Itoa(d.Id) + `">
+				<div class="calendar_icon">
+					<span class="calendar_icon_month">Mgs</span>
+					<span class="calendar_icon_day">` + strconv.Itoa(d.Count) + `</span>
+				</div>
+				<span class="sidebar_text">` + d.Name + `</span>
+				`
+	if d.Opened != true {
+		output += `<span class="sidebar_alert">!</span>`
+	}
+	output += `			
+			</a>
+		</li>`
+	return output
+}
+
+func dashSpecificMessage(l SpecificMessage) string {
+	output := `<div id="dash_content" class="dash_listings">
+	<div id="dash_title">
+		<h3>` + l.Name + `</h3>
+	</div>
+	<div id="registered_passengers" class="passengers">
+		<span>` + l.Message + `</span>
+	</div>
+</div>
+`
+return output
+}
+
+//Reservations page
+func DashReservationsHtml(dashReservations []DashReservation, reservation Reservation) string {
+	output := `<div class="sidebar" id="main_sidebar">
+	<ul>
+		<li class="message_icon">
+			<a href="https://5sur.com/dashboard/messages"></a>
+		</li>
+		<li class="listings_icon">
+			<a href="https://5sur.com/dashboard/listings"></a>
+		</li>
+		<li class="reservation_icon selected_dark">
+			<a href="https://5sur.com/dashboard/reservations"></a>
+		</li>
+		<li class="settings_icon">
+			<a href="https://5sur.com/dashboard/settings"></a>
+		</li>
+	</ul>
+</div>
+
+<div class="sidebar" id="sub_sidebar">
+	<h2>Reservations</h2>
+	<ul>`
+	for i := range dashReservations{
+		output += sidebarReservation(dashReservations[i], reservation.ListingId)
+	}
+	output +=
+	`
+	</ul>
+</div>`
+
+	if reservation.ListingId == 0 {
+		return output
+	}
+
+	output += dashSpecificReservation(reservation)
+
+	return output
+}
+
+func sidebarReservation(d DashReservation, r int) string {
+	output := ""
+	if d.ListingId == r {
+		output += `<li class="selected_light">`
+	} else {
+		output += `<li>`
+	}
+	listingTime, _ := time.Parse("2006-01-02 15:04:05", d.Time)
+	output += `
+			<a href="https://5sur.com/dashboard/reservations?i=` + strconv.Itoa(d.ListingId) + `">
+				<div class="calendar_icon">
+					<span class="calendar_icon_month">` + listingTime.Format("Jan") + `</span>
+					<span class="calendar_icon_day">` + listingTime.Format("_2") + `</span>
+				</div>
+				<span class="sidebar_text">` + d.Origin + ` &#10132; ` + d.Destination + `</span>
+			</a>
+		</li>`
+	return output
+}
+
+func dashSpecificReservation(r Reservation) string {
+	output := `<div id="dash_content" class="dash_listings">
+	<div id="dash_title">
+		<h3>` + r.Origin + ` &#10132; ` + r.Destination + `</h3>
+	</div>
+	<div id="registered_passengers" class="passengers">
+		<ul>
+			<li>
+				<form class="passenger_form" method="POST" action="https://5sur.com/dashboard/reservations?i=` + strconv.Itoa(r.ListingId) + `">
+					<input name="r" value="` + strconv.Itoa(r.DriverId) + `" id="passenger_reject" type="submit">
+					<input name="m" value="` + strconv.Itoa(r.DriverId) + `" id="passenger_message" type="submit">
+				</form>
+			</li>
+		</ul>
+	</div>
+</div>
+`
+return output
 }
 
 // Move specific scrips to specific pages!
