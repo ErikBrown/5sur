@@ -260,7 +260,7 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request){
 		}
 	}
 
-	err := gen.CheckReservePost(db, userId, r, token)
+	err = gen.CheckReservePost(db, userId, r, token)
 	if err != nil {
 		fmt.Fprint(w, "failed")
 		return

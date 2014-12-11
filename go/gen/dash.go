@@ -539,9 +539,9 @@ func findSeats(db *sql.DB, listingId int, toRemove int) (int, error) {
 // userId in this case is passengerId because this is for a user removing themself from the reservation list
 // or messenging the driver of the ride.
 func CheckReservePost(db *sql.DB, userId int, r *http.Request, listingId int) error {
-	if r.FormValue("d") != "" {
+	if r.FormValue("r") != "" {
 		// Handle deleting this reservation
-		driverId, err := strconv.Atoi(r.FormValue("d"))
+		driverId, err := strconv.Atoi(r.FormValue("r"))
 		if err != nil {
 			return errors.New("Invalid")
 		}
@@ -549,7 +549,7 @@ func CheckReservePost(db *sql.DB, userId int, r *http.Request, listingId int) er
 		if err != nil {
 			return err
 		}
-		deleted, err := deleteUserReservation(db, driverId, listingId, userId)
+		deleted, err := deleteFromReservations(db, driverId, listingId, userId)
 		if err != nil {
 			return err
 		}
@@ -564,6 +564,7 @@ func CheckReservePost(db *sql.DB, userId int, r *http.Request, listingId int) er
 	if r.FormValue("m") != "" {
 		// We are messenging the user with id equal to the post request data.
 	}
+	return nil
 }
 
 func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
