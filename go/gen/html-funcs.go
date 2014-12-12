@@ -18,7 +18,7 @@ func DashListingsPage(dashListings []DashListing, listing SpecificListing, user 
 	dashListingsPage += FooterHtml()
 	return dashListingsPage, nil
 }
-
+/*
 func DashMessagesPage(dashMessages []DashMessages, dashMessage SpecificMessage, user string) (string, error) {
 	title := "Dashboard - Messages"
 	headerInfo := Header {
@@ -30,7 +30,7 @@ func DashMessagesPage(dashMessages []DashMessages, dashMessage SpecificMessage, 
 	dashMessagesPage += FooterHtml()
 	return dashMessagesPage, nil
 }
-
+*/
 func DashReservationsPage(dashReservations []DashReservation, reservation Reservation, user string) (string, error) {
 	title := "Dashboard - Reservations"
 	headerInfo := Header {

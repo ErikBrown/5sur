@@ -79,10 +79,16 @@ type SpecificListing struct {
 	RegisteredUsers []RegisteredUser
 }
 
-type SpecificMessage struct {
-	Id int
+type MessageThread struct {
+	UserId int
 	Name string
 	Picture string
+	Messages []SpecificMessage
+}
+
+type SpecificMessage struct {
+	Id int
+	Sent bool
 	Date string
 	Message string
 }
@@ -200,12 +206,13 @@ func GetDashMessages(db *sql.DB, userId int) ([]DashMessages, error) {
 	return results, nil
 }
 
-func SpecificDashMessage(db *sql.DB, messages []DashMessages, messageId int) (SpecificMessage, error) {
+// The naming is poor, this actually returns all messages sent between you and whoever else
+func SpecificDashMessage(db *sql.DB, messages []DashMessages, recipient int, userId int) (MessageThread, error) {
 	found := false
-	message := SpecificMessage{}
+	message := MessageThread{}
 	for i := range messages{
-		if messages[i].Id == messageId {
-			message.Id = messages[i].Id
+		if messages[i].Id == recipient {
+			message.UserId = messages[i].Id
 			message.Name = messages[i].Name
 			message.Picture = messages[i].Picture
 			found = true
@@ -213,32 +220,56 @@ func SpecificDashMessage(db *sql.DB, messages []DashMessages, messageId int) (Sp
 		}
 	}
 	if !found {
-		return SpecificMessage{}, errors.New("Could not find specific message")
+		return MessageThread{}, errors.New("Could not find specific message")
 	}
+	var err error
+	message.Messages, err = getMessages(db, recipient, userId)
+	if err != nil {
+		return MessageThread{}, err
+	}
+	return message, nil
+}
 
+func getMessages(db *sql.DB, recipient int, userId int) ([]SpecificMessage, error) {
+	messages := make ([]SpecificMessage, 0)
 	stmt, err := db.Prepare(`
-		SELECT m.message
-			FROM messages as m 
-			WHERE m.id = ?;
+		SELECT m.id, m.sender, m.date, m.message 
+			FROM messages AS m 
+			WHERE (receiver = ? AND sender = ?) 
+				OR (receiver = ? AND sender = ?);
 		`)
 	if err != nil {
-		return SpecificMessage{}, err
+		return messages, err
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query(messageId)
+	rows, err := stmt.Query(recipient, userId, userId, recipient)
 	if err != nil {
-		return SpecificMessage{}, err
+		return messages, err
 	}
 
 	for rows.Next() {
-		err := rows.Scan(&message.Message)
+		temp := SpecificMessage{}
+		sender := 0
+		var s sql.NullString
+		err := rows.Scan(&temp.Id, &sender, &temp.Date, &s)
 		if err != nil {
-			return SpecificMessage{}, err
+			return messages, err
 		}
+		// Check for null value
+		if s.Valid {
+			temp.Message = s.String
+		}
+
+		if sender == userId {
+			temp.Sent = true
+		} else {
+			temp.Sent = false
+		}
+		messages = append(messages, temp)
 	}
 
-	return message, nil
+	return messages, nil
 }
 
 func SpecificDashListing(db *sql.DB, listings []DashListing, listingId int) (SpecificListing, error) {

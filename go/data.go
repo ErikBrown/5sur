@@ -209,10 +209,10 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request){
 		fmt.Fprint(w, err.Error())
 	}
 
-	message := gen.SpecificMessage{}
+	message := gen.MessageThread{}
 	token, err := util.ValidDashQuery(r.URL)
 	if err == nil {
-		message, err = gen.SpecificDashMessage(db, dashMessages, token)
+		message, err = gen.SpecificDashMessage(db, dashMessages, token, userId)
 		if err != nil {
 			fmt.Fprint(w, err.Error())
 			return
@@ -220,12 +220,27 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request){
 	}
 
 	// HTML generation
+	/*
 	dashMessagesPage, err := gen.DashMessagesPage(dashMessages, message, user);
 	if err != nil {
 		fmt.Fprint(w, err.Error())
 		return
 	}
 	fmt.Fprint(w, dashMessagesPage)
+	*/
+	jsonMessages, err := json.MarshalIndent(dashMessages, "", "    ")
+	if err != nil {
+		fmt.Fprint(w, "convert to json failed")
+		return
+	}
+	jsonMessages2, err := json.MarshalIndent(message, "", "    ")
+	if err != nil {
+		fmt.Fprint(w, "convert to json failed")
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, string(jsonMessages))
+	fmt.Fprint(w, string(jsonMessages2))
 }
 
 func DashReservationsHandler(w http.ResponseWriter, r *http.Request){

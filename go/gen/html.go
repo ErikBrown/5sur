@@ -306,6 +306,9 @@ func dashSpecificListing(l SpecificListing) string {
 	output := `<div id="dash_content" class="dash_listings">
 	<div id="dash_title">
 		<h3>` + l.Origin + ` &#10132; ` + l.Destination + `</h3>
+		<form class="passenger_form" method="POST" action="https://5sur.com/dashboard/listings">
+			<input name="d" value="` + strconv.Itoa(l.ListingId) + `" id="passenger_reject" type="submit">
+		</form>
 	</div>
 	<div id="registered_passengers" class="passengers">
 		<span>Registered</span>
@@ -359,82 +362,6 @@ func dashAcceptedPassenger(u PendingUser, l int) string {
 				<span class="passenger_seats">` + strconv.Itoa(u.Seats) + `</span>
 			</li>`
 	return output
-}
-
-//Message page
-func DashMessagesHtml(dashMessages []DashMessages, dashMessage SpecificMessage) string {
-	output := `<div class="sidebar" id="main_sidebar">
-	<ul>
-		<li class="message_icon selected_dark">
-			<a href="https://5sur.com/dashboard/messages"></a>
-		</li>
-		<li class="listings_icon">
-			<a href="https://5sur.com/dashboard/listings"></a>
-		</li>
-		<li class="reservation_icon">
-			<a href="https://5sur.com/dashboard/reservations"></a>
-		</li>
-		<li class="settings_icon">
-			<a href="https://5sur.com/dashboard/settings"></a>
-		</li>
-	</ul>
-</div>
-
-<div class="sidebar" id="sub_sidebar">
-	<h2>Messages</h2>
-	<ul>`
-	for i := range dashMessages{
-		output += sidebarMessage(dashMessages[i], dashMessage.Id)
-	}
-	output +=
-	`
-	</ul>
-</div>`
-
-	if dashMessage.Id == 0 {
-		return output
-	}
-
-	output += dashSpecificMessage(dashMessage)
-
-	return output
-}
-
-func sidebarMessage(d DashMessages, m int) string {
-	output := ""
-	if d.Id == m {
-		output += `<li class="selected_light">`
-	} else {
-		output += `<li>`
-	}
-	output += `
-			<a href="https://5sur.com/dashboard/messages?i=` + strconv.Itoa(d.Id) + `">
-				<div class="calendar_icon">
-					<span class="calendar_icon_month">Mgs</span>
-					<span class="calendar_icon_day">` + strconv.Itoa(d.Count) + `</span>
-				</div>
-				<span class="sidebar_text">` + d.Name + `</span>
-				`
-	if d.Opened != true {
-		output += `<span class="sidebar_alert">!</span>`
-	}
-	output += `			
-			</a>
-		</li>`
-	return output
-}
-
-func dashSpecificMessage(l SpecificMessage) string {
-	output := `<div id="dash_content" class="dash_listings">
-	<div id="dash_title">
-		<h3>` + l.Name + `</h3>
-	</div>
-	<div id="registered_passengers" class="passengers">
-		<span>` + l.Message + `</span>
-	</div>
-</div>
-`
-return output
 }
 
 //Reservations page
