@@ -567,6 +567,30 @@ func findSeats(db *sql.DB, listingId int, toRemove int) (int, error) {
 	return seats, nil
 }
 
+func DeleteListing(db *sql.DB, userId int, listingId int) error {
+
+	stmt, err := db.Prepare(`
+		DELETE l, r, rq
+			FROM listings AS l
+			LEFT JOIN reservations AS r ON r.listing_id = l.id
+			LEFT JOIN reservation_queue AS rq ON rq.listing_id = l.id
+			WHERE l.driver = ?
+				AND l.id = ?
+	`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	// db.Query() prepares, executes, and closes a prepared statement - three round
+	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
+	_, err = stmt.Exec(userId, listingId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // userId in this case is passengerId because this is for a user removing themself from the reservation list
 // or messenging the driver of the ride.
 func CheckReservePost(db *sql.DB, userId int, r *http.Request, listingId int) (string, error) {
@@ -657,6 +681,13 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 		}
 		// Deal with messenging
 	}
+	// if r.FormValue("d") != "" {
+	// 	listingToDelete, err := strconv.Atoi(r.FormValue("r"))
+	// 	if err != nil {
+	// 		return errors.New("Invalid")
+	// 	}
+	// 	deleteListing(db, userId, listingToDelete)
+	// }
 	return nil
 }
 

@@ -306,8 +306,8 @@ func dashSpecificListing(l SpecificListing) string {
 	output := `<div id="dash_content" class="dash_listings">
 	<div id="dash_title">
 		<h3>` + l.Origin + ` &#10132; ` + l.Destination + `</h3>
-		<form class="passenger_form" method="POST" action="https://5sur.com/dashboard/listings">
-			<input name="d" value="` + strconv.Itoa(l.ListingId) + `" id="passenger_reject" type="submit">
+		<form class="passenger_form" method="GET" action="https://5sur.com/dashboard/listings/delete">
+			<input name="i" value="` + strconv.Itoa(l.ListingId) + `" id="passenger_reject" type="submit">
 		</form>
 	</div>
 	<div id="registered_passengers" class="passengers">
@@ -441,6 +441,24 @@ func dashSpecificReservation(r Reservation) string {
 </div>
 `
 return output
+}
+
+func DeleteForm(listingId int) string {
+	return `
+	<html>
+	<head>
+	<title>delete listing</title>
+	</head>
+	<body>
+	<form class="passenger_form" method="POST" action="https://5sur.com/dashboard/listings/delete">
+	 <input name="d" value="`+ strconv.Itoa(listingId) +`" type="submit">
+	</form>
+	<br />
+	<br />
+	<a href="https://5sur.com/dashboard/listings/">I dun want to delete no listing!</a>
+	</body>
+	</html>
+	`
 }
 
 // Move specific scrips to specific pages!

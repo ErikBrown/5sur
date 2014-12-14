@@ -238,3 +238,21 @@ func ValidDashQuery(u *url.URL) (int, error) {
 	}
 	return i, nil
 }
+
+func ValidDeleteListingQuery(u *url.URL) (int, error) {
+	m, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		e := errors.New("Empty Field")
+		return 0, e
+	}
+	if _,ok := m["i"]; !ok {
+		e := errors.New("Missing token")
+		return 0, e
+	}
+	f := m["i"][0]
+	i, err := strconv.Atoi(f)
+	if err != nil {
+		return 0, err
+	}
+	return i, nil
+}

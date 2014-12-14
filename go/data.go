@@ -9,6 +9,7 @@ import (
 	"data/gen"
 	"data/util"
 	"os"
+	"strconv"
 	// "log"
 )
 
@@ -294,6 +295,48 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request){
 
 }
 
+func DeleteListingHandler(w http.ResponseWriter, r *http.Request) {
+	// Database initialization
+	db, err := openDb()
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	defer db.Close()
+
+	// User authentication
+	_, userId := util.CheckCookie(r, db) // return "",0 if not logged in
+
+	if userId == 0 {
+		fmt.Fprint(w, "not logged in")
+		return
+	}
+
+	if r.PostFormValue("d") == "" {
+		listingId, err := util.ValidDeleteListingQuery(r.URL)
+		if err != nil {
+			fmt.Fprint(w, err.Error())
+			return
+		}
+		deleteForm := gen.DeleteForm(listingId)
+		fmt.Fprint(w, deleteForm)
+		return
+	}
+	listingId, err := strconv.Atoi(r.FormValue("d"))
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	err = gen.DeleteListing(db, userId, listingId)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	http.Redirect(w, r, "https://5sur.com/dashboard/listings", 301)
+}
+
 func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	// log.Println("sdfsdf")
 	
@@ -533,6 +576,7 @@ func main() {
 	http.HandleFunc("/dashboard/listings", DashListingsHandler)
 	http.HandleFunc("/dashboard/messages", DashMessagesHandler)
 	http.HandleFunc("/dashboard/reservations", DashReservationsHandler)
+	http.HandleFunc("/dashboard/listings/delete", DeleteListingHandler)
 	http.HandleFunc("/env", EnvHandler)
 	http.HandleFunc("/", RootHandler)
 	http.ListenAndServe(":8080", nil)
