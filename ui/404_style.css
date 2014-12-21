@@ -1,0 +1,45 @@
+body {
+
+	overflow: hidden;
+}
+
+#center {
+	position: absolute;
+	bottom: 50%;
+	width: 100%;
+	margin-bottom: -40px;
+
+}
+
+h1 {
+	font-family: 'Exo', sans-serif;
+	font-size: 60px;
+	line-height: 0px;
+	text-align: center;
+}
+
+span {	
+	display: block;
+	text-align: center;
+}
+
+a {
+	font-family: 'Open Sans', sans-serif;
+	text-decoration: none;
+}
+	
+a:link {
+	color: #249BDB;
+}
+
+a:visited {
+	color: #2980D6;
+}
+
+a:hover {
+	color: #0ADEF5;
+}
+
+a:active {
+	color: #0ADEF5;
+}

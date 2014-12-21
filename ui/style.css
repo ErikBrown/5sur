@@ -1,0 +1,774 @@
+/* Get rid of unnecessary normalize rules */
+
+html {
+	overflow-y: scroll; 
+}
+
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td { 
+	margin: 0;
+	padding: 0;
+}
+	
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+fieldset,img,iframe { 
+	border: 0;
+}
+	
+address,caption,cite,code,dfn,em,strong,th,var {
+	font-style: normal;
+	font-weight: normal;
+}
+
+h1,h2,h3,h4,h5,h6 {
+	font-size: 100%;
+	font-weight: normal;
+}
+
+q:before,q:after {
+	content: '';
+}
+
+abbr,acronym { 
+	border:0;
+}
+	
+ul { 
+	list-style: none;
+}
+
+a, a:hover, a:visited, a:active {
+	text-decoration: none;
+	color: inherit;
+}
+
+* {
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	box-sizing: border-box;         /* Opera/IE 8+ */
+}
+
+html, body {
+	height: 100%;
+	font-family: 'Open Sans', sans-serif;
+	color: #323F43;
+	overflow: none;
+}
+
+h1 {
+	float: left;
+	margin-left: 15px;
+	font-family: 'Montserrat', sans-serif;
+	font-weight: 700;
+	font-size: 24px;
+	line-height: 65px;
+}
+
+h2 {
+	font-size: 25px;
+	font-weight: 200;
+	line-height: 100px;
+	text-align: center;
+	margin: 0 25px;
+	border-bottom: 1px solid rgba(0,0,0,.2);
+}
+
+h3 {
+	font-family: 'Bitter', serif;
+	font-size: 25px;
+	font-weight: 700;
+}
+
+h4 {
+	font-family: 'Bitter', serif;
+	font-weight: 300;
+	font-size: 36px;
+	color: #ffffff;
+	padding: 20px 0;
+}
+
+h5 {
+	color: #ffffff;
+	font-size: 25px;
+	font-weight: 600;
+	margin-top: 50px;
+}
+
+h6 {
+	font-family: 'Bitter', serif;
+	font-weight: 300;
+	font-size: 36px;
+	text-align: center;
+	background: #27AF61;
+}
+
+/** HEADER **/
+
+#header {
+	position: relative;
+	width: 100%;
+	height: 65px;
+	background: #ffffff;
+	color: #44454D;
+	box-shadow: 1px 0px 2px #999999;
+	z-index: 10;
+}
+
+.nav {
+	font-weight: 400;
+	font-size: 16px;
+	line-height: 65px;
+	height: 65px;
+}
+
+.nav > li {
+	float: left;
+	width: 35px;
+	height: 100%;
+	text-align: center;
+	cursor: pointer;
+}
+
+.nav > li > a {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+#global_nav {
+	float: left;
+}
+
+#global_nav > li {
+	margin-left: 25px;
+}
+
+#account_nav {
+	float: right;
+}
+
+#account_nav > li {
+	margin-right: 25px;
+}
+
+.user_icon > img {
+	vertical-align: middle;
+	width: 100%;
+	border-radius: 100%;
+}
+
+#new_listing_icon {
+	background: url("https://5sur.com/graphics/newListing.png") center no-repeat;
+
+}
+
+.no_alerts {
+	background: url("https://5sur.com/graphics/envelope.png") center no-repeat;
+}
+
+.active_alerts {
+	background: url("https://5sur.com/graphics/envelopeAlert.png") center no-repeat;
+}
+
+#search_wrapper {
+	width: 100%;
+	margin-bottom: 50px;
+	padding-top: 80px;
+	padding-bottom: 25px;
+	background: #E5E5E5;
+	overflow: hidden;
+	text-align: center;
+}
+
+.search_option {
+	width: 150px;
+	height: 30px;
+	padding: 0 10px;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 14px;
+}
+
+.blank_option {
+	display: none;
+}
+
+#date_box, #time_box {
+	max-width: 100px;
+}
+
+/***** CALENDAR WIDGET *****/
+
+#calendar_wrapper {
+	overflow: hidden;
+	height: 0px;
+	margin-top: 25px;
+	margin-left: auto;
+	margin-right: auto;
+	background: #ffffff;
+	opacity: 0;
+	box-shadow: 0px 5px 5px #888888;
+	-webkit-transition: .35s;
+	transition: .35s;
+}
+
+#calendar {
+	position: relative;
+	height: 457px;
+	color: #333333;
+}
+
+#month_wrapper {
+	font-family: 'Bitter', serif;
+	color: #ffffff;
+	height: 50px;
+	line-height: 50px;
+	text-align: center;
+	font-weight: 700;
+	-webkit-transition: .75s;
+	transition: .75s;
+}
+
+#month_wrapper > span {
+	padding: 0 10px;
+	cursor: pointer;
+	-webkit-transition: .2s;
+	transition: .2s;
+}
+
+#month_left:hover, #month_right:hover {
+	background: rgba(0, 0, 0, 0.5); 
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+#month_left {
+	float: left;
+}
+
+#month_right {
+	float: right;
+}
+
+#calendar thead {
+	border-bottom: 1px solid #cccccc;
+}
+
+#calendar tbody {
+	position: absolute;
+	left: 0;
+	-webkit-transition: left .75s;
+	transition: left .75s;
+}
+
+#calendar th {
+	font-family: 'Bitter', serif;
+	width: 65px;
+	height: 65px;
+	font-weight: 700;
+}
+
+#calendar td {
+	width: 65px;
+	height: 65px;
+	text-align: center;
+	-webkit-transition: .1s;
+	transition: .1s;
+}
+
+#calendar td:hover {
+	cursor: pointer;
+	color: #ffffff;
+	background: #5A6165;
+
+}
+
+.other_month {
+	color: #ACACAC;
+	background: #E2E6E7;
+}
+
+#search_submit {
+	height: 30px;
+	padding: 0 10px;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 15px;
+
+}
+
+/***** LISTING ITEMS *****/
+
+.list_item {
+	float: left;
+	clear: left;
+	height: 100px;
+	margin: 0 0 15px 15px;
+	border: 1px solid #dddddd;
+	background: #ffffff;
+	overflow: hidden;
+	text-align: center;
+}
+
+.list_item > li {
+	float: left;
+}
+
+.list_item > li + li > span {
+	height: 100px;
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.listing_user {
+	position: relative;
+	color: #15B031;
+	width: 100px;
+	height: 100px;
+}
+
+.listing_user > span {
+	display: block;
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	padding: 0 0 2px 0;
+	background: #333333;
+	opacity: .95;
+	font-weight: 600;
+}
+
+.date_leaving {
+	height: 100px;
+	width: 100px;
+	border-right: 1px solid #D7D7D7;
+}
+
+.date_leaving > div {
+	margin-top: 25px;
+}
+
+.month {
+	display: block;
+	font-family: 'Bitter', serif;
+	font-size: 26px;
+	color: #048F9B;
+}
+
+.day {
+	display: block;
+	margin-top: 3px;
+	font-size: 14px;
+}
+
+.city {
+	padding: 0 25px;
+	font-size: 26px;
+	font-weight: 700;
+}
+
+.to {
+	color: #ACACAC;
+	padding: 0 10px;
+	font-family: 'Open Sans', sans-serif;
+}
+
+.fee {
+	position: relative;
+	width: 100px;
+	margin-right: 0px;
+	border-left: 1px solid #D7D7D7;
+	background: #333333;
+	font-weight: 700;
+	color: #ffffff;	
+	-webkit-transition: .5s;
+	transition: .5s;
+}
+
+.fee:hover {
+	cursor: pointer;
+}
+
+.fee > span {
+	width: 100px;
+}
+
+.seats {
+	width: 100px;
+	margin-right: 0px;
+	border-left: 1px solid #D7D7D7;
+	font-size: 44px;
+	font-weight: 600;
+}
+
+.seats > span {
+	width: 100px;
+}
+
+.reserve {
+	width: 100px;
+	text-align: center;
+	line-height: 100px;
+}
+
+.reserve a {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+/****** USER PAGE ******/
+
+#user_sidebar {
+	position: fixed;
+	float: left;
+	height: 100%;
+	padding-top: 45px;
+	color: #ffffff;
+	width: 300px;
+	background: #444444;
+	z-index: 1;
+}
+
+#user_sidebar img {
+	display: block;
+	width: 100%;
+}
+
+#user_stats {
+	padding: 10px;
+}
+
+#user_stats li+li {
+	margin-top: 10px;
+}
+
+#user_content {
+	position: relative;
+	min-height: 100%;
+	padding-top: 55px;
+	margin-left: 300px;
+	background: #333333;
+}
+
+#user_graph {
+	font-size: 0;
+	position: relative;
+	width: 100%;
+	height: 550px;
+	background: #F3F3F3;
+}
+
+.donut_chart {
+	position: relative;
+	float: left;
+	width: 50%;
+	height: 300px;
+}
+
+.donut_chart canvas {
+	position: absolute;
+}
+
+#chart1 canvas {
+	right: 10%;
+}
+
+#chart2 canvas {
+	left: 10%;
+}
+
+#chart3 {
+	position: relative;
+	clear: left;
+	height: 250px;
+}
+
+#chart3 canvas {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+}
+
+.donut_labels {
+	cursor: pointer;
+	border-radius: 100%;
+	opacity: 0;
+	-webkit-transition: .4s;
+	transition: .4s;
+}
+
+.donut_labels:hover {
+	opacity: 1;
+}
+
+#user_comments {
+	padding: 0 35px;
+}
+
+.comment {
+	display: inline-block;
+	vertical-align: top;
+	overflow: hidden;
+	margin-bottom: 25px;
+	width: 33%;
+}
+
+.score {
+	font-size: 50px;
+	line-height: 75px;
+	text-align: center;
+	color: #ffffff;
+	float: left;
+	width: 75px;
+	height: 75px;
+	margin-right: 10px;
+}
+
+.positive {
+	background: #27AF61;
+}
+
+.negative {
+	background: #EC4137;
+}
+
+.comment_text {
+	display: block;
+	color: #ffffff;
+	min-height: 75px;
+	margin-right: 25px;
+}
+
+.comment_date {
+	display: block;
+	font-size: 12px;
+	color: #888888;
+	text-align: right;
+	margin-right: 25px;
+}
+
+@media all and (max-width: 1250px) {
+	#user_sidebar {
+		width: 250px;
+	}
+
+	#user_content {
+		margin-left: 250px;
+	}
+
+	.comment {
+		width: 49%;
+		font-size: 14px;
+	}
+}
+
+/*** DASHBOARD ***/
+.sidebar {
+	float: left;
+	min-height: 100%;
+	font-weight: 600;
+}
+
+.sidebar li {
+	width: 100%;
+}
+
+#main_sidebar li:hover {
+	background-color: rgba(255,255,255,.1);
+}
+
+#main_sidebar {
+	position: fixed;
+	width: 100px;
+	background: #2b2e37;
+}
+
+#main_sidebar li {
+	height: 100px;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.sidebar a {
+	display: block;
+	height: 100%;
+	width: 100%;
+}
+
+.message_icon{background-image: url("https://5sur.com/graphics/message.png");}
+.listings_icon{background-image: url("https://5sur.com/graphics/listings.png");}
+.reservation_icon{background-image: url("https://5sur.com/graphics/reservations.png");}
+.settings_icon{background-image: url("https://5sur.com/graphics/settings.png");}
+
+.selected_dark {
+	background-color: rgba(255,255,255,.1);
+}
+.selected_light {
+	background-color: rgba(0,0,0,.08);
+	font-weight: 700;
+}
+
+#sub_sidebar {
+	width: 350px;
+	margin-left: 100px;
+	font-weight: 400;
+	font-size: 16px;
+	box-shadow: 2px 5px 5px -2px #888888;
+}
+
+#sub_sidebar li {
+	height: 75px;
+	line-height: 75px;
+}
+
+#sub_sidebar li:hover {
+	background-color: rgba(0,0,0,.08);
+}
+
+
+#sub_sidebar li > a > * {
+	float: left;
+}
+
+.calendar_icon {
+	width: 35px;
+	height: 35px;
+	margin-top: 20px;
+	margin-left: 25px;
+	margin-right: 25px;
+	border-radius: 20%;
+	overflow: hidden;
+	line-height: 80px;
+	font-weight: 600;
+	text-align: center;
+	box-shadow: 2px 2px 5px -2px #888888;
+}
+
+.calendar_icon_month {
+	display: block;
+	background: #E26865;
+	font-size: 10px;
+	color: #ffffff;
+	line-height: 15px;
+}
+
+.calendar_icon_day {
+	display: block;
+	height: 100%;
+	background: #ffffff;
+	font-size: 12px;
+	line-height: 19px;
+}
+
+/* Add max-width to sidebar_text */
+
+.sidebar_alert {
+	float: right !important;
+	width: 20px;
+	margin-top: 27px;
+	margin-right: 25px;
+	background: #ED4141;
+	border-radius: 100%;
+	line-height: 20px;
+	font-weight: 700;
+	color: #ffffff;
+	text-align: center;
+}
+
+#dash_content {
+	overflow: hidden;
+	min-height: 100%;
+}
+
+#dash_title {
+	line-height: 100px;
+	padding: 0 25px;
+}
+
+.passengers {
+	float: left;
+	width: 400px;
+	margin: 0 25px;
+	margin-bottom: 25px;
+	border-radius: 5px;
+	box-shadow: 1px 1px 5px -2px #888888;
+	overflow: hidden;
+}
+
+.passengers > span {
+	display: block;
+	padding: 0 25px;
+	line-height: 75px;
+	font-family: 'Montserrat', sans-serif;
+	font-size: 18px;
+	font-weight: 700;
+	color: #ffffff;
+	background: #2b2e37;
+}
+
+.passengers > ul > li {
+	padding: 0 25px;
+}
+
+.passengers li {
+	display: inline-block;
+	width: 100%;
+	height: 75px;
+	font-weight: 600;
+	font-size: 14px;
+}
+
+.passengers li+li {
+	border-top: 1px solid rgba(0,0,0,.1);
+}
+
+.passengers img {
+	float: left;
+	margin-top: 12px;
+	margin-right: 25px;
+	width: 50px;
+	height: 50px;
+	border-radius: 100%;
+}
+
+.passengers li > span {
+	line-height: 75px;
+}
+
+.passenger_seats {
+	float: right;
+}
+
+.passenger_form {
+	display: inline-block;
+	float: right;
+	margin-left: 10px;
+	line-height: 75px;
+	font-size: 0;
+}
+
+.passenger_form > input {
+	vertical-align: middle;
+	width: 20px;
+	height: 20px;
+	font-size: 0;
+	border: 0;
+	cursor: pointer;
+}
+
+.passenger_form > input+input {
+	margin-left: 5px;
+}
+
+#passenger_accept {
+	background: url("https://5sur.com/graphics/check.png");
+}
+
+#passenger_reject {
+	background: url("https://5sur.com/graphics/x.png");
+}

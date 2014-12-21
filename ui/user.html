@@ -1,0 +1,121 @@
+<!doctype html>
+
+<html>
+
+<head>
+
+<meta charset='utf-8'>
+<meta name="viewport" content="widdiv=device-widdiv">
+
+<!-- <link rel="icon" type="image/png" href="graphics/favicon.ico"> -->
+<!-- remove dive extra weights -->
+<link href='https://fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:400,400italic,600,300,700,800|Bitter:400,400italic,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="style.css" />
+
+
+<title>RideChile - User Page</title>
+
+</head>
+
+<body>
+
+<div id="header">
+	<h1><a href="https://5sur.com/l/">RideChile</a></h1>
+	<ul id="account_nav">
+		<li><a href="https://5sur.com/login.html">Login</a></li>
+	</ul>
+</div>
+
+<div id="user_sidebar">
+	<img src="https://5sur.com/usr.png" alt="UserPicture">
+	<h6>+125</h6>
+	<ul id="user_stats">
+		<li>&#10132; Created: 28-10-2014</li>
+		<li>&#10132; Rides Given: 133</li>
+		<li>&#10132; Rides Taken: 24</li>
+		<li>&#10132; Favorite Place: Santiago</li>
+	</ul>
+</div>
+
+<div id="user_content">
+	<div id="user_graph">
+		<div id="chart1" class="donut_chart">
+			<canvas id="donut_bars1" width="300" height="300"></canvas>
+			<canvas id="donut_text1" width="300" height="300"></canvas>
+			<canvas id="donut_text1_2" class="donut_labels" width="300" height="300"></canvas>
+		</div>
+		<div id="chart2" class="donut_chart">
+			<canvas id="donut_bars2" width="300" height="300"></canvas>
+			<canvas id="donut_text2" width="300" height="300"></canvas>
+			<canvas id="donut_text2_2" class="donut_labels" width="300" height="300"></canvas>
+		</div>
+		<div id="chart3">
+			<canvas id="line_graph" width="100%" height="250"></canvas>
+			<canvas id="line_graph_text" width="100%" height="250"></canvas>
+		</div>
+	</div>
+	<div id="user_comments">
+		<div id="comment_title">
+			<h4>Recent Comments</h4>
+		</div>
+		<div class="comment">
+			<div class="score positive">+</div>
+			<span class="comment_text">Dude gave me free cookies</span>
+			<span class="comment_date">30 October, 2014</span>
+		</div>
+		<div class="comment">
+			<div class="score negative">-</div>
+			<span class="comment_text">Dude gave me free herpes</span>
+			<span class="comment_date">28 October, 2014</span>
+		</div>
+		<div class="comment">
+			<div class="score positive">+</div>
+			<span class="comment_text">Was very polite, +1!</span>
+			<span class="comment_date">27 October, 2014</span>
+		</div>
+		<div class="comment">
+			<div class="score positive">+</div>
+			<span class="comment_text">No complaints</span>
+			<span class="comment_date">15 October, 2014</span>
+		</div>
+		<div class="comment">
+			<div class="score positive">+</div>
+			<span class="comment_text">This is a longer comment to expand the div's height. Let's see if this looks any good. One more line, there we go. Let's put in one more for good measure: blah blah blah blah.</span>
+			<span class="comment_date">12 October, 2014</span>
+		</div>
+		<div class="comment">
+			<div class="score positive">+</div>
+			<span class="comment_text">Sick car dude</span>
+			<span class="comment_date">11 October, 2014</span>
+		</div>
+		<div class="comment">
+			<div class="score positive">+</div>
+			<span class="comment_text">Cured me of cancer +1.</span>
+			<span class="comment_date">10 October, 2014</span>
+		</div>
+		<div class="comment">
+			<div class="score positive">+</div>
+			<span class="comment_text">Free ride to Curico! THIS GUY ROCKS</span>
+			<span class="comment_date">8 October, 2014</span>
+		</div>
+		<div class="comment">
+			<div class="score negative">-</div>
+			<span class="comment_text">Never showed up, had to walk the 150 miles to Santiago. Took too long and missed my son's wedding. He has cut me out from the family and now my wife is filling for a divorce. -1</span>
+			<span class="comment_date">2 October, 2014</span>
+		</div>
+		<div class="comment">
+			<div class="score positive">+</div>
+			<span class="comment_text">ty</span>
+			<span class="comment_date">1 October, 2014</span>
+		</div>
+		<div class="comment">
+			<div class="score positive">+</div>
+			<span class="comment_text">Dude listens to some sick music</span>
+			<span class="comment_date">25 September, 2014</span>
+		</div>
+	</div>
+</div>
+<script src="userScript.js"></script>
+</body>
+
+</html>
