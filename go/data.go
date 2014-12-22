@@ -8,8 +8,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"data/gen"
 	"data/util"
-	"os"
 	"strconv"
+	"net"
 	// "log"
 )
 
@@ -556,8 +556,13 @@ func UserHandler(w http.ResponseWriter, r *http.Request) {
 
 func EnvHandler(w http.ResponseWriter, r *http.Request) {
 	// Database initialization
-	
-	fmt.Fprint(w, "hi" + os.Getenv("TEST"))
+	ip := ""
+	if ipProxy := r.Header.Get("X-Real-IP"); len(ipProxy) > 0 {
+	    ip = ipProxy
+	} else {
+		ip, _, _ = net.SplitHostPort(r.RemoteAddr)
+	}
+	fmt.Fprint(w, ip)
 }
 
 func main() {
