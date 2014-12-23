@@ -7,7 +7,10 @@ import (
 	"regexp"
 	"encoding/hex"
 	"crypto/sha256"
+	"net/http"
 	"net/smtp"
+	"io/ioutil"
+	"encoding/json"
 	"crypto/tls"
 	"data/util"
 	"errors"
@@ -372,4 +375,30 @@ func CheckCredentials(db *sql.DB, username string, password string) bool {
 		return false
 	}
 	return true
+}
+
+func CheckCaptcha(formValue string, userIp string) (bool, error){
+	// Get super secret password from external file at some point
+	resp, err := http.Get("https://www.google.com/recaptcha/api/siteverify?secret=6Lcjkf8SAAAAAMAxp-geyAYnkFwZwtkMR1uhLvjQ" + "&response="+ formValue)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close() 
+	contents, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+
+	type Captcha struct {
+		Success bool
+		ErrorCodes []string
+	}
+
+	var captcha Captcha
+	err = json.Unmarshal(contents, &captcha)
+	if err != nil {
+		return false, err
+	}
+
+	return captcha.Success, nil
 }

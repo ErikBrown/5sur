@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"encoding/json"
 	"database/sql"
@@ -447,6 +448,23 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 	err = gen.CheckUserInfo(db, r.FormValue("Username"), r.FormValue("Email"))
 	if err != nil {
 		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	userIp := ""
+	if ipProxy := r.Header.Get("X-FORWARDED-FOR"); len(ipProxy) > 0 {
+		userIp = ipProxy
+	} else {
+		userIp, _, _ = net.SplitHostPort(r.RemoteAddr)
+	}
+
+	human, err := gen.CheckCaptcha(r.FormValue("g-recaptcha-response"), userIp)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	if !human {
+		fmt.Fprint(w, "Captcha Failed")
 		return
 	}
 	
