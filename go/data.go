@@ -10,9 +10,11 @@ import (
 	"data/gen"
 	"data/util"
 	"strconv"
-	"net"
+	"html/template"
 	// "log"
 )
+
+var templates = template.Must(template.ParseFiles("templates/login.html"))
 
 func openDb() (*sql.DB, error) {
 	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
@@ -404,19 +406,32 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Database initialization
 	db, err := openDb()
-	if err!=nil {
+	if err != nil {
 		fmt.Fprint(w, err)
 		return
 	}
 	defer db.Close()
 
+
+	userIp := ""
+	if ipProxy := r.Header.Get("X-Real-IP"); len(ipProxy) > 0 {
+		userIp = ipProxy
+	} else {
+		userIp, _, _ = net.SplitHostPort(r.RemoteAddr)
+	}
+
 	// User authentication
 	if gen.CheckCredentials(db, r.FormValue("Username"), r.FormValue("Password")) {
 		myCookie := util.CreateCookie(r.FormValue("Username"), db) // This also stores a hashed cookie in the database
 		http.SetCookie(w, &myCookie)
-		http.Redirect(w, r, "https://5sur.com/l/", 301)
+		http.Redirect(w, r, "https://5sur.com/", 301)
 		return
 	}else {
+		err = gen.UpdateLoginAttempts(db, userIp)
+		if err != nil {
+			fmt.Fprint(w, err)
+			return
+		}
 		fmt.Fprint(w, "Your username/password was incorrect")
 		return
 	}
@@ -576,11 +591,49 @@ func EnvHandler(w http.ResponseWriter, r *http.Request) {
 	// Database initialization
 	ip := ""
 	if ipProxy := r.Header.Get("X-Real-IP"); len(ipProxy) > 0 {
-	    ip = ipProxy
+		ip = ipProxy
 	} else {
 		ip, _, _ = net.SplitHostPort(r.RemoteAddr)
 	}
 	fmt.Fprint(w, ip)
+}
+
+func LoginFormHandler(w http.ResponseWriter, r *http.Request) {
+	db, err := openDb()
+	if err!=nil {
+		fmt.Fprint(w, err)
+		return
+	}
+	defer db.Close()
+
+	userIp := ""
+	if ipProxy := r.Header.Get("X-Real-IP"); len(ipProxy) > 0 {
+		userIp = ipProxy
+	} else {
+		userIp, _, _ = net.SplitHostPort(r.RemoteAddr)
+	}
+
+	attempts, err := gen.CheckAttempts(db, userIp)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	var script, captcha template.HTML
+	if attempts > 2 {
+		script = `<script src='https://www.google.com/recaptcha/api.js'></script>`
+		captcha = `<div class="g-recaptcha" data-sitekey="6Lcjkf8SAAAAAE242oMsYj9akkUm69jfYIlSBOLF"></div>`
+	}
+	registerData := &gen.Login{
+		Title: "Login",
+		Script: script,
+		Captcha: captcha,
+	}
+	err = templates.ExecuteTemplate(w, "login.html", registerData)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
 }
 
 func main() {
@@ -590,6 +643,8 @@ func main() {
 	http.HandleFunc("/a/", AppHandler)
 	http.HandleFunc("/login", LoginHandler)
 	http.HandleFunc("/register", RegistrationHandler)
+	http.HandleFunc("/loginForm", LoginFormHandler)
+	http.HandleFunc("/loginForm/", LoginFormHandler)
 	http.HandleFunc("/auth/", AccountAuthHandler)
 	http.HandleFunc("/logout", LogoutHandler)
 	http.HandleFunc("/reserveSubmit", ReserveHandler)

@@ -5,7 +5,14 @@ import (
 	"data/util"
 	"fmt"
 	"time"
+	"html/template"
 )
+
+type Login struct {
+	Title string
+	Script template.HTML
+	Captcha template.HTML
+}
 
 type Header struct {
 	Title string

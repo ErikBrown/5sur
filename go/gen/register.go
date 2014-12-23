@@ -399,6 +399,51 @@ func CheckCaptcha(formValue string, userIp string) (bool, error){
 	if err != nil {
 		return false, err
 	}
-
 	return captcha.Success, nil
+}
+
+func CheckAttempts(db *sql.DB, ip string) (int, error) {
+	stmt, err := db.Prepare(`
+		SELECT attempts
+			FROM login_attempts
+			WHERE ip = ?
+	`)
+	
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	attempts := 0
+	err = stmt.QueryRow(ip).Scan(&attempts)
+	if err != nil {
+		// IP hasn't attempted to login yet
+	}
+	return attempts, nil
+}
+
+func UpdateLoginAttempts(db *sql.DB, ip string) error {
+	stmt, err := db.Prepare(`
+		INSERT INTO login_attempts (ip, attempts)
+			VALUES (?, 1)
+			ON DUPLICATE KEY UPDATE
+			attempts = attempts + 1;
+		`)
+	defer stmt.Close()
+
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(ip)
+	if err != nil {
+		return err
+	}
+	
+	/*
+	rowCnt, err := res.RowsAffected()
+	if err != nil {
+		// Log the error
+	}
+	*/
+	return nil
 }
