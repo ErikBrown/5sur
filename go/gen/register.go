@@ -379,7 +379,7 @@ func CheckCredentials(db *sql.DB, username string, password string) bool {
 
 func CheckCaptcha(formValue string, userIp string) (bool, error){
 	// Get super secret password from external file at some point
-	resp, err := http.Get("https://www.google.com/recaptcha/api/siteverify?secret=6Lcjkf8SAAAAAMAxp-geyAYnkFwZwtkMR1uhLvjQ" + "&response="+ formValue)
+	resp, err := http.Get("https://www.google.com/recaptcha/api/siteverify?secret=6Lcjkf8SAAAAAMAxp-geyAYnkFwZwtkMR1uhLvjQ" + "&response="+ formValue + "&remoteip=" + userIp)
 	if err != nil {
 		return false, err
 	}

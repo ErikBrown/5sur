@@ -452,7 +452,7 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userIp := ""
-	if ipProxy := r.Header.Get("X-FORWARDED-FOR"); len(ipProxy) > 0 {
+	if ipProxy := r.Header.Get("X-Real-IP"); len(ipProxy) > 0 {
 		userIp = ipProxy
 	} else {
 		userIp, _, _ = net.SplitHostPort(r.RemoteAddr)
