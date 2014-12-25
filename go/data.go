@@ -11,6 +11,11 @@ import (
 	"data/util"
 	"strconv"
 	"html/template"
+	"os"
+	"image"
+	"image/png"
+	_ "image/jpeg"
+	_ "image/gif"
 	// "log"
 )
 
@@ -569,6 +574,45 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func UploadHandler(w http.ResponseWriter, r *http.Request) {
+	// the FormFile function takes in the POST input id file
+	file, header, err := r.FormFile("Picture")
+	if err != nil {
+			fmt.Fprintln(w, err)
+			return
+		}
+	defer file.Close()
+
+
+
+	image, _, err := image.Decode(file)
+	if err != nil {
+		fmt.Fprintf(w, err.Error())
+		return
+	}
+
+	// This should be userId rather than uploadedFile.png.
+	// TODO
+	toimg, _ := os.Create("/var/www/html/images/uploadedFile.png")
+	defer toimg.Close()
+	err = png.Encode(toimg, image)	
+
+	bounds := image.Bounds()
+	ratio:= float64(bounds.Dx())/float64(bounds.Dy())
+	if ratio < .8 || ratio > 1.2 {
+		fmt.Fprintf(w, "Wrong dimensions")
+		return
+	}
+
+
+	if err != nil {
+		fmt.Fprintf(w, err.Error())
+		return
+	}
+	fmt.Fprintf(w, "File uploaded successfully : ")
+	fmt.Fprintf(w, header.Filename)
+}
+
 func UserHandler(w http.ResponseWriter, r *http.Request) {
 	// Database initialization
 	db, err := openDb()
@@ -656,6 +700,7 @@ func main() {
 	http.HandleFunc("/dashboard/reservations", DashReservationsHandler)
 	http.HandleFunc("/dashboard/listings/delete", DeleteListingHandler)
 	http.HandleFunc("/env", EnvHandler)
+	http.HandleFunc("/upload", UploadHandler)
 	http.HandleFunc("/", RootHandler)
 	http.ListenAndServe(":8080", nil)
 }
