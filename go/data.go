@@ -420,6 +420,24 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		userIp, _, _ = net.SplitHostPort(r.RemoteAddr)
 	}
 
+	// Check for captcha if login attempts > 2
+	attempts, err := gen.CheckAttempts(db, userIp)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+	if attempts > 2 {
+		human, err := gen.CheckCaptcha(r.FormValue("g-recaptcha-response"), userIp)
+		if err != nil {
+			fmt.Fprint(w, err.Error())
+			return
+		}
+		if !human {
+			fmt.Fprint(w, "Captcha Failed")
+			return
+		}
+	}
+	
 	// User authentication
 	if gen.CheckCredentials(db, r.FormValue("Username"), r.FormValue("Password")) {
 		myCookie := util.CreateCookie(r.FormValue("Username"), db) // This also stores a hashed cookie in the database
