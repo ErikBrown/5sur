@@ -54,7 +54,7 @@ func returnTimeLayout(t string) string {
 func ReturnTime(d string, t string) (time.Time, error) {
 	loc, err := time.LoadLocation("America/Santiago")
 	if err != nil {
-		return time.Time{}, err
+		return time.Time{}, NewError(err, "Internal server error", 500)
 	}
 
 	layout := returnTimeLayout(d)
@@ -67,7 +67,7 @@ func ReturnTime(d string, t string) (time.Time, error) {
 
 	timeVar, err := time.ParseInLocation(layout, d + " " + t, loc)
 	if err != nil {
-		return time.Time{}, err
+		return time.Time{}, NewError(nil, "Invalid time format", 400)
 	}
 
 	return timeVar, nil
@@ -83,7 +83,7 @@ func ReturnTimeString(humanReadable bool, d string, t string) (string, string, e
 	)
 	loc, err := time.LoadLocation("America/Santiago")
 	if err != nil {
-		return "", "", err
+		return "", "", NewError(err, "Internal server error", 500)
 	}
 
 	layout := returnTimeLayout(d)
@@ -95,7 +95,7 @@ func ReturnTimeString(humanReadable bool, d string, t string) (string, string, e
 	}
 	timeVar, err := time.ParseInLocation(layout, d + " " + t, loc)
 	if err != nil {
-		return "", "", err
+		return "", "", NewError(nil, "Invalid time format", 400)
 	}
 	if humanReadable {
 		return timeVar.Format(layoutHuman), timeVar.Format("15:04"), nil
@@ -109,13 +109,13 @@ func ReturnCurrentTimeString() (string, string) {
 }
 
 //FORM yyyy-mm-dd hh:mm:ss Drop the seconds. Parse the rest.
-func PrettyDate(timestamp string, suffix bool) Date {
+func PrettyDate(timestamp string, suffix bool) (Date, error) {
 	var splits []string = strings.SplitAfter(timestamp, "")
 	var date Date
 	month := splits[5] + splits[6]
 	m, err := strconv.ParseInt(month, 10, 8)
 	if err != nil {
-		// FUCKING PANIC
+		return date, NewError(err, "Internal server error", 500)
 	}
 	date.Month = months[m-1]
 	var day string
@@ -137,5 +137,5 @@ func PrettyDate(timestamp string, suffix bool) Date {
 	}
 	date.Day = day
 	date.Time = splits[11] + splits[12] + ":" + splits[14] + splits[15]
-	return date
+	return date, nil
 }

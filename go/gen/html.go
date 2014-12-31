@@ -151,7 +151,7 @@ func optionHtml(c City, i int) string {
 func ListingsHtml(l []Listing) string{
 	output := ""
 	for i := range l {
-	date := util.PrettyDate(l[i].DateLeaving, true)
+	date, _ := util.PrettyDate(l[i].DateLeaving, true)
 	output += `
 	<ul class="list_item">
 		<li class="listing_user">

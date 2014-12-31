@@ -78,7 +78,8 @@ func CreateListingHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	user, _ := util.CheckCookie(r, db) // return "" if not logged in
+	user, _, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
 	if user == "" {
 		http.Redirect(w, r, "https://5sur.com/login", 301)
 		return nil
@@ -99,7 +100,8 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request) error{
 	defer db.Close()
 
 	// User authentication
-	user, userId := util.CheckCookie(r, db) // return "" if not logged in
+	user, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
 	if user == "" {
 		http.Redirect(w, r, "https://5sur.com/login", 301)
 		return nil
@@ -129,7 +131,8 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request) error{
 	defer db.Close()
 
 	// User authentication
-	user, userId := util.CheckCookie(r, db) // return "" if not logged in
+	user, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
 
 	if user == "" {
 		http.Redirect(w, r, "https://5sur.com/login", 301)
@@ -166,7 +169,8 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 	defer db.Close()
 
 	// User authentication
-	user, userId := util.CheckCookie(r, db) // return "" if not logged in
+	user, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
 
 	if user == "" {
 		http.Redirect(w, r, "https://5sur.com/login", 301)
@@ -212,7 +216,8 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request) error{
 	defer db.Close()
 
 	// User authentication
-	user, userId := util.CheckCookie(r, db) // return "",0 if not logged in
+	user, userId, err := util.CheckCookie(r, db) // return "",0 if not logged in
+	if err != nil { return err }
 
 	if userId == 0 {
 		http.Redirect(w, r, "https://5sur.com/login", 301)
@@ -249,7 +254,8 @@ func DeleteListingHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	_, userId := util.CheckCookie(r, db) // return "",0 if not logged in
+	_, userId, err := util.CheckCookie(r, db) // return "",0 if not logged in
+	if err != nil { return err }
 
 	if userId == 0 {
 		http.Redirect(w, r, "https://5sur.com/login", 301)
@@ -316,7 +322,8 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	user, _ := util.CheckCookie(r, db) // return "" if not logged in
+	user, _, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
 
 	// HTML generation (also does listing-specific SQL calls)
 	listPage, err := gen.ListingsPage(db, query, user);
@@ -426,7 +433,8 @@ func ReserveFormHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	user, _ := util.CheckCookie(r, db) // return "" if not logged in
+	user, _, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
 
 	if user == "" {
 		http.Redirect(w, r, "https://5sur.com/login", 301)
@@ -451,7 +459,8 @@ func ReserveHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	user, userId := util.CheckCookie(r, db) // return "" if not logged in
+	user, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
 	if user == "" {
 		http.Redirect(w, r, "https://5sur.com/login", 301)
 		return nil
@@ -473,7 +482,8 @@ func RootHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	user, _ := util.CheckCookie(r, db) // return "" if not logged in
+	user, _, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
 
 	// HTML generation (also does listing-specific SQL calls)
 	homePage, err := gen.HomePage(db, user);
@@ -490,7 +500,8 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	user, _ := util.CheckCookie(r, db) // return "" if not logged in
+	user, _, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
 	if user == "" {
 		http.Redirect(w, r, "https://5sur.com/login", 301)
 		return nil

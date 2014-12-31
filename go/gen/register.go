@@ -243,7 +243,9 @@ func UserAuth(db *sql.DB, username string, password string, email string) error 
 	alphaNum := []byte("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv")
 	randValue := ""
 	for i := 0; i < 32; i++ {
-		randValue = randValue + string(alphaNum[util.RandKey(58)])
+		num, err := util.RandKey(58)
+		if err != nil {return err}
+		randValue = randValue + string(alphaNum[num])
 	}
 	hashed := sha256.New()
 	hashed.Write([]byte(randValue))
@@ -314,11 +316,12 @@ func CreateUser(db *sql.DB, token string) (string, error){
 		return "", util.NewError(nil, "Username already taken", 400)
 	}
 
-	createUser(db, userInfo)
+	err = createUser(db, userInfo)
+	if err != nil { return "", err }
 	return userInfo.name, nil
 }
 
-func createUser(db *sql.DB, u unauthedUser) {
+func createUser(db *sql.DB, u unauthedUser) error {
 	stmt, err := db.Prepare(`
 		INSERT INTO users (name, email, password)
 			VALUES (?, ?, ?)
@@ -326,11 +329,11 @@ func createUser(db *sql.DB, u unauthedUser) {
 	defer stmt.Close()
 
 	if err != nil {
-		panic(err.Error() + ` THE ERROR IS ON LINE 56`)
+		return util.NewError(err, "Internal server error", 500)
 	}
 	_, err = stmt.Exec(u.name, u.email, u.password)
 	if err != nil {
-		panic(err.Error() + ` THE ERROR IS ON LINE 60`)
+		return util.NewError(err, "Internal server error", 500)
 	}
 	deleteUserAuth(db, u.email)
 	/*
@@ -339,6 +342,7 @@ func createUser(db *sql.DB, u unauthedUser) {
 		// Log the error
 	}
 	*/
+	return nil
 }
 
 func CheckCredentials(db *sql.DB, username string, password string) (bool, error) {

@@ -123,7 +123,8 @@ func GetDashListings(db *sql.DB, userId int) ([]DashListing, error) {
 		if err != nil {
 			return results, util.NewError(err, "Database error", 500)
 		}
-		convertedDate := util.PrettyDate(date, false)
+		convertedDate, err := util.PrettyDate(date, false)
+		if err != nil { return results, err }
 		temp.Day = convertedDate.Day
 		temp.Month = convertedDate.Month
 		temp.Time = convertedDate.Time
@@ -699,7 +700,7 @@ func SendMessage(db *sql.DB, sender int, receiver int, message string) error {
 		`)
 	
 	if err != nil {
-		return err // Have a proper error in production
+		return util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
@@ -707,12 +708,12 @@ func SendMessage(db *sql.DB, sender int, receiver int, message string) error {
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	res, err := stmt.Exec(sender, receiver, message, sender, receiver, receiver, sender)
 	if err != nil {
-		return err
+		return util.NewError(err, "Database error", 500)
 	}
 
 	_, err = res.RowsAffected()
 	if err != nil {
-		return err
+		return util.NewError(err, "Database error", 500)
 	}
 
 	return nil

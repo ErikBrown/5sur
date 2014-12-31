@@ -13,7 +13,9 @@ func CreateCookie(u string, db *sql.DB) (http.Cookie, error) {
 	alphaNum := []byte("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv")
 	randValue := ""
 	for i := 0; i < 32; i++ {
-		randValue = randValue + string(alphaNum[RandKey(58)])
+		num, err := RandKey(58)
+		if err != nil {return http.Cookie{}, err}
+		randValue = randValue + string(alphaNum[num])
 	}
 
 	authCookie := http.Cookie{
@@ -71,24 +73,18 @@ func updateSession(v string, u string, db *sql.DB) error {
 	return nil
 }
 
-func CheckCookie(r *http.Request, db *sql.DB) (string, int) {
+func CheckCookie(r *http.Request, db *sql.DB) (string, int, error) {
 	sessionID, err := r.Cookie("RideChile")
 	if err != nil {
-		return "", 0
+		return "", 0, nil // No cookie
 	}
-	n, i := checkSession(sessionID.Value, db)
+	n, i, err := checkSession(sessionID.Value, db)
+	if err != nil {return "", 0, err}
 
-	if n != "" { // Super super temporary
-		// You're logged in!
-		return n, i
-	} else {
-		// Session ID is not valid
-	}
-	return n, i
-
+	return n, i, nil
 }
 
-func checkSession(s string, db *sql.DB) (string, int){
+func checkSession(s string, db *sql.DB) (string, int, error){
 	hashed := sha256.New()
 	hashed.Write([]byte(s))
 	hashedStr := hex.EncodeToString(hashed.Sum(nil))
@@ -99,7 +95,7 @@ func checkSession(s string, db *sql.DB) (string, int){
 		`)
 	
 	if err != nil {
-		panic(err.Error() + ` THE ERROR IS ON LINE 78`)
+		return "", 0, NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
@@ -107,7 +103,7 @@ func checkSession(s string, db *sql.DB) (string, int){
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	rows, err := stmt.Query(hashedStr)
 	if err != nil {
-		panic(err.Error() + ` THE ERROR IS ON LINE 86`)
+		return "", 0, NewError(err, "Database error", 500)
 	}
 	// Always defer rows.Close(), even if you explicitly Close it at the end of the
 	// loop. The connection will have the chance to remain open otherwise.
@@ -121,9 +117,9 @@ func checkSession(s string, db *sql.DB) (string, int){
 	for rows.Next() {
 		err := rows.Scan(&name, &id)
 		if err != nil {
-			panic(err.Error() + ` THE ERROR IS ON LINE 99`)
+		return "", 0, NewError(err, "Database error", 500)
 		}
 		
 	}
-	return name, id
+	return name, id, nil
 }
