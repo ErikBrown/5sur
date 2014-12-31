@@ -2,11 +2,11 @@ package gen
 
 import (
 	"database/sql"
+	"data/util"
 	_ "github.com/go-sql-driver/mysql"
-	"errors"
 )
 
-func ReturnFilter(db *sql.DB) []City {
+func ReturnFilter(db *sql.DB) ([]City, error) {
 	results := make ([]City, 0)
 
 	// Always prepare queries to be used multiple times. The parameter placehold is ?
@@ -16,7 +16,7 @@ func ReturnFilter(db *sql.DB) []City {
 	`)
 
 	if err != nil {
-		return results
+		return results, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
@@ -24,7 +24,7 @@ func ReturnFilter(db *sql.DB) []City {
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	rows, err := stmt.Query()
 	if err != nil {
-		return results
+		return results, util.NewError(err, "Database error", 500)
 	}
 	// Always defer rows.Close(), even if you explicitly Close it at the end of the
 	// loop. The connection will have the chance to remain open otherwise.
@@ -35,11 +35,11 @@ func ReturnFilter(db *sql.DB) []City {
 		var temp City
 		err := rows.Scan(&temp.Id, &temp.Name)
 		if err != nil {
-			panic(err.Error()) // Have a proper error in production
+			return results, util.NewError(err, "Database error", 500)
 		}
 		results = append(results, temp)
 	}
-	return results
+	return results, nil
 } 
 
 func checkNearbyListings(db *sql.DB, date_leaving string, id int) error {
@@ -50,27 +50,23 @@ func checkNearbyListings(db *sql.DB, date_leaving string, id int) error {
 		driver = ?
 	`)
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
-	// db.Query() prepares, executes, and closes a prepared statement - three round
-	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	rows, err := stmt.Query(date_leaving, date_leaving, id)
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return util.NewError(err, "Database error", 500)
 	}
-	// Always defer rows.Close(), even if you explicitly Close it at the end of the
-	// loop. The connection will have the chance to remain open otherwise.
 	defer rows.Close()
 
 	for rows.Next() {
-		return errors.New("You have a listing near this date.")
+		return util.NewError(err, "You already have a listing near this date", 400)
 	}
 	return nil
 }
 
-func ReturnListings(db *sql.DB, o int, d int, t string) []Listing {
+func ReturnListings(db *sql.DB, o int, d int, t string) ([]Listing, error) {
 	results := make ([]Listing, 0)
 
 	// Always prepare queries to be used multiple times. The parameter placehold is ?
@@ -84,12 +80,13 @@ func ReturnListings(db *sql.DB, o int, d int, t string) []Listing {
 				AND l.destination = ? 
 				AND l.date_leaving >= ?
 				AND l.seats > 0
+				AND l.date_leaving > NOW()
 			ORDER BY l.date_leaving
 			LIMIT 25
 		`)
 	
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return results, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
@@ -97,7 +94,7 @@ func ReturnListings(db *sql.DB, o int, d int, t string) []Listing {
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	rows, err := stmt.Query(o, d, t)
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return results, util.NewError(err, "Database error", 500)
 	}
 	// Always defer rows.Close(), even if you explicitly Close it at the end of the
 	// loop. The connection will have the chance to remain open otherwise.
@@ -108,36 +105,39 @@ func ReturnListings(db *sql.DB, o int, d int, t string) []Listing {
 		var temp Listing
 		err := rows.Scan(&temp.Id, &temp.Driver, &temp.Picture, &temp.DateLeaving, &temp.Origin, &temp.Destination, &temp.Seats, &temp.Fee)
 		if err != nil {
-			panic(err.Error()) // Have a proper error in production
+			return results, util.NewError(err, "Database error", 500)
 		}
 		results = append(results, temp)
 	}
-	return results
+	return results, nil
 }
 
 func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, destination int, seats int, fee float64) error {
 	// This needs to take in account the hour/minute!!! Concatinate the form values! CHANGE THIS
 	err := checkNearbyListings(db, date_leaving, driver)
 	if err !=nil {
-		return err
+		return err // err is already util.MyError
 	}
 
 	stmt, err := db.Prepare(`
 		INSERT INTO listings (date_leaving,driver,origin,destination,seats,fee,reserved)
 			VALUES (?, ?, ?, ?, ?, ?, false)
 		`)
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(date_leaving, driver, origin, destination, seats, fee)
 	if err != nil {
-		return err
+		return util.NewError(err, "Database error", 500)
 	}
 	
 	return nil
 }
 
 func ReturnIndividualListing(db *sql.DB, id int) (Listing, error) {
-	result :=Listing{}
+	result := Listing{}
 	stmt, err := db.Prepare(`
 		SELECT l.id, u.id, u.picture, l.date_leaving, c.name, c2.name, l.seats, l.fee
 			FROM listings AS l
@@ -148,15 +148,13 @@ func ReturnIndividualListing(db *sql.DB, id int) (Listing, error) {
 		`)
 	
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return Listing{}, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
-	// db.Query() prepares, executes, and closes a prepared statement - three round
-	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	err = stmt.QueryRow(id).Scan(&result.Id, &result.Driver, &result.Picture, &result.DateLeaving, &result.Origin, &result.Destination, &result.Seats, &result.Fee)
 	if err != nil {
-		return result, err
+		return Listing{}, util.NewError(nil, "Listing does not exist", 400)
 	}
 	return result, nil
 }

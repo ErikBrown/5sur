@@ -45,7 +45,8 @@ func DashReservationsPage(dashReservations []DashReservation, reservation Reserv
 
 func HomePage(db *sql.DB, user string) (string, error) {
 	title := "5Sur"
-	cities := ReturnFilter(db)
+	cities, err := ReturnFilter(db)
+	if err != nil { return "", err }
 
 	headerInfo := Header {
 		Title: title,
@@ -61,9 +62,13 @@ func HomePage(db *sql.DB, user string) (string, error) {
 
 func ListingsPage(db *sql.DB, query util.ListingQueryFields, user string) (string, error) {
 	title := "Listings"
-	cities := ReturnFilter(db)
-	listings := ReturnListings(db, query.Origin, query.Destination, query.Date + " " + query.Time)
+	cities, err := ReturnFilter(db)
+	if err != nil { return "", err }
 
+	listings, err := ReturnListings(db, query.Origin, query.Destination, query.Date + " " + query.Time)
+	if err != nil {
+		return "", err
+	}
 	headerInfo := Header {
 		Title: title,
 		User: user,
@@ -85,7 +90,9 @@ func CreateListingPage(db *sql.DB, user string) (string, error) {
 		User: user,
 	}
 	createListingPage := HeaderHtml(&headerInfo)
-	cities := ReturnFilter(db)
+	cities, err := ReturnFilter(db)
+	if err != nil { return "", err }
+
  	createListingPage += CreateListingHtml(user, cities)
 	createListingPage += FooterHtml()
 	return createListingPage, nil

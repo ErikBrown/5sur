@@ -9,7 +9,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func CreateCookie(u string, db *sql.DB) http.Cookie {
+func CreateCookie(u string, db *sql.DB) (http.Cookie, error) {
 	alphaNum := []byte("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv")
 	randValue := ""
 	for i := 0; i < 32; i++ {
@@ -26,9 +26,11 @@ func CreateCookie(u string, db *sql.DB) http.Cookie {
 		HttpOnly: true, // HTTP(S) only
 	}
 
-	updateSession(randValue, u, db)
-
-	return authCookie
+	err := updateSession(randValue, u, db)
+	if err != nil {
+		return http.Cookie{}, err
+	}
+	return authCookie, nil
 }
 
 func DeleteCookie() http.Cookie {
@@ -45,7 +47,7 @@ func DeleteCookie() http.Cookie {
 	return expiredCookie
 }
 
-func updateSession(v string, u string, db *sql.DB) {
+func updateSession(v string, u string, db *sql.DB) error {
 	// To save CPU cycles we'll use sha256; Bcrypt is an intentionally slow hash.
 	// We don't even need that secure of a hash function since our session ID is 
 	// sufficiently random and long.
@@ -53,19 +55,20 @@ func updateSession(v string, u string, db *sql.DB) {
 	hashed.Write([]byte(v))
 	hashedStr := hex.EncodeToString(hashed.Sum(nil))
 	stmt, err := db.Prepare(`UPDATE users SET session = ? WHERE name = ?`)
+	if err != nil {
+		return NewError(err, "Database error", 500)
+	}
 	defer stmt.Close()
 
-	if err != nil {
-		panic(err.Error() + ` THE ERROR IS ON LINE 46`)
-	}
 	res, err := stmt.Exec(hashedStr, u)
 	if err != nil {
-		panic(err.Error() + ` THE ERROR IS ON LINE 50`)
+		return NewError(err, "Database error", 500)
 	}
 	_, err = res.RowsAffected()
 	if err != nil {
-		panic(err.Error() + ` THE ERROR IS ON LINE 54`)
+		return NewError(err, "Database error", 500)
 	}
+	return nil
 }
 
 func CheckCookie(r *http.Request, db *sql.DB) (string, int) {

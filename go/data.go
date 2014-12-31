@@ -24,125 +24,98 @@ var templates = template.Must(template.ParseFiles("templates/login.html"))
 func openDb() (*sql.DB, error) {
 	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
 	if err != nil {
-		return db, err
+		return db, util.NewError(err, "Database connection failed", 500)
 	}
 	err = db.Ping()
 	if err != nil {
-		return db, err
+		return db, util.NewError(err, "Database connection failed", 500)
 	}
 	return db, nil
 }
 
-func AccountAuthHandler(w http.ResponseWriter, r *http.Request) {
+func AccountAuthHandler(w http.ResponseWriter, r *http.Request) error {
 	// Query string validation
 	token, err := util.ValidAuthQuery(r.URL) // Returns util.QueryFields
-	if err != nil {
-		fmt.Fprint(w, "nonvalid query string")
-		return
-	}
+	if err != nil { return err }
 
 	// Database initialization
 	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err)
-		return
-	}
+	if err != nil { return err }
 	defer db.Close()
 
 	// Authenticate and create the user account
 	user, err := gen.CreateUser(db, token)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 
 	fmt.Fprint(w, user + ", your accout is activated!")
-	return
+	return nil
 }
 
-func AppHandler(w http.ResponseWriter, r *http.Request) {
+func AppListingsHandler(w http.ResponseWriter, r *http.Request) error {
 	query, err := util.ValidListingQuery(r.URL) // Returns util.QueryFields
-	if err != nil {
-		fmt.Fprint(w, "nonvalid query string")
-		return
-	}
+	if err != nil { return err }
 
 	// Database initialization
 	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err)
-		return
-	}
+	if err != nil { return err }
 	defer db.Close()
 
-	listings := gen.ReturnListings(db, query.Origin, query.Destination, query.Time)
+	listings, err := gen.ReturnListings(db, query.Origin, query.Destination, query.Date + " " + query.Time)
+	if err != nil { return err }
 	jsonListings, err := json.MarshalIndent(listings, "", "    ")
 	if err != nil {
-		fmt.Fprint(w, "convert to json failed")
-		return
+		return util.NewError(nil, "Json conversion failed", 500)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprint(w, string(jsonListings))
+	return nil
 }
 
-func CreateListingHandler(w http.ResponseWriter, r *http.Request){
+func CreateListingHandler(w http.ResponseWriter, r *http.Request) error {
 	// Database initialization
 	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err)
-		return
-	}
+	if err != nil { return err }
 	defer db.Close()
 
 	// User authentication
 	user, _ := util.CheckCookie(r, db) // return "" if not logged in
 	if user == "" {
-		fmt.Fprint(w, "not logged in")
-		return
+		http.Redirect(w, r, "https://5sur.com/login", 301)
+		return nil
 	}
 
 	// HTML generation (also does listing-specific SQL calls)
-	createListingPage, err := gen.CreateListingPage(db, user);
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	createListingPage, err := gen.CreateListingPage(db, user)
+	if err != nil { return err }
 
 	fmt.Fprint(w, createListingPage)
+	return nil
 }
 
-func CreateSubmitHandler(w http.ResponseWriter, r *http.Request){
+func CreateSubmitHandler(w http.ResponseWriter, r *http.Request) error{
 	// Database initialization
 	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 	defer db.Close()
 
 	// User authentication
 	user, userId := util.CheckCookie(r, db) // return "" if not logged in
 	if user == "" {
-		fmt.Fprint(w, "not logged in")
-		return
+		http.Redirect(w, r, "https://5sur.com/login", 301)
+		return nil
 	}
 
 	createFormPost, err := util.ValidCreateSubmit(r)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 
 	err = gen.CreateListing(db, createFormPost.Date, userId, createFormPost.Origin, createFormPost.Destination, createFormPost.Seats, createFormPost.Fee)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 
 	fmt.Fprint(w, "listing created!")
+	return nil
 }
 
-func DashListingsHandler(w http.ResponseWriter, r *http.Request){
+func DashListingsHandler(w http.ResponseWriter, r *http.Request) error{
 	token, err := util.ValidDashQuery(r.URL)
 	specificListing := false
 	if err == nil {
@@ -152,80 +125,61 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request){
 	}
 	// Database initialization
 	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 	defer db.Close()
 
 	// User authentication
 	user, userId := util.CheckCookie(r, db) // return "" if not logged in
 
 	if user == "" {
-		fmt.Fprint(w, "not logged in")
-		return
+		http.Redirect(w, r, "https://5sur.com/login", 301)
+		return nil
 	}
 
 	// Check post data for if a button was clicked that directed the user here.
 	if specificListing {
 		err := gen.CheckPost(db, userId, r, token)
-		if err != nil {
-			fmt.Fprint(w, err.Error())
-			return
-		}
+		if err != nil { return err }
 	}
 
 	dashListings, err := gen.GetDashListings(db, userId)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 
 	var listing gen.SpecificListing
 	if specificListing {
-		// DO SPECIFIC LISTING
 		listing, err = gen.SpecificDashListing(db, dashListings, token)
+		if err != nil { return err }
 	}
 
 	// HTML generation
 	dashListingsPage, err := gen.DashListingsPage(dashListings, listing, user);
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 
 	fmt.Fprint(w, dashListingsPage)
+	return nil
 }
 
-func DashMessagesHandler(w http.ResponseWriter, r *http.Request){
+func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 	// Database initialization
 	db, err := openDb()
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 	defer db.Close()
 
 	// User authentication
 	user, userId := util.CheckCookie(r, db) // return "" if not logged in
 
 	if user == "" {
-		fmt.Fprint(w, "not logged in")
-		return
+		http.Redirect(w, r, "https://5sur.com/login", 301)
+		return nil
 	}
 	dashMessages, err := gen.GetDashMessages(db, userId)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-	}
+	if err != nil { return err }
 
 	message := gen.MessageThread{}
-	token, err := util.ValidDashQuery(r.URL)
+	token, err := util.ValidDashQuery(r.URL) // Ignore error here
 	if err == nil {
 		message, err = gen.SpecificDashMessage(db, dashMessages, token, userId)
-		if err != nil {
-			fmt.Fprint(w, err.Error())
-			return
-		}
+		if err != nil { return err }
 	}
 
 	// HTML generation
@@ -239,115 +193,89 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request){
 	*/
 	jsonMessages, err := json.MarshalIndent(dashMessages, "", "    ")
 	if err != nil {
-		fmt.Fprint(w, "convert to json failed")
-		return
+		return util.NewError(nil, "Json conversion failed", 500)
 	}
 	jsonMessages2, err := json.MarshalIndent(message, "", "    ")
 	if err != nil {
-		fmt.Fprint(w, "convert to json failed")
-		return
+		return util.NewError(nil, "Json conversion failed", 500)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprint(w, string(jsonMessages))
 	fmt.Fprint(w, string(jsonMessages2))
+	return nil
 }
 
-func DashReservationsHandler(w http.ResponseWriter, r *http.Request){
+func DashReservationsHandler(w http.ResponseWriter, r *http.Request) error{
 	// Database initialization
 	db, err := openDb()
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 	defer db.Close()
 
 	// User authentication
 	user, userId := util.CheckCookie(r, db) // return "",0 if not logged in
 
 	if userId == 0 {
-		fmt.Fprint(w, "not logged in")
-		return
+		http.Redirect(w, r, "https://5sur.com/login", 301)
+		return nil
 	}
 
 	dashReservations, err := gen.GetDashReservations(db, userId)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-	}
+	if err != nil { return err }
 	
 	reservation := gen.Reservation{}
 	token, err := util.ValidDashQuery(r.URL)
 	if err == nil {
 		reservation, err = gen.SpecificDashReservation(db, dashReservations, token)
-		if err != nil {
-			fmt.Fprint(w, err.Error())
-			return
-		}
+		if err != nil { return err }
 	}
 
 	url, err := gen.CheckReservePost(db, userId, r, token)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 	if url != "" {
 		http.Redirect(w, r, url, 301)
-		return
+		return nil
 	}
 	// HTML generation
 	dashReservationsPage, err := gen.DashReservationsPage(dashReservations, reservation, user)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 	fmt.Fprint(w, dashReservationsPage)
-
+	return nil
 }
 
-func DeleteListingHandler(w http.ResponseWriter, r *http.Request) {
+func DeleteListingHandler(w http.ResponseWriter, r *http.Request) error {
 	// Database initialization
 	db, err := openDb()
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 	defer db.Close()
 
 	// User authentication
 	_, userId := util.CheckCookie(r, db) // return "",0 if not logged in
 
 	if userId == 0 {
-		fmt.Fprint(w, "not logged in")
-		return
+		http.Redirect(w, r, "https://5sur.com/login", 301)
+		return nil
 	}
 
 	if r.PostFormValue("d") == "" {
-		listingId, err := util.ValidDeleteListingQuery(r.URL)
-		if err != nil {
-			fmt.Fprint(w, err.Error())
-			return
-		}
+		listingId, err := util.ValidDashQuery(r.URL)
+		if err != nil { return err }
 		deleteForm := gen.DeleteForm(listingId)
 		fmt.Fprint(w, deleteForm)
-		return
+		return nil
 	}
 	listingId, err := strconv.Atoi(r.FormValue("d"))
 	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
+		return util.NewError(nil, "Invalid listing", 400)
 	}
 
 	err = gen.DeleteListing(db, userId, listingId)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 
 	http.Redirect(w, r, "https://5sur.com/dashboard/listings", 301)
+	return nil
 }
 
-func ListingsHandler(w http.ResponseWriter, r *http.Request) {
-	// log.Println("sdfsdf")
-	
+func ListingsHandler(w http.ResponseWriter, r *http.Request) error {	
 	// Convert POST to GET (also does a time validation)
 	if r.FormValue("Origin") != "" && r.FormValue("Destination") != "" {
 		convertedDate := ""
@@ -367,25 +295,23 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 			convertedDate, convertedTime, err = util.ReturnTimeString(false, r.FormValue("Date"), r.FormValue("Time"))
 			if err != nil {
 				fmt.Fprint(w, err)
-				return
+				return nil
 			}
 		}
 		http.Redirect(w, r, "https://5sur.com/l/?o=" + r.FormValue("Origin") + "&d=" + r.FormValue("Destination") + "&t=" + convertedDate + "&h=" + convertedTime, 301)
-		return
+		return nil
 	}
 
 	// Query string validation
 	query, err := util.ValidListingQuery(r.URL)
 	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
+		return err
 	}
 
 	// Database initialization
 	db, err := openDb()
 	if err!=nil {
-		fmt.Fprint(w, err)
-		return
+		return err
 	}
 	defer db.Close()
 
@@ -395,26 +321,22 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) {
 	// HTML generation (also does listing-specific SQL calls)
 	listPage, err := gen.ListingsPage(db, query, user);
 	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
+		return err
 	}
 
 	fmt.Fprint(w, listPage)
+	return nil
 }
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
+func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 	// POST validation
 	if r.FormValue("Password") == "" || r.FormValue("Username") == "" {
-		fmt.Fprint(w, "enter a password/username")
-		return
+		return util.NewError(nil, "Missing username or password", 400)
 	}
 
 	// Database initialization
 	db, err := openDb()
-	if err != nil {
-		fmt.Fprint(w, err)
-		return
-	}
+	if err != nil { return err }
 	defer db.Close()
 
 
@@ -427,67 +349,53 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check for captcha if login attempts > 2
 	attempts, err := gen.CheckAttempts(db, userIp)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
+
 	if attempts > 2 {
 		human, err := gen.CheckCaptcha(r.FormValue("g-recaptcha-response"), userIp)
-		if err != nil {
-			fmt.Fprint(w, err.Error())
-			return
-		}
+		if err != nil { return err }
 		if !human {
-			fmt.Fprint(w, "Captcha Failed")
-			return
+			return util.NewError(nil, "Incorrect Captcha", 400)
 		}
 	}
 	
 	// User authentication
-	if gen.CheckCredentials(db, r.FormValue("Username"), r.FormValue("Password")) {
-		myCookie := util.CreateCookie(r.FormValue("Username"), db) // This also stores a hashed cookie in the database
+	authenticated, err := gen.CheckCredentials(db, r.FormValue("Username"), r.FormValue("Password"))
+	if err != nil { return err }
+	if authenticated {
+		myCookie, err := util.CreateCookie(r.FormValue("Username"), db) // This also stores a hashed cookie in the database
+		if err != nil { return err }
 		http.SetCookie(w, &myCookie)
 		http.Redirect(w, r, "https://5sur.com/", 301)
-		return
+		return nil
 	}else {
 		err = gen.UpdateLoginAttempts(db, userIp)
-		if err != nil {
-			fmt.Fprint(w, err)
-			return
-		}
-		fmt.Fprint(w, "Your username/password was incorrect")
-		return
+		if err != nil { return err }
+		return util.NewError(nil, "Your username or password was incorrect", 400)
 	}
+	return nil
 }
 
-func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+func LogoutHandler(w http.ResponseWriter, r *http.Request) error {
 	// Create gen.InvalidateCookie
 	expiredCookie := util.DeleteCookie()
 	http.SetCookie(w, &expiredCookie)
 
 	fmt.Fprint(w, "you SHOULD be logged out")
+	return nil
 }
 
-func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
+func RegistrationHandler(w http.ResponseWriter, r *http.Request) error {
 	err := util.ValidRegister(r)
-	if err != nil {
-		fmt.Fprint(w, err)
-		return
-	}
+	if err != nil { return err }
 
 	// Database initialization
 	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err)
-		return
-	}
+	if err != nil { return err }
 	defer db.Close()
 
 	err = gen.CheckUserInfo(db, r.FormValue("Username"), r.FormValue("Email"))
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 
 	userIp := ""
 	if ipProxy := r.Header.Get("X-Real-IP"); len(ipProxy) > 0 {
@@ -497,85 +405,71 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	human, err := gen.CheckCaptcha(r.FormValue("g-recaptcha-response"), userIp)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 	if !human {
-		fmt.Fprint(w, "Captcha Failed")
-		return
+		return util.NewError(nil, "Incorrect Captcha", 400)
 	}
 	
-	gen.UserAuth(db, r.FormValue("Username"), r.FormValue("Password"), r.FormValue("Email"))
+	err = gen.UserAuth(db, r.FormValue("Username"), r.FormValue("Password"), r.FormValue("Email"))
+	if err != nil { return err }
 
 	fmt.Fprint(w, "Confirmation email has been sent to " + r.FormValue("Email"))
+	return nil
 }
 
-func ReserveFormHandler(w http.ResponseWriter, r *http.Request) {
+func ReserveFormHandler(w http.ResponseWriter, r *http.Request) error {
 	l, err := util.ValidReserveURL(r)
-	// Database initialization
+	if err != nil { return err }
+
 	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err)
-		return
-	}
+	if err != nil { return err }
 	defer db.Close()
 
 	// User authentication
 	user, _ := util.CheckCookie(r, db) // return "" if not logged in
 
 	if user == "" {
-		fmt.Fprint(w, "not logged in")
-		return
+		http.Redirect(w, r, "https://5sur.com/login", 301)
+		return nil
 	}
 	listing, err := gen.ReturnIndividualListing(db, l)
+	if err != nil { return err }
 
 	reservePage := gen.CreateReserveFormPage(listing, user)
 	fmt.Fprint(w, reservePage)
+	return nil
 }
 
-func ReserveHandler(w http.ResponseWriter, r *http.Request) {
+func ReserveHandler(w http.ResponseWriter, r *http.Request) error {
 	//Check POST data
 	values, err := util.ValidRegisterPost(r)
-	if err != nil {
-		fmt.Fprint(w, err)
-		return
-	}
+	if err != nil { return err }
 
 	// Database initialization
 	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err)
-		return
-	}
+	if err != nil { return err }
 	defer db.Close()
 
 	// User authentication
 	user, userId := util.CheckCookie(r, db) // return "" if not logged in
 	if user == "" {
-		fmt.Fprint(w, "not logged in")
-		return
+		http.Redirect(w, r, "https://5sur.com/login", 301)
+		return nil
 	}
 
 	err = gen.CreateReservation(db, userId, values.ListingId, values.Seats, r.FormValue("Message"))
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 
 	reservePage := gen.CreateReservePage(values.ListingId, values.Seats, user, r.FormValue("Message"))
 
 	fmt.Fprint(w, reservePage)
-	return
+	return nil
 }
 
-func RootHandler(w http.ResponseWriter, r *http.Request) {
+func RootHandler(w http.ResponseWriter, r *http.Request) error {
 	// Database initialization
 	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err)
-		return
-	}
+	if err != nil { return err }
 	defer db.Close()
 
 	// User authentication
@@ -583,30 +477,34 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 
 	// HTML generation (also does listing-specific SQL calls)
 	homePage, err := gen.HomePage(db, user);
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 
 	fmt.Fprint(w, homePage)
-	return
+	return nil
 }
 
-func UploadHandler(w http.ResponseWriter, r *http.Request) {
+func UploadHandler(w http.ResponseWriter, r *http.Request) error {
+	// Database initialization
+	db, err := openDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	// User authentication
+	user, _ := util.CheckCookie(r, db) // return "" if not logged in
+	if user == "" {
+		http.Redirect(w, r, "https://5sur.com/login", 301)
+		return nil
+	}
 	// the FormFile function takes in the POST input id file
 	file, header, err := r.FormFile("Picture")
 	if err != nil {
-			fmt.Fprintln(w, err)
-			return
-		}
+		return util.NewError(nil, "No picture found", 400)
+	}
 	defer file.Close()
-
-
 
 	image, _, err := image.Decode(file)
 	if err != nil {
-		fmt.Fprintf(w, err.Error())
-		return
+		return util.NewError(nil, "Invalid image format", 400)
 	}
 
 	// This should be userId rather than uploadedFile.png.
@@ -614,58 +512,41 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	toimg, _ := os.Create("/var/www/html/images/uploadedFile.png")
 	defer toimg.Close()
 	err = png.Encode(toimg, image)	
+	if err != nil {
+		return util.NewError(err, "Image cannot be used", 500)
+	}
 
 	bounds := image.Bounds()
 	ratio:= float64(bounds.Dx())/float64(bounds.Dy())
 	if ratio < .8 || ratio > 1.2 {
-		fmt.Fprintf(w, "Wrong dimensions")
-		return
+		return util.NewError(nil, "Invalid image dimensions", 400)
 	}
 
-
-	if err != nil {
-		fmt.Fprintf(w, err.Error())
-		return
-	}
 	fmt.Fprintf(w, "File uploaded successfully : ")
 	fmt.Fprintf(w, header.Filename)
+	return nil
 }
 
-func UserHandler(w http.ResponseWriter, r *http.Request) {
+func UserHandler(w http.ResponseWriter, r *http.Request) error {
 	// Database initialization
 	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err)
-		return
-	}
+	if err != nil { return err }
 	defer db.Close()
 
-	user := gen.ReturnUserInfo(db, r.URL.Path[3:])
+	user, err := gen.ReturnUserInfo(db, r.URL.Path[3:])
+	if err != nil { return err }
+
 	formatted, err := json.MarshalIndent(user, "", "    ")
 	if err != nil {
-		fmt.Fprint(w, "can't convert to json")
-		return
+		return util.NewError(err, "Json conversion failed", 500)
 	}
 	fmt.Fprint(w, string(formatted))
+	return nil
 }
 
-func EnvHandler(w http.ResponseWriter, r *http.Request) {
-	// Database initialization
-	ip := ""
-	if ipProxy := r.Header.Get("X-Real-IP"); len(ipProxy) > 0 {
-		ip = ipProxy
-	} else {
-		ip, _, _ = net.SplitHostPort(r.RemoteAddr)
-	}
-	fmt.Fprint(w, ip)
-}
-
-func LoginFormHandler(w http.ResponseWriter, r *http.Request) {
+func LoginFormHandler(w http.ResponseWriter, r *http.Request) error{
 	db, err := openDb()
-	if err!=nil {
-		fmt.Fprint(w, err)
-		return
-	}
+	if err != nil { return err }
 	defer db.Close()
 
 	userIp := ""
@@ -676,10 +557,7 @@ func LoginFormHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	attempts, err := gen.CheckAttempts(db, userIp)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
+	if err != nil { return err }
 
 	var script, captcha template.HTML
 	if attempts > 2 {
@@ -693,32 +571,62 @@ func LoginFormHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err = templates.ExecuteTemplate(w, "login.html", registerData)
 	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
+		return util.NewError(err, "Failed to load page", 500)
+	}
+	return nil
+}
+
+func AppCityHandler(w http.ResponseWriter, r *http.Request) error {
+	db, err := openDb()
+	if err != nil { return err }
+	defer db.Close()
+	cities, err := gen.ReturnFilter(db)
+	if err != nil { return err }
+
+	jsonCities, err := json.MarshalIndent(cities, "", "    ")
+	if err != nil {
+		return util.NewError(err, "Json conversion failed", 500)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, string(jsonCities))
+	return nil
+}
+
+type handlerWrapper func(http.ResponseWriter, *http.Request) error
+
+func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if err := fn(w, r); err != nil {
+		if myErr, ok := err.(util.MyError); ok {
+			http.Error(w, myErr.Message, myErr.Code)
+			if myErr.LogError != nil {
+				util.PrintLog(myErr)
+			}
+		}
 	}
 }
 
 func main() {
 	util.ConfigureLog()
-	http.HandleFunc("/l/", ListingsHandler)
-	http.HandleFunc("/u/", UserHandler)
-	http.HandleFunc("/a/", AppHandler)
-	http.HandleFunc("/login", LoginHandler)
-	http.HandleFunc("/register", RegistrationHandler)
-	http.HandleFunc("/loginForm", LoginFormHandler)
-	http.HandleFunc("/loginForm/", LoginFormHandler)
-	http.HandleFunc("/auth/", AccountAuthHandler)
-	http.HandleFunc("/logout", LogoutHandler)
-	http.HandleFunc("/reserveSubmit", ReserveHandler)
-	http.HandleFunc("/reserve", ReserveFormHandler)
-	http.HandleFunc("/create", CreateListingHandler)
-	http.HandleFunc("/createSubmit", CreateSubmitHandler)
-	http.HandleFunc("/dashboard/listings", DashListingsHandler)
-	http.HandleFunc("/dashboard/messages", DashMessagesHandler)
-	http.HandleFunc("/dashboard/reservations", DashReservationsHandler)
-	http.HandleFunc("/dashboard/listings/delete", DeleteListingHandler)
-	http.HandleFunc("/env", EnvHandler)
-	http.HandleFunc("/upload", UploadHandler)
-	http.HandleFunc("/", RootHandler)
+	http.Handle("/l/", handlerWrapper(ListingsHandler))
+	http.Handle("/u/", handlerWrapper(UserHandler))
+	http.Handle("/a/listings", handlerWrapper(AppListingsHandler))
+	http.Handle("/a/listings/", handlerWrapper(AppListingsHandler))
+	http.Handle("/a/cities", handlerWrapper(AppCityHandler))
+	http.Handle("/login", handlerWrapper(LoginHandler))
+	http.Handle("/register", handlerWrapper(RegistrationHandler))
+	http.Handle("/loginForm", handlerWrapper(LoginFormHandler))
+	http.Handle("/loginForm/", handlerWrapper(LoginFormHandler))
+	http.Handle("/auth/", handlerWrapper(AccountAuthHandler))
+	http.Handle("/logout", handlerWrapper(LogoutHandler))
+	http.Handle("/reserveSubmit", handlerWrapper(ReserveHandler))
+	http.Handle("/reserve", handlerWrapper(ReserveFormHandler))
+	http.Handle("/create", handlerWrapper(CreateListingHandler))
+	http.Handle("/createSubmit", handlerWrapper(CreateSubmitHandler))
+	http.Handle("/dashboard/listings", handlerWrapper(DashListingsHandler))
+	http.Handle("/dashboard/messages", handlerWrapper(DashMessagesHandler))
+	http.Handle("/dashboard/reservations", handlerWrapper(DashReservationsHandler))
+	http.Handle("/dashboard/listings/delete", handlerWrapper(DeleteListingHandler))
+	http.Handle("/upload", handlerWrapper(UploadHandler))
+	http.Handle("/", handlerWrapper(RootHandler))
 	http.ListenAndServe(":8080", nil)
 }

@@ -3,25 +3,25 @@ package gen
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	"errors"
+	"data/util"
 )
 
 func CreateReservation(db *sql.DB, userId int, listingId int, seats int, message string) error {
 	ride, err := ReturnIndividualListing(db, listingId)
 	if err != nil {
-		return errors.New("Listing does not exist")
+		return err
 	}
 
 	if userId == ride.Driver {
-		return errors.New("Cannot register for a ride you own")
+		return util.NewError(nil, "Cannot register for a ride you own", 400)
 	}
 
 	if seats > ride.Seats {
-		return errors.New("Not enough seats available")
+		return util.NewError(nil, "Not enough seats available", 400)
 	}
 
 	if seats <= 0 {
-		return errors.New("Have to register for at least one seat")
+		return util.NewError(nil, "You must register for at least one seat", 400)
 	}
 	
 	err = validReservation(db, userId, listingId, ride.DateLeaving)
@@ -44,15 +44,14 @@ func validReservation(db *sql.DB, userId int, listingId int, date string) error 
 	`)
 	
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
 	t := ""
 	err = stmt.QueryRow(listingId, userId).Scan(&t)
 	if err == nil {
-		e := errors.New("You are already on this reservation queue")
-		return e
+		return util.NewError(nil, "You are already on this reservation queue", 400)
 	}
 
 	stmt2, err := db.Prepare(`
@@ -66,18 +65,14 @@ func validReservation(db *sql.DB, userId int, listingId int, date string) error 
 	`)
 	
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return util.NewError(err, "Database error", 500)
 	}
 	defer stmt2.Close()
 
-	// db.Query() prepares, executes, and closes a prepared statement - three round
-	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	rows, err := stmt2.Query(userId, date, date)
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return util.NewError(err, "Database error", 500)
 	}
-	// Always defer rows.Close(), even if you explicitly Close it at the end of the
-	// loop. The connection will have the chance to remain open otherwise.
 	defer rows.Close()
 
 	results := make ([]int, 0)
@@ -86,20 +81,18 @@ func validReservation(db *sql.DB, userId int, listingId int, date string) error 
 		var temp int
 		err := rows.Scan(&temp)
 		if err != nil {
-			panic(err.Error()) // Have a proper error in production
+			return util.NewError(err, "Database error", 500)
 		}
 		results = append(results, temp)
 	}
 	for _, v := range results {
 		if v == listingId {
-			e := errors.New("You are already registered for this listing")
-			return e
+			return util.NewError(nil, "You are already registered for this listing", 400)
 		}
 	}
 
 	if len(results) != 0 {
-		e := errors.New("You are already registered for a ride at this time")
-		return e
+		return util.NewError(nil, "You are already registered for a ride at this time", 400)
 	}
 
 	return nil
@@ -110,13 +103,15 @@ func CheckReservationQueue(db *sql.DB, listingId int) (bool, error) {
 		SELECT * FROM reservation_queue 
 			WHERE listing_id = ?
 		`)
+	if err != nil {
+		return false, util.NewError(err, "Database error", 500)
+	}
 	defer stmt.Close()
 	rows, err := stmt.Query(listingId)
 	if err != nil {
-		return false, errors.New("Failed accessing DB") 
+		return false, util.NewError(err, "Database error", 500)
 	}
-	// Always defer rows.Close(), even if you explicitly Close it at the end of the
-	// loop. The connection will have the chance to remain open otherwise.
+
 	defer rows.Close()
 
 	for rows.Next() {
@@ -130,14 +125,14 @@ func makeReservation(db *sql.DB, listingId int, seats int, userId int, message s
 		INSERT INTO reservation_queue (listing_id, seats, passenger_id, message)
 			VALUES (?, ?, ?, ?)
 		`)
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
 	defer stmt.Close()
 
-	if err != nil {
-		return err
-	}
 	_, err = stmt.Exec(listingId, seats, userId, message)
 	if err != nil {
-		return err
+		return util.NewError(err, "Database error", 500)
 	}
 	return nil
 }

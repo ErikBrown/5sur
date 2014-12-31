@@ -4,7 +4,6 @@ import (
 	"data/util"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	"errors"
 	"net/http"
 	"strconv"
 )
@@ -107,13 +106,13 @@ func GetDashListings(db *sql.DB, userId int) ([]DashListing, error) {
 		`)
 
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return results, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(userId)
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return results, util.NewError(err, "Database error", 500)
 	}
 
 		// The last rows.Next() call will encounter an EOF error and call rows.Close()
@@ -122,7 +121,7 @@ func GetDashListings(db *sql.DB, userId int) ([]DashListing, error) {
 		var temp DashListing
 		err := rows.Scan(&date, &temp.Origin, &temp.Destination, &temp.ListingId, &temp.Seats, &temp.Fee)
 		if err != nil {
-			panic(err.Error()) // Have a proper error in production
+			return results, util.NewError(err, "Database error", 500)
 		}
 		convertedDate := util.PrettyDate(date, false)
 		temp.Day = convertedDate.Day
@@ -150,13 +149,13 @@ func GetDashReservations(db *sql.DB, userId int) ([]DashReservation, error) {
 		`)
 
 	if err != nil {
-		return results, err
+		return results, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(userId)
 	if err != nil {
-		return results, err
+		return results, util.NewError(err, "Database error", 500)
 	}
 
 		// The last rows.Next() call will encounter an EOF error and call rows.Close()
@@ -164,7 +163,7 @@ func GetDashReservations(db *sql.DB, userId int) ([]DashReservation, error) {
 		temp := DashReservation{}
 		err := rows.Scan(&temp.ListingId, &temp.Time, &temp.Origin, &temp.Destination, &temp.Seats, &temp.Fee)
 		if err != nil {
-			return results, err
+			return results, util.NewError(err, "Database error", 500)
 		}
 		results = append(results, temp)
 	}
@@ -185,20 +184,20 @@ func GetDashMessages(db *sql.DB, userId int) ([]DashMessages, error) {
 			GROUP BY m.sender;
 		`)
 	if err != nil {
-		return results, err
+		return results, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(userId)
 	if err != nil {
-		return results, err
+		return results, util.NewError(err, "Database error", 500)
 	}
 
 	for rows.Next() {
 		var temp DashMessages
 		err := rows.Scan(&temp.Id, &temp.Name, &temp.Picture, &temp.Count, &temp.Opened)
 		if err != nil {
-			return results, err
+			return results, util.NewError(err, "Database error", 500)
 		}
 		results = append(results, temp)
 	}
@@ -220,7 +219,7 @@ func SpecificDashMessage(db *sql.DB, messages []DashMessages, recipient int, use
 		}
 	}
 	if !found {
-		return MessageThread{}, errors.New("Could not find specific message")
+		return MessageThread{}, util.NewError(nil, "Could not find specific message", 400)
 	}
 	var err error
 	message.Messages, err = getMessages(db, recipient, userId)
@@ -231,7 +230,7 @@ func SpecificDashMessage(db *sql.DB, messages []DashMessages, recipient int, use
 }
 
 func getMessages(db *sql.DB, recipient int, userId int) ([]SpecificMessage, error) {
-	messages := make ([]SpecificMessage, 0)
+	results := make ([]SpecificMessage, 0)
 	stmt, err := db.Prepare(`
 		SELECT m.id, m.sender, m.date, m.message 
 			FROM messages AS m 
@@ -239,13 +238,13 @@ func getMessages(db *sql.DB, recipient int, userId int) ([]SpecificMessage, erro
 				OR (receiver = ? AND sender = ?);
 		`)
 	if err != nil {
-		return messages, err
+		return results, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(recipient, userId, userId, recipient)
 	if err != nil {
-		return messages, err
+		return results, util.NewError(err, "Database error", 500)
 	}
 
 	for rows.Next() {
@@ -254,7 +253,7 @@ func getMessages(db *sql.DB, recipient int, userId int) ([]SpecificMessage, erro
 		var s sql.NullString
 		err := rows.Scan(&temp.Id, &sender, &temp.Date, &s)
 		if err != nil {
-			return messages, err
+			return results, util.NewError(err, "Database error", 500)
 		}
 		// Check for null value
 		if s.Valid {
@@ -266,10 +265,10 @@ func getMessages(db *sql.DB, recipient int, userId int) ([]SpecificMessage, erro
 		} else {
 			temp.Sent = false
 		}
-		messages = append(messages, temp)
+		results = append(results, temp)
 	}
 
-	return messages, nil
+	return results, nil
 }
 
 func SpecificDashListing(db *sql.DB, listings []DashListing, listingId int) (SpecificListing, error) {
@@ -285,7 +284,7 @@ func SpecificDashListing(db *sql.DB, listings []DashListing, listingId int) (Spe
 	}
 
 	if !found {
-		return SpecificListing{}, errors.New("Could not find specific listing")
+		return SpecificListing{}, util.NewError(nil, "Could not find specific listing", 400)
 	}
 	var result SpecificListing
 	result.Day = myListing.Day
@@ -326,7 +325,7 @@ func SpecificDashReservation(db *sql.DB, reservations []DashReservation, listing
 	}
 
 	if !found {
-		return Reservation{}, errors.New("Could not find specific reservation")
+		return Reservation{}, util.NewError(nil, "Could not find specific reservation", 400)
 	}
 
 	stmt, err := db.Prepare(`
@@ -336,19 +335,19 @@ func SpecificDashReservation(db *sql.DB, reservations []DashReservation, listing
 			WHERE r.listing_id = ?
 		`)
 	if err != nil {
-		return Reservation{}, err
+		return Reservation{}, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(listingId)
 	if err != nil {
-		return Reservation{}, err
+		return Reservation{}, util.NewError(err, "Database error", 500)
 	}
 
 	for rows.Next() {
 		err := rows.Scan(&results.DriverId, &results.DriverName, &results.DriverPicture)
 		if err != nil {
-			return Reservation{}, err
+		return Reservation{}, util.NewError(err, "Database error", 500)
 		}
 	}
 
@@ -356,6 +355,7 @@ func SpecificDashReservation(db *sql.DB, reservations []DashReservation, listing
 }
 
 func getPendingUsers(db *sql.DB, listingId int) ([]PendingUser, error) {
+	var results []PendingUser
 	stmt, err := db.Prepare(`
 		SELECT r.message, u.id, u.name, u.picture, r.seats
 			FROM reservation_queue as r
@@ -364,23 +364,21 @@ func getPendingUsers(db *sql.DB, listingId int) ([]PendingUser, error) {
 	`)
 	
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return results, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(listingId)
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return results, util.NewError(err, "Database error", 500)
 	}
-	// Always defer rows.Close(), even if you explicitly Close it at the end of the
-	// loop. The connection will have the chance to remain open otherwise.
 	defer rows.Close()
-	var results []PendingUser
+
 	for rows.Next() {
 		var temp PendingUser
 		err := rows.Scan(&temp.Message, &temp.Id, &temp.Name, &temp.Picture, &temp.Seats)
 		if err != nil {
-			panic(err.Error()) // Have a proper error in production
+			return results, util.NewError(err, "Database error", 500)
 		}
 		results = append(results, temp)
 	}
@@ -409,6 +407,7 @@ func getPendingUser(db *sql.DB, listingId int, pendingUserId int) (PendingUser, 
 }
 
 func getRegisteredUsers(db *sql.DB, listingId int) ([]RegisteredUser, error) {
+	var results []RegisteredUser
 	stmt, err := db.Prepare(`
 		SELECT u.id, u.name, u.picture, r.seats
 			FROM reservations as r
@@ -416,22 +415,21 @@ func getRegisteredUsers(db *sql.DB, listingId int) ([]RegisteredUser, error) {
 			WHERE r.listing_id = ?;
 	`)
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return results, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(listingId)
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return results, util.NewError(err, "Database error", 500)
 	}
 	defer rows.Close()
 
-	var results []RegisteredUser
 	for rows.Next() {
 		var temp RegisteredUser
 		err := rows.Scan( &temp.Id, &temp.Name, &temp.Picture, &temp.Seats)
 		if err != nil {
-			panic(err.Error()) // Have a proper error in production
+			return results, util.NewError(err, "Database error", 500)
 		}
 		results = append(results, temp)
 	}
@@ -456,7 +454,7 @@ func deleteFromQueue(db *sql.DB, userId int, listingId int, passenger_id int) (b
 		`)
 	
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return false, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
@@ -464,11 +462,11 @@ func deleteFromQueue(db *sql.DB, userId int, listingId int, passenger_id int) (b
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	affected, err := stmt.Exec(passenger_id, userId, listingId, listingId)
 	if err != nil {
-		return false, err
+		return false, util.NewError(err, "Database error", 500)
 	}
 	rowsDeleted, err := affected.RowsAffected()
 	if err != nil {
-		panic(err.Error())
+		return false, util.NewError(err, "Database error", 500)
 	}
 	if rowsDeleted == 0{
 		return false, nil
@@ -485,19 +483,17 @@ func deleteFromReservations(db *sql.DB, driverId int, listingId int, passengerId
 		`)
 	
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return false, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
-	// db.Query() prepares, executes, and closes a prepared statement - three round
-	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	affected, err := stmt.Exec(driverId, listingId, passengerId)
 	if err != nil {
-		return false, err
+		return false, util.NewError(err, "Database error", 500)
 	}
 	rowsDeleted, err := affected.RowsAffected()
 	if err != nil {
-		panic(err.Error())
+		return false, util.NewError(err, "Database error", 500)
 	}
 	if rowsDeleted == 0{
 		return false, nil
@@ -519,7 +515,7 @@ func addToReservation(db *sql.DB, userId int, listingId int, passengerId int, se
 		`)
 	
 	if err != nil {
-		return err // Have a proper error in production
+		return util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
@@ -527,7 +523,7 @@ func addToReservation(db *sql.DB, userId int, listingId int, passengerId int, se
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	_, err = stmt.Exec(listingId, userId, passengerId, seats, listingId, userId, passengerId)
 	if err != nil {
-		return err
+		return util.NewError(err, "Database error", 500)
 	}
 	return nil
 }
@@ -540,12 +536,12 @@ func updateSeats(db *sql.DB, userId int, listingId int, seats int) error {
 				AND driver = ?;
 			`)
 	if err != nil {
-		return err // Have a proper error in production
+		return util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 	_, err = stmt.Exec(seats, listingId, userId)
 	if err != nil {
-		return err
+		return util.NewError(err, "Database error", 500)
 	}
 	return nil
 }
@@ -556,19 +552,18 @@ func findSeats(db *sql.DB, listingId int, toRemove int) (int, error) {
 			WHERE passenger_id = ? AND listing_id = ?
 	`)
 	if err != nil {
-		panic(err.Error()) // Have a proper error in production
+		return 0, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 	var seats int
 	err = stmt.QueryRow(toRemove, listingId).Scan(&seats)
 	if err != nil {
-		return seats, err
+		return seats, util.NewError(err, "Database error", 500)
 	}
 	return seats, nil
 }
 
 func DeleteListing(db *sql.DB, userId int, listingId int) error {
-
 	stmt, err := db.Prepare(`
 		DELETE l, r, rq
 			FROM listings AS l
@@ -578,7 +573,7 @@ func DeleteListing(db *sql.DB, userId int, listingId int) error {
 				AND l.id = ?
 	`)
 	if err != nil {
-		return err
+		return util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
@@ -586,7 +581,7 @@ func DeleteListing(db *sql.DB, userId int, listingId int) error {
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	_, err = stmt.Exec(userId, listingId)
 	if err != nil {
-		return err
+		return util.NewError(err, "Database error", 500)
 	}
 	return nil
 }
@@ -598,7 +593,7 @@ func CheckReservePost(db *sql.DB, userId int, r *http.Request, listingId int) (s
 		// Handle deleting this reservation
 		driverId, err := strconv.Atoi(r.FormValue("r"))
 		if err != nil {
-			return "", errors.New("Invalid")
+			return "", util.NewError(nil, "Invalid user", 400)
 		}
 		seats, err := findSeats(db, listingId, userId)
 		if err != nil {
@@ -627,7 +622,7 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 	if r.FormValue("a") != "" {
 		passengerId, err := strconv.Atoi(r.FormValue("a"))
 		if err != nil {
-			return errors.New("Invalid")
+			return util.NewError(nil, "Invalid passenger", 400)
 		}
 		pendingUser, err := getPendingUser(db, listingId, passengerId)
 		if err != nil {
@@ -652,7 +647,7 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 	if r.FormValue("r") != "" {
 		remove, err := strconv.Atoi(r.FormValue("r"))
 		if err != nil {
-			return errors.New("Invalid")
+			return util.NewError(nil, "Invalid passenger", 400)
 		}
 		deleted, err := deleteFromQueue(db, userId, listingId, remove)
 		if err != nil {
@@ -677,7 +672,7 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 	if r.FormValue("m") != "" {
 		_, err := strconv.Atoi(r.FormValue("m"))
 		if err != nil {
-			return errors.New("Invalid")
+			return util.NewError(nil, "Invalid passenger", 400)
 		}
 		// Deal with messenging
 	}

@@ -1,0 +1,89 @@
+<!doctype html>
+
+<html>
+
+<head>
+
+<meta charset='utf-8'>
+<meta name="viewport" content="width=device-width">
+
+<link rel="icon" type="image/png" href="https://5sur.com/graphics/favicon.png">
+<!-- remove the extra weights -->
+<link href='https://fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:400,400italic,600,300,700,800|Bitter:400,400italic,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="style.css" />
+
+
+<title>5Sur - Dashboard</title>
+
+</head>
+
+<body id="listings_page">
+
+<div id="header">
+	<a href="https://5sur.com/" id="header_logo"></a>
+</div>
+
+<ul id="content_header">
+	<li><a href="https://5sur.com/dashboard/">Dashboard</a></li>
+	<li><a href="https://5sur.com/dashboard/listings">Listings</a></li>
+	<li>
+		<span id="dash_date">May 22 - 12:30</span>
+		<span id="dash_title">Chillan to Santiago: </span>
+		<span id="dash_delete"></span>
+	</li>
+</ul>
+
+<div id="sidebar">
+	<ul>
+		<li id="sidebar_messages"><a href="https://5sur.com/dashboard/messages">Messages</a></li>
+		<li id="sidebar_listings" class="active"><a href="https://5sur.com/dashboard/listings">Listings</a></li>
+		<li id="sidebar_reservations"><a href="https://5sur.com/dashboard/reservations">Reservations</a></li>
+		<li id="sidebar_settings"><a href="https://5sur.com/dashboard/settings">Settings</a></li>
+	</ul>
+</div>
+<div id="sub_sidebar">
+	<ul>
+		<li>
+			<a href="https://5sur.com/dashboard/listings?l=">
+				<div class="calendar_icon">
+					<span class="calendar_icon_month">May</span>
+					<span class="calendar_icon_day">12</span>
+				</div>
+				<span class="sidebar_text">Santiago to Curico</span>
+				<span class="sidebar_alert">!</span>
+			</a>
+		</li>
+		<li>
+			<a href="https://5sur.com/dashboard/listings?l=">
+				<div class="calendar_icon">
+					<span class="calendar_icon_month">May</span>
+					<span class="calendar_icon_day">18</span>
+				</div>
+				<span class="sidebar_text">Someplace to Curico</span>
+			</a>
+		</li>
+		<li class="active">
+			<a href="https://5sur.com/dashboard/listings?l=">
+				<div class="calendar_icon">
+					<span class="calendar_icon_month">May</span>
+					<span class="calendar_icon_day">22</span>
+				</div>
+				<span class="sidebar_text">Chillan to Santiago</span>
+				<span class="sidebar_alert">!</span>
+			</a>
+		</li>
+		<li>
+			<a href="https://5sur.com/dashboard/listings?l=">
+				<div class="calendar_icon">
+					<span class="calendar_icon_month">Jun</span>
+					<span class="calendar_icon_day">3</span>
+				</div>
+				<span class="sidebar_text">Santiago to Location</span>
+			</a>
+		</li>
+	</ul>
+</div>
+<script src="dashboard.js"></script>
+</body>
+
+</html>

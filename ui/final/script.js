@@ -1,28 +1,24 @@
+/***** Form Page *****/
+var form = document.getElementById('login_form');
+
+function setFormHeight() {
+	form.style.minHeight = window.innerHeight - 100 + "px";
+}
+
+window.onload = function() {
+	setFormHeight();
+}
+
+window.onresize = function() {
+	setFormHeight();
+}
+
+/***** Calendar Widget *****/
+
 var today = new Date();
-// var todayConst = new Date();
-// alert(today.getDate());
-// alert(today.getDay());
-// alert(today.getMonth()+1);
-// alert(today.getFullYear());
-// today.setDate(32);
-// today.setDate(2);
 var months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 var monthColors = ['#35A6D0', '#D37056', '#61BE71', '#7C5498', '#AE75A3', '#54A7CF', '#60AE6D', '#C4BF66', '#D9B340', '#71ACB3', '#947C52', '#2D4B93'];
-/*
-var dayMax = [31, febDays(today), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
-function febDays(d) {
-	if (d.getFullYear() % 4 != 0) {
-		return 28;
-	} else if (d.getFullYear() % 100 != 0) {
-		return 29;
-	} else if (d.getFullYear() % 400 != 0) {
-		return 28;
-	} else {
-		return 29;
-	}
-}
-*/
 
 var searchWrapper = document.getElementById('search_wrapper');
 var calendar = document.getElementById('calendar');

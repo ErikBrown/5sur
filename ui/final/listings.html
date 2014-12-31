@@ -1,0 +1,160 @@
+<!doctype html>
+
+<html>
+
+<head>
+
+<meta charset='utf-8'>
+<meta name="viewport" content="width=device-width">
+
+<link rel="icon" type="image/png" href="https://5sur.com/graphics/favicon.png">
+<!-- remove the extra weights -->
+<link href='https://fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:400,400italic,600,300,700,800|Bitter:400,400italic,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="style.css" />
+
+
+<title>5Sur - Listings</title>
+
+</head>
+
+<body id="listings_page">
+
+<div id="header">
+	<a href="https://5sur.com/" id="header_logo"></a>
+</div>
+
+<div id="search_wrapper">
+	<form method="post" action="https://5sur.com/l/" id="search_form">
+		<select name="Origin" id="origin_select" class="search_option">
+			<option disabled selected class="blank_option"></option>
+			<option value="1">City 1</option>
+			<option value="2">City 2</option>
+			<option value="3">City 3</option>
+			<option value="4">City 4</option>
+			<option value="5">City 5</option>
+		</select>
+		<span class="to">&#10132;</span>
+		<select name="Destination" id="destination_select" class="search_option">
+			<option disabled selected class="blank_option"></option>
+			<option value="1">City 1</option>
+			<option value="2">City 2</option>
+			<option value="3">City 3</option>
+			<option value="4">City 4</option>
+			<option value="5">City 5</option>
+		</select>
+		<span class="to">&#128343;</span>
+		<input type="text" name="Date" placeholder="Select date..." autocomplete="off" id="date_box" class="search_option">
+		<input type="text" name="Time" placeholder="Select time..." autocomplete="off" id="time_box" class="search_option">
+		<div id="calendar_wrapper">
+			<div id="month_wrapper">
+				<span id="month_left">&#9664;</span>
+				<span id="month_title"></span>
+				<span id="month_right">&#9654;</span>
+			</div>
+			<table id="calendar">
+				<thead>
+					<tr>
+						<th>lu</th>
+						<th>ma</th>
+						<th>mi</th>
+						<th>ju</th>
+						<th>vi</th>
+						<th>sa</th>
+						<th>su</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	<input type="submit" name="FilterSubmit" value="Find a ride!" id="search_submit">
+	</form>
+</div>
+
+<div id="listing_item_wrapper">
+	<a href="https://5sur.com/reserve?l=">
+		<div class="listing_item">
+			<div class="listing_date">
+				<span class="listing_date_month">Jan</span>
+				<span class="listing_date_day">25th</span>
+				<span class="listing_date_time">12:30</span>
+			</div>
+			<div class="listing_user">
+				<img src="https://5sur.com/default.png" alt="User Image">
+				<span class="reputation_score">+78</span>
+			</div>
+			<div class="listing_cities">
+				<span>Chillán</span>
+				<span class="to">&#10132;</span>
+				<span>Curicó</span>
+			</div>
+			<div class="listing_seats">
+				<span class="listing_seats_number">4</span>
+				<span class="listing_seats_title">Seats</span>
+			</div>
+			<div class="listing_fee">
+				$1.50
+			</div>
+		</div>
+	</a>
+</div>
+
+
+<div id="listing_item_wrapper">
+	<a href="https://5sur.com/reserve?l=">
+		<div class="listing_item">
+			<div class="listing_date">
+				<span class="listing_date_month">Jan</span>
+				<span class="listing_date_day">25th</span>
+				<span class="listing_date_time">13:00</span>
+			</div>
+			<div class="listing_user">
+				<img src="https://5sur.com/usr2.png" alt="User Image">
+				<span class="reputation_score">+64</span>
+			</div>
+			<div class="listing_cities">
+				<span>Chillán</span>
+				<span class="to">&#10132;</span>
+				<span>Curicó</span>
+			</div>
+			<div class="listing_seats">
+				<span class="listing_seats_number">1</span>
+				<span class="listing_seats_title">Seat</span>
+			</div>
+			<div class="listing_fee">
+				$1.50
+			</div>
+		</div>
+	</a>
+</div>
+
+<div id="listing_item_wrapper">
+	<a href="https://5sur.com/reserve?l=">
+		<div class="listing_item">
+			<div class="listing_date">
+				<span class="listing_date_month">Jan</span>
+				<span class="listing_date_day">25th</span>
+				<span class="listing_date_time">14:30</span>
+			</div>
+			<div class="listing_user">
+				<img src="https://5sur.com/default.png" alt="User Image">
+				<span class="reputation_score">+182</span>
+			</div>
+			<div class="listing_cities">
+				<span>Chillán</span>
+				<span class="to">&#10132;</span>
+				<span>Curicó</span>
+			</div>
+			<div class="listing_seats">
+				<span class="listing_seats_number">2</span>
+				<span class="listing_seats_title">Seats</span>
+			</div>
+			<div class="listing_fee">
+				$0
+			</div>
+		</div>
+	</a>
+</div>
+
+<script src="script.js"></script>
+</body>
+
+</html>
