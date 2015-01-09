@@ -13,19 +13,20 @@
 <link rel="stylesheet" type="text/css" href="style.css" />
 
 
-<title>5Sur - Login</title>
+<title>5Sur - Message</title>
 
 </head>
 
 <body id="form_page">
-	<form method="post" action="https://5sur.com/login" class="form_standard" id="plain_form">
+	<form method="post" action="https://5sur.com/message" class="form_standard" id="plain_form">
 		<a href="https://5sur.com/" id="form_logo"></a>
-		<input type="text" name="Username" placeholder="Username">
-		<input type="password" name="Password" placeholder="Password">
-		<input type="submit" value="Sign In">
-		<a href="https://5sur.com/register.html" id="switch_form">Don't have an account?</a>
+		<span>To: <b><a href="https://5sur.com/user">username</a></b></span>
+		<textarea name="Message" placeholder="Create a message... " id="message_text"></textarea>
+		<input type="submit" value="Send Message">
+		<a href="https://5sur.com/" id="discard_message">Discard message</a>
 	</form>
 <script src="formScript.js"></script>
+<script src="messageScript.js"></script>
 </body>
 
 </html>

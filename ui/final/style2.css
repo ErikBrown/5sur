@@ -92,7 +92,7 @@ h3 {
 }
 
 #header_logo:before {
-	content:url('https://5sur.com/graphics/logo_small.png');
+	content:url('graphics/logo_small.png');
 }
 
 #nav,#nav_dropdown {
@@ -121,13 +121,13 @@ h3 {
 }
 
 #nav_create {
-	background: url('https://5sur.com/graphics/create.png');
+	background: url('graphics/create.png');
 	background-size: 35px; /*temp until size is 35*/
 }
 
 #nav_alert {
 	position: relative;
-	background: url('https://5sur.com/graphics/alert.png');
+	background: url('graphics/alert.png');
 	background-size: 35px; /*temp until size is 35*/
 }
 

@@ -19,7 +19,7 @@ import (
 	// "log"
 )
 
-var templates = template.Must(template.ParseFiles("templates/login.html"))
+var templates = template.Must(template.ParseFiles("templates/login.html","templates/dashMessages.html"))
 
 func openDb() (*sql.DB, error) {
 	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
@@ -179,10 +179,10 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 	dashMessages, err := gen.GetDashMessages(db, userId)
 	if err != nil { return err }
 
-	message := gen.MessageThread{}
+	messages := gen.MessageThread{}
 	token, err := util.ValidDashQuery(r.URL) // Ignore error here
 	if err == nil {
-		message, err = gen.SpecificDashMessage(db, dashMessages, token, userId)
+		messages, err = gen.SpecificDashMessage(db, dashMessages, token, userId)
 		if err != nil { return err }
 	}
 
@@ -195,17 +195,35 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 	}
 	fmt.Fprint(w, dashMessagesPage)
 	*/
-	jsonMessages, err := json.MarshalIndent(dashMessages, "", "    ")
-	if err != nil {
-		return util.NewError(nil, "Json conversion failed", 500)
+
+	header := &gen.HeaderHTML {
+		Username: user,
+		Alerts: 4,
+		AlertText: []template.HTML{`<li><a href="https://5sur.com/dashboard/reservations"><b>Removed</b> from ride Santiago to Curico</a></li>`,
+				`<li><a href="#"><img src="https://5sur.com/usr2.png" alt="user"><b>username</b><p>Hey man you left your keys and virginity in my car</p></a></li>`,
+				`<li><a href="#"><b>New pending users</b> on Curico > Chillan</a></li>`,
+				`<li><a href="#"><img src="https://5sur.com/usr2.png" alt="user"><b>alias</b><p>Can you pick up me at my house? My address is 999 fake st</p></a></li>`},
+		UserImage: "https://5sur.com/default.png",
 	}
-	jsonMessages2, err := json.MarshalIndent(message, "", "    ")
-	if err != nil {
-		return util.NewError(nil, "Json conversion failed", 500)
+
+	body := &gen.DashMessagesHTML{
+		Title: "Dashboard",
+		SidebarMessages: dashMessages,
+		MessageThread: messages,
 	}
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprint(w, string(jsonMessages))
-	fmt.Fprint(w, string(jsonMessages2))
+
+	page := struct {
+		Header gen.HeaderHTML
+		Body gen.DashMessagesHTML
+	}{
+		*header,
+		*body,
+	}
+
+	err = templates.ExecuteTemplate(w, "dashMessages.html", page)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
 	return nil
 }
 
@@ -575,7 +593,7 @@ func LoginFormHandler(w http.ResponseWriter, r *http.Request) error{
 		script = `<script src='https://www.google.com/recaptcha/api.js'></script>`
 		captcha = `<div class="g-recaptcha" data-sitekey="6Lcjkf8SAAAAAE242oMsYj9akkUm69jfYIlSBOLF"></div>`
 	}
-	registerData := &gen.Login{
+	registerData := &gen.LoginHTML{
 		Title: "Login",
 		Script: script,
 		Captcha: captcha,

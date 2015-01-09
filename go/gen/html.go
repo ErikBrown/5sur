@@ -8,10 +8,24 @@ import (
 	"html/template"
 )
 
-type Login struct {
+type LoginHTML struct {
 	Title string
 	Script template.HTML
 	Captcha template.HTML
+}
+
+type HeaderHTML struct {
+	Username string
+	Alerts int
+	AlertText []template.HTML
+	UserImage string
+}
+
+type DashMessagesHTML struct {
+	Title string
+	Temp string
+	SidebarMessages []DashMessages
+	MessageThread MessageThread
 }
 
 type Header struct {

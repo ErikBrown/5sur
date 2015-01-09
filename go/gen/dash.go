@@ -25,7 +25,6 @@ type DashMessages struct {
 	Name string
 	Picture string
 	Count int
-	Opened bool
 }
 
 type DashReservation struct {
@@ -177,7 +176,7 @@ func GetDashMessages(db *sql.DB, userId int) ([]DashMessages, error) {
 
 	// Always prepare queries to be used multiple times. The parameter placehold is ?
 	stmt, err := db.Prepare(`
-		SELECT m.sender, u.name, u.picture, count(*), min(m.opened)
+		SELECT m.sender, u.name, u.picture, SUM(IF(m.opened = 0, 1, 0))
 			FROM messages as m 
 			JOIN users AS u 
 				ON u.id = m.sender 
@@ -196,7 +195,7 @@ func GetDashMessages(db *sql.DB, userId int) ([]DashMessages, error) {
 
 	for rows.Next() {
 		var temp DashMessages
-		err := rows.Scan(&temp.Id, &temp.Name, &temp.Picture, &temp.Count, &temp.Opened)
+		err := rows.Scan(&temp.Id, &temp.Name, &temp.Picture, &temp.Count)
 		if err != nil {
 			return results, util.NewError(err, "Database error", 500)
 		}

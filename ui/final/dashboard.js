@@ -1,12 +1,16 @@
-/***** Form Page *****/
-var sidebar1 = document.getElementById('sidebar');
+var sidebar1 = document.getElementById('main_sidebar');
 var sidebar2 = document.getElementById('sub_sidebar');
 var header = document.getElementById('header');
-var header2 = document.getElementById('content_header');
 
 function setSidebarHeight() {
-	sidebar1.style.minHeight = window.innerHeight - header.offsetHeight - header2.offsetHeight + "px";
-	sidebar2.style.minHeight = window.innerHeight - header.offsetHeight - header2.offsetHeight + "px";
+	var body = document.body,
+		html = document.documentElement;
+
+	var height = Math.max(body.scrollHeight, body.offsetHeight, 
+				html.clientHeight, html.scrollHeight, html.offsetHeight);
+	sidebar1.style.height = height - header.offsetHeight + "px";
+	sidebar2.style.height = height - header.offsetHeight + "px";
+	console.log(height - header.offsetHeight + "px");
 }
 
 window.onload = function() {

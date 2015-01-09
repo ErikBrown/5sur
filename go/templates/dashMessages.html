@@ -1,0 +1,108 @@
+<!doctype html>
+
+<html lang="es">
+
+<head>
+
+<meta charset='utf-8'>
+<meta name="viewport" content="width=device-width">
+
+<link rel="icon" type="image/png" href="https://5sur.com/graphics/favicon.png">
+<!-- remove the extra weights -->
+<link href='https://fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:400,400italic,600,300,700,800|Bitter:400,400italic,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="https://5sur.com/style2.css" />
+
+
+<title>5Sur - {{.Body.Title}}</title>
+
+</head>
+
+<body class="header_padding">
+
+<div id="header">
+	<a href="https://5sur.com/" id="header_logo"></a>
+	<ul id="nav">
+		<li id="nav_create"><a href="https://5sur.com/create"></a></li>
+		<li id="nav_alert"><span>{{.Header.Alerts}}</span></li>
+		<li id="nav_user">
+			<img src="https://5sur.com/usr.png" alt="user">
+		</li>
+	</ul>
+	<ul id="nav_dropdown">
+		<li id="nav_alert_dropdown" class="dropdown">
+			<span>4 Alerts</span>
+			<ul>
+				{{range $key, $value := .Header.AlertText}}{{$value}}
+				{{end}}
+			</ul>
+		</li>
+		<li id="nav_user_dropdown" class="dropdown">
+			<span>{{.Header.Username}}</span>
+			<ul>
+				<li><a href="https://5sur.com/user">Pr</a></li>
+				<li><a href="https://5sur.com/dashboard">Da</a></li>
+				<li><a href="https://5sur.com/logout">Lo</a></li>
+			</ul>
+		</li>
+	</ul>
+</div>
+
+<div class="sidebar" id="main_sidebar">
+	<ul>
+		<li class="message_icon selected_dark">
+			<a href="https://5sur.com/dashboard/messages"></a>
+		</li>
+		<li class="listings_icon">
+			<a href="https://5sur.com/dashboard/listings"></a>
+		</li>
+		<li class="reservation_icon">
+			<a href="https://5sur.com/dashboard/reservations"></a>
+		</li>
+		<li class="settings_icon">
+			<a href="https://5sur.com/dashboard/settings"></a>
+		</li>
+	</ul>
+</div>
+
+<div class="sidebar" id="sub_sidebar">
+	<h2>Messages</h2>
+	<ul>
+		{{range $key, $value := .Body.SidebarMessages}}
+		{{if eq $value.Id $.Body.MessageThread.UserId}}
+		<li class="selected_light">{{else}}
+		<li>{{end}}
+			<a href="https://5sur.com/dashboard/messages?i={{$value.Id}}">
+				<img src="https://5sur.com/{{$value.Picture}}">
+				<span class="sidebar_text">{{$value.Name}}</span>
+				{{if ne $value.Count 0}}
+				<span class="sidebar_alert">{{$value.Count}}</span>{{end}}
+			</a>
+		</li>
+		{{end}}
+	</ul>
+</div>
+
+<div id="dash_content" class="dash_messages">
+	<div id="dash_title">
+		<h3>Conversation with {{.Body.MessageThread.Name}}</h3>
+		<span id="dash_listing_date">Latest message: Febuary 1st, 2015</span>
+		<span>&#8226;</span>
+		<span id="dash_message_warning"><a href="https://5sur.com/">Expires in 3 days</a></span>
+	</div>
+	{{range $key, $value := .Body.MessageThread.Messages}}
+	<div class="dash_message">
+		<a href="https://5sur.com/user"><img src="https://5sur.com/{{$.Body.MessageThread.Picture}}" alt="user image"></a>
+		<span class="dash_message_name">
+			{{if eq $value.Sent true}}{{$.Header.Username}}{{else}}{{$.Body.MessageThread.Name}}{{end}}
+		</span>
+		<span class="dash_message_timestamp">{{$value.Date}}</span>
+		<p>{{$value.Message}}</p>
+	</div>
+	{{end}}
+</div>
+
+<script src="https://5sur.com/header.js"></script>
+<script src="https://5sur.com/dashboard.js"></script>
+</body>
+
+</html>
