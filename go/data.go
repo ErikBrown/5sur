@@ -184,6 +184,13 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 	if err == nil {
 		messages, err = gen.SpecificDashMessage(db, dashMessages, token, userId)
 		if err != nil { return err }
+		err = gen.SetMessagesClosed(db, token, userId)
+		if err != nil { return err }
+		for key := range dashMessages {
+			if dashMessages[key].Name == messages.Name {
+				dashMessages[key].Count = 0
+			}
+		}
 	}
 
 	// HTML generation

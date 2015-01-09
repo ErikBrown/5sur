@@ -30,7 +30,7 @@
 	</ul>
 	<ul id="nav_dropdown">
 		<li id="nav_alert_dropdown" class="dropdown">
-			<span>4 Alerts</span>
+			<span>{{.Header.Alerts}} Alerts</span>
 			<ul>
 				{{range $key, $value := .Header.AlertText}}{{$value}}
 				{{end}}

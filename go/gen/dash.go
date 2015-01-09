@@ -717,3 +717,30 @@ func SendMessage(db *sql.DB, sender int, receiver int, message string) error {
 
 	return nil
 }
+
+func SetMessagesClosed(db *sql.DB, sender int, receiver int) error {
+	stmt, err := db.Prepare(`
+		UPDATE messages SET opened = 1
+			WHERE sender = ?
+			AND receiver = ?
+		`)
+	
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+	defer stmt.Close()
+
+	// db.Query() prepares, executes, and closes a prepared statement - three round
+	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
+	res, err := stmt.Exec(sender, receiver)
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+
+	_, err = res.RowsAffected()
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+
+	return nil
+}
