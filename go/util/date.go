@@ -4,6 +4,7 @@ import (
 	"strings"
 	"strconv"
 	"time"
+	"unicode/utf8"
 )
 
 type Date struct{
@@ -20,12 +21,12 @@ var months = [12]string{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", 
 // The punctuation (-,/,_,etc) is determined by the second parameter
 func parseTimeLayout(s []string, p string) string {
 	if len(s) == 3 {
-		if len(s[0]) - 1 == 4 {
+		if utf8.RuneCountInString(s[0]) == 4 {
 			return "2006" + p + "1" + p + "_2"
 		} else {
-			if len(s[2]) == 4 {
+			if utf8.RuneCountInString(s[2]) == 4 {
 				return "_2" + p + "1" + p + "2006"
-			} else if len(s[2])== 2 {
+			} else if utf8.RuneCountInString(s[2])== 2 {
 				return "_2" + p + "1" + p + "06"
 			}
 		}

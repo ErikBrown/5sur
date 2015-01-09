@@ -6,15 +6,33 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func ReturnUserInfo(db *sql.DB, u string) (User, error) {
+type User struct {
+	Id int
+	Name string
+	Picture string
+}
+
+func ReturnUserInfo(db *sql.DB, u interface{}) (User, error) {
 	var results User
 
 	// Always prepare queries to be used multiple times. The parameter placehold is ?
-	stmt, err := db.Prepare(`
-	SELECT u.name, u.picture, u.created, u.positive_ratings, u.negative_ratings
-		FROM users as u
-		WHERE u.name = ?
-	`)
+	stmtText := ""
+
+	switch u.(type) {
+		case string:
+			stmtText = `
+				SELECT u.id, u.name, u.picture
+					FROM users as u
+					WHERE u.name = ?
+				`
+		case int:
+			stmtText = `
+				SELECT u.id, u.name, u.picture
+					FROM users as u
+					WHERE u.id = ?
+				`
+	}
+	stmt, err := db.Prepare(stmtText)
 	
 	if err != nil {
 		return results, util.NewError(err, "Database error", 500)
@@ -32,7 +50,7 @@ func ReturnUserInfo(db *sql.DB, u string) (User, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.Scan(&results.Name, &results.Picture, &results.Created, &results.RatingPositive, &results.RatingNegative)
+		err := rows.Scan(&results.Id, &results.Name, &results.Picture)
 		if err != nil {
 			return results, util.NewError(err, "Database error", 500)
 		}

@@ -213,3 +213,37 @@ func ValidDashQuery(u *url.URL) (int, error) {
 	}
 	return i, nil
 }
+
+func ValidMessageURL(r *http.Request) (int, error) {
+	u, err := url.Parse(r.URL.String())
+	if err != nil {
+		return 0, NewError(err, "Internal server error", 500)
+	}
+	m, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		return 0, NewError(err, "Internal server error", 500)
+	}
+	if _,ok := m["i"]; !ok {
+		return 0, NewError(nil, "Missing message recipient", 400)
+	}
+	userId, err := strconv.Atoi(m["i"][0])
+	if err != nil {
+		return 0, NewError(nil, "Invalid message recipient", 400)
+	}
+	return userId, nil
+}
+
+func ValidMessagePost(r *http.Request) (int, string, error) {
+	if r.FormValue("Recipient") == "" || r.FormValue("Message") == ""{
+		return 0, "", NewError(nil, "Missing required fields", 400)
+	}
+	
+	recipient, err := strconv.Atoi(r.FormValue("Recipient"))
+	if err != nil {
+		return 0, "", NewError(nil, "Invalid message recipient", 400)
+	}
+	if utf8.RuneCountInString(r.FormValue("Message")) > 500 {
+		return 0, "", NewError(nil, "Message too long (500 character max length)", 400)
+	}
+	return recipient, r.FormValue("Message"), nil
+}

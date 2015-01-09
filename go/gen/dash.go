@@ -692,10 +692,10 @@ func SendMessage(db *sql.DB, sender int, receiver int, message string) error {
 			SELECT ? AS sender, ? AS receiver, ? AS message FROM dual
 				WHERE EXISTS (
 					SELECT listing_id
-						FROM reservations
-						WHERE (sender = ? AND receiver = ?)
-					OR (receiver = ? AND sender = ?)
-			) LIMIT 1;
+						FROM reservations as r
+						WHERE (r.driver_id = ? AND r.passenger_id = ?)
+						OR (r.passenger_id = ? AND r.driver_id = ?)
+				) LIMIT 1;
 		`)
 	
 	if err != nil {
@@ -703,16 +703,17 @@ func SendMessage(db *sql.DB, sender int, receiver int, message string) error {
 	}
 	defer stmt.Close()
 
-	// db.Query() prepares, executes, and closes a prepared statement - three round
-	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
-	res, err := stmt.Exec(sender, receiver, message, sender, receiver, receiver, sender)
+	res, err := stmt.Exec(sender, receiver, message, sender, receiver, sender, receiver)
 	if err != nil {
 		return util.NewError(err, "Database error", 500)
 	}
 
-	_, err = res.RowsAffected()
+	rowCnt, err := res.RowsAffected()
 	if err != nil {
 		return util.NewError(err, "Database error", 500)
+	}
+	if rowCnt == 0 {
+		return util.NewError(err, "You do not have permissions to message this person", 400)
 	}
 
 	return nil

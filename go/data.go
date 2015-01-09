@@ -19,7 +19,7 @@ import (
 	// "log"
 )
 
-var templates = template.Must(template.ParseFiles("templates/login.html","templates/dashMessages.html"))
+var templates = template.Must(template.ParseFiles("templates/login.html","templates/dashMessages.html","templates/message.html"))
 
 func openDb() (*sql.DB, error) {
 	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
@@ -628,6 +628,56 @@ func AppCityHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func MessageHandler(w http.ResponseWriter, r *http.Request) error {
+	recipientId, err := util.ValidMessageURL(r)
+	if err != nil { return err }
+
+	db, err := openDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	// User authentication
+	_, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
+
+	if userId == 0 {
+		http.Redirect(w, r, "https://5sur.com/login", 301)
+		return nil
+	}
+	userInfo, err := gen.ReturnUserInfo(db, recipientId)
+	if err != nil { return err }
+
+	err = templates.ExecuteTemplate(w, "message.html", userInfo)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
+	return nil
+}
+
+func MessageSubmitHandler(w http.ResponseWriter, r *http.Request) error {
+	db, err := openDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	// User authentication
+	_, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
+
+	if userId == 0 {
+		http.Redirect(w, r, "https://5sur.com/login", 301)
+		return nil
+	}
+
+	recipient, message, err := util.ValidMessagePost(r)
+	if err != nil { return err }
+
+	err = gen.SendMessage(db, userId, recipient, message)
+	if err != nil { return err }
+	
+	fmt.Fprint(w, "Message submitted successfully!:" + "\n\n" + r.FormValue("Recipient") + "\n\n" + r.FormValue("Message"))
+	return nil
+}
+
 type handlerWrapper func(http.ResponseWriter, *http.Request) error
 
 func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -663,6 +713,8 @@ func main() {
 	http.Handle("/dashboard/reservations", handlerWrapper(DashReservationsHandler))
 	http.Handle("/dashboard/listings/delete", handlerWrapper(DeleteListingHandler))
 	http.Handle("/upload", handlerWrapper(UploadHandler))
+	http.Handle("/message", handlerWrapper(MessageHandler))
+	http.Handle("/messageSubmit", handlerWrapper(MessageSubmitHandler))
 	http.Handle("/", handlerWrapper(RootHandler))
 	http.ListenAndServe(":8080", nil)
 }
