@@ -134,7 +134,7 @@ func ValidListingQuery(u *url.URL) (ListingQueryFields, error) {
 
 	timeVar, err := ReturnTime(m["t"][0], m["h"][0])
 	if err != nil {
-		return ListingQueryFields{}, NewError(nil, "Invalid time", 400)
+		return ListingQueryFields{}, err
 	}
 
 	return ListingQueryFields{city1, city2, timeVar.Format("2006-01-02"), timeVar.Format("15:04")}, nil

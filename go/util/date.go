@@ -36,10 +36,10 @@ func parseTimeLayout(s []string, p string) string {
 
 // Returns time layout for time.Parse
 func returnTimeLayout(t string) string {
-	splits := strings.SplitAfter(t, "/")
+	splits := strings.Split(t, "/")
 	layout := parseTimeLayout(splits, "/")
 	if layout == "" {
-		splits = strings.SplitAfter(t, "-")
+		splits = strings.Split(t, "-")
 		layout = parseTimeLayout(splits, "-")
 	}
 	if layout == "" {
@@ -59,7 +59,7 @@ func ReturnTime(d string, t string) (time.Time, error) {
 	}
 
 	layout := returnTimeLayout(d)
-	splits := strings.SplitAfter(t, ":")
+	splits := strings.Split(t, ":")
 	if len(splits) == 1 {
 		layout += " 15"
 	} else {
@@ -88,7 +88,7 @@ func ReturnTimeString(humanReadable bool, d string, t string) (string, string, e
 	}
 
 	layout := returnTimeLayout(d)
-	splits := strings.SplitAfter(t, ":")
+	splits := strings.Split(t, ":")
 	if len(splits) == 1 {
 		layout += " 15"
 	} else {
@@ -111,7 +111,7 @@ func ReturnCurrentTimeString() (string, string) {
 
 //FORM yyyy-mm-dd hh:mm:ss Drop the seconds. Parse the rest.
 func PrettyDate(timestamp string, suffix bool) (Date, error) {
-	var splits []string = strings.SplitAfter(timestamp, "")
+	var splits []string = strings.Split(timestamp, "")
 	var date Date
 	month := splits[5] + splits[6]
 	m, err := strconv.ParseInt(month, 10, 8)
