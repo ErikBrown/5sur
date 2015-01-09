@@ -50,21 +50,6 @@ type Listing struct {
 	Fee float32
 }
 
-type User struct {
-	Name string
-	Picture string
-	Created string
-	RatingPositive int
-	RatingNegative int
-	RidesTaken int
-	RidesGiven int
-	FavDestination string
-	Comments []struct {
-		Rating int
-		Message string
-	}
-}
-
 func HeaderHtml(h *Header) string {
 	temp := `<!doctype html>
 	<html>
