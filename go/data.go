@@ -324,9 +324,7 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) error {
 			}
 		} else {
 			convertedDate, convertedTime, err = util.ReturnTimeString(false, r.FormValue("Date"), r.FormValue("Time"))
-			if err != nil {
-				return err
-			}
+			if err != nil { return err }
 		}
 		http.Redirect(w, r, "https://5sur.com/l/?o=" + r.FormValue("Origin") + "&d=" + r.FormValue("Destination") + "&t=" + convertedDate + "&h=" + convertedTime, 301)
 		return nil
