@@ -117,7 +117,7 @@ func checkSession(s string, db *sql.DB) (string, int, error){
 	for rows.Next() {
 		err := rows.Scan(&name, &id)
 		if err != nil {
-		return "", 0, NewError(err, "Database error", 500)
+			return "", 0, NewError(err, "Database error", 500)
 		}
 		
 	}

@@ -4,18 +4,20 @@ import (
 	"data/util"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
+	"strconv"
+	"html/template"
 )
 
-type Alerts struct {
-	Category string
-	TargetId int
-	Content string
+type AlertMessage struct {
+	Name string
+	Picture string
+	Message string
 }
 
-func GetAlerts(db *sql.DB, user int) ([]Alerts, error) {
-	var results []Alerts
+func GetAlerts(db *sql.DB, user int) ([]template.HTML, error) {
+	var results []template.HTML
 	stmt, err := db.Prepare(`
-		SELECT category, target_id, content
+		SELECT content
 			FROM alerts
 			WHERE user = ?;
 	`)
@@ -31,12 +33,12 @@ func GetAlerts(db *sql.DB, user int) ([]Alerts, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var temp Alerts
-		err := rows.Scan(&temp.Category, &temp.TargetId, &temp.Content)
+		var temp string
+		err := rows.Scan(&temp)
 		if err != nil {
 			return results, util.NewError(err, "Database error", 500)
 		}
-		results = append(results, temp)
+		results = append(results, template.HTML(temp))
 	}
 	return results, nil
 }
@@ -63,27 +65,68 @@ func DeleteAlert(db *sql.DB, user int, category string, targetId int) error {
 	return nil
 }
 
-func createAlertContent(category string, targetId int) (string, error) {
+func createAlertContent(db *sql.DB, user int, category string, targetId int) (string, error) {
+	id := strconv.Itoa(targetId)
+
 	switch category {
-		case "pending":
-			return "1", nil
-		case "message":
-			return "2", nil
+		case "pending": // The target id is the listing id
+			listing, err := ReturnIndividualListing(db, targetId)
+			if err != nil {return "", err}
+			return `
+			<li>
+				<a href="https://5sur.com/dashboard/listings?i=` + id + `">
+					<b>New pending users</b> on ` + listing.Origin + ` > ` + listing.Destination + `
+				</a>
+			</li>`, nil
+		case "message": // The target id is the user id
+			message, err := returnAlertMessage(db, user, targetId)
+			if err != nil {return "", err}
+			return `
+			<li>
+				<a href="https://5sur.com/dashboard/messages?i=` + id + `">
+					<img src="https://5sur.com/` + message.Picture + `" alt="user">
+					<b>` + message.Name + `</b><p>` + message.Message + `</p>
+				</a>
+			</li>`, nil
 		case "accepted":
-			return "3", nil
+			listing, err := ReturnIndividualListing(db, targetId)
+			if err != nil {return "", err}
+			return `
+			<li>
+				<a href="https://5sur.com/dashboard/reservations?i=` + id + `">
+					<b>Accepted</b> onto ride ` + listing.Origin + ` > ` + listing.Destination + `
+				</a>
+			</li>
+			`, nil
 		case "removed":
-			return "4", nil
+			listing, err := ReturnIndividualListing(db, targetId)
+			if err != nil {return "", err}
+			return `
+			<li>
+				<a href="https://5sur.com/dashboard/reservations?i=` + id + `">
+					You have been <b>removed</b> from ride ` + listing.Origin + ` > ` + listing.Destination + `
+				</a>
+			</li>
+			`, nil
+		case "deleted":
+			return `
+			<li>
+				<a href="https://5sur.com/dashboard/reservations">
+					A ride you were registered for has been <b>deleted</b>.
+				</a>
+			</li>`, nil
 	}
 	return "", nil
 }
 
 func CreateAlert(db *sql.DB, user int, category string, targetId int) error {
-	content, err := createAlertContent(category, targetId)
+	content, err := createAlertContent(db, user, category, targetId)
 	if err != nil {return err}
 	
 	stmt, err := db.Prepare(`
 		INSERT INTO alerts (user, category, target_id, content)
-			VALUES ?,?,?;
+			VALUES (?,?,?,?)
+			ON DUPLICATE KEY UPDATE content = IF(category = "message", ?, content)
 	`)
 	if err != nil {
 		return util.NewError(err, "Database error", 500)
@@ -92,9 +135,33 @@ func CreateAlert(db *sql.DB, user int, category string, targetId int) error {
 
 	// db.Query() prepares, executes, and closes a prepared statement - three round
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
-	_, err = stmt.Exec(user, category, targetId, content)
+	_, err = stmt.Exec(user, category, targetId, content, content)
 	if err != nil {
 		return util.NewError(err, "Database error", 500)
 	}
 	return nil
+}
+
+func returnAlertMessage(db *sql.DB, recipient int, sender int) (AlertMessage, error) {
+	result := AlertMessage{}
+	stmt, err := db.Prepare(`
+		SELECT u.name, u.picture, m.message
+			FROM messages AS m
+			JOIN users AS u ON m.sender = u.id
+			WHERE m.receiver = ?
+				AND m.sender = ?
+			ORDER BY m.date DESC
+			LIMIT 1;
+		`)
+	
+	if err != nil {
+		return AlertMessage{}, util.NewError(err, "Database error", 500)
+	}
+	defer stmt.Close()
+
+	err = stmt.QueryRow(recipient, sender).Scan(&result.Name, &result.Picture, &result.Message)
+	if err != nil {
+		return AlertMessage{}, util.NewError(nil, "Message does not exist", 400)
+	}
+	return result, nil
 }

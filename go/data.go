@@ -81,8 +81,7 @@ func CreateListingHandler(w http.ResponseWriter, r *http.Request) error {
 	user, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 	if user == "" {
-		http.Redirect(w, r, "https://5sur.com/login", 301)
-		return nil
+		return util.NewError(nil, "Login required", 401)
 	}
 
 	// HTML generation (also does listing-specific SQL calls)
@@ -103,8 +102,7 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request) error{
 	user, userId, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 	if user == "" {
-		http.Redirect(w, r, "https://5sur.com/login", 301)
-		return nil
+		return util.NewError(nil, "Login required", 401)
 	}
 
 	createFormPost, err := util.ValidCreateSubmit(r)
@@ -135,8 +133,7 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request) error{
 	if err != nil { return err }
 
 	if user == "" {
-		http.Redirect(w, r, "https://5sur.com/login", 301)
-		return nil
+		return util.NewError(nil, "Login required", 401)
 	}
 
 	// Check post data for if a button was clicked that directed the user here.
@@ -173,8 +170,7 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 	if err != nil { return err }
 
 	if user == "" {
-		http.Redirect(w, r, "https://5sur.com/login", 301)
-		return nil
+		return util.NewError(nil, "Login required", 401)
 	}
 	dashMessages, err := gen.GetDashMessages(db, userId)
 	if err != nil { return err }
@@ -185,6 +181,8 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 		messages, err = gen.SpecificDashMessage(db, dashMessages, token, userId)
 		if err != nil { return err }
 		err = gen.SetMessagesClosed(db, token, userId)
+		if err != nil { return err }
+		err = gen.DeleteAlert(db, userId, "message", token)
 		if err != nil { return err }
 		for key := range dashMessages {
 			if dashMessages[key].Name == messages.Name {
@@ -203,13 +201,13 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 	fmt.Fprint(w, dashMessagesPage)
 	*/
 
+	alerts, err := gen.GetAlerts(db, userId)
+	if err != nil { return err }
+
 	header := &gen.HeaderHTML {
 		Username: user,
-		Alerts: 4,
-		AlertText: []template.HTML{`<li><a href="https://5sur.com/dashboard/reservations"><b>Removed</b> from ride Santiago to Curico</a></li>`,
-				`<li><a href="#"><img src="https://5sur.com/usr2.png" alt="user"><b>username</b><p>Hey man you left your keys and virginity in my car</p></a></li>`,
-				`<li><a href="#"><b>New pending users</b> on Curico > Chillan</a></li>`,
-				`<li><a href="#"><img src="https://5sur.com/usr2.png" alt="user"><b>alias</b><p>Can you pick up me at my house? My address is 999 fake st</p></a></li>`},
+		Alerts: len(alerts),
+		AlertText: alerts,
 		UserImage: "https://5sur.com/default.png",
 	}
 
@@ -245,8 +243,7 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request) error{
 	if err != nil { return err }
 
 	if userId == 0 {
-		http.Redirect(w, r, "https://5sur.com/login", 301)
-		return nil
+		return util.NewError(nil, "Login required", 401)
 	}
 
 	dashReservations, err := gen.GetDashReservations(db, userId)
@@ -262,7 +259,7 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request) error{
 	url, err := gen.CheckReservePost(db, userId, r, token)
 	if err != nil { return err }
 	if url != "" {
-		http.Redirect(w, r, url, 301)
+		http.Redirect(w, r, url, 303)
 		return nil
 	}
 	// HTML generation
@@ -283,8 +280,7 @@ func DeleteListingHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	if userId == 0 {
-		http.Redirect(w, r, "https://5sur.com/login", 301)
-		return nil
+		return util.NewError(nil, "Login required", 401)
 	}
 
 	if r.PostFormValue("d") == "" {
@@ -302,7 +298,7 @@ func DeleteListingHandler(w http.ResponseWriter, r *http.Request) error {
 	err = gen.DeleteListing(db, userId, listingId)
 	if err != nil { return err }
 
-	http.Redirect(w, r, "https://5sur.com/dashboard/listings", 301)
+	http.Redirect(w, r, "https://5sur.com/dashboard/listings", 303)
 	return nil
 }
 
@@ -326,7 +322,7 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) error {
 			convertedDate, convertedTime, err = util.ReturnTimeString(false, r.FormValue("Date"), r.FormValue("Time"))
 			if err != nil { return err }
 		}
-		http.Redirect(w, r, "https://5sur.com/l/?o=" + r.FormValue("Origin") + "&d=" + r.FormValue("Destination") + "&t=" + convertedDate + "&h=" + convertedTime, 301)
+		http.Redirect(w, r, "https://5sur.com/l/?o=" + r.FormValue("Origin") + "&d=" + r.FormValue("Destination") + "&t=" + convertedDate + "&h=" + convertedTime, 303)
 		return nil
 	}
 
@@ -395,7 +391,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 		myCookie, err := util.CreateCookie(r.FormValue("Username"), db) // This also stores a hashed cookie in the database
 		if err != nil { return err }
 		http.SetCookie(w, &myCookie)
-		http.Redirect(w, r, "https://5sur.com/", 301)
+		http.Redirect(w, r, "https://5sur.com/", 303)
 		return nil
 	}else {
 		err = gen.UpdateLoginAttempts(db, userIp)
@@ -459,8 +455,7 @@ func ReserveFormHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	if user == "" {
-		http.Redirect(w, r, "https://5sur.com/login", 301)
-		return nil
+		return util.NewError(nil, "Login required", 401)
 	}
 	listing, err := gen.ReturnIndividualListing(db, l)
 	if err != nil { return err }
@@ -484,8 +479,7 @@ func ReserveHandler(w http.ResponseWriter, r *http.Request) error {
 	user, userId, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 	if user == "" {
-		http.Redirect(w, r, "https://5sur.com/login", 301)
-		return nil
+		return util.NewError(nil, "Login required", 401)
 	}
 
 	err = gen.CreateReservation(db, userId, values.ListingId, values.Seats, r.FormValue("Message"))
@@ -525,8 +519,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) error {
 	user, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 	if user == "" {
-		http.Redirect(w, r, "https://5sur.com/login", 301)
-		return nil
+		return util.NewError(nil, "Login required", 401)
 	}
 	// the FormFile function takes in the POST input id file
 	file, header, err := r.FormFile("Picture")
@@ -625,7 +618,7 @@ func AppCityHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func MessageHandler(w http.ResponseWriter, r *http.Request) error {
+func SendMessageHandler(w http.ResponseWriter, r *http.Request) error {
 	recipientId, err := util.ValidMessageURL(r)
 	if err != nil { return err }
 
@@ -638,8 +631,7 @@ func MessageHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	if userId == 0 {
-		http.Redirect(w, r, "https://5sur.com/login", 301)
-		return nil
+		return util.NewError(nil, "Login required", 401)
 	}
 	userInfo, err := gen.ReturnUserInfo(db, recipientId)
 	if err != nil { return err }
@@ -651,7 +643,7 @@ func MessageHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func MessageSubmitHandler(w http.ResponseWriter, r *http.Request) error {
+func SendMessageSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 	db, err := openDb()
 	if err != nil { return err }
 	defer db.Close()
@@ -661,8 +653,7 @@ func MessageSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	if userId == 0 {
-		http.Redirect(w, r, "https://5sur.com/login", 301)
-		return nil
+		return util.NewError(nil, "Login required", 401)
 	}
 
 	recipient, message, err := util.ValidMessagePost(r)
@@ -710,8 +701,8 @@ func main() {
 	http.Handle("/dashboard/reservations", handlerWrapper(DashReservationsHandler))
 	http.Handle("/dashboard/listings/delete", handlerWrapper(DeleteListingHandler))
 	http.Handle("/upload", handlerWrapper(UploadHandler))
-	http.Handle("/message", handlerWrapper(MessageHandler))
-	http.Handle("/messageSubmit", handlerWrapper(MessageSubmitHandler))
+	http.Handle("/message", handlerWrapper(SendMessageHandler))
+	http.Handle("/messageSubmit", handlerWrapper(SendMessageSubmitHandler))
 	http.Handle("/", handlerWrapper(RootHandler))
 	http.ListenAndServe(":8080", nil)
 }

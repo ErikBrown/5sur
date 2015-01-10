@@ -716,6 +716,9 @@ func SendMessage(db *sql.DB, sender int, receiver int, message string) error {
 		return util.NewError(err, "You do not have permissions to message this person", 400)
 	}
 
+	err = CreateAlert(db, receiver, "message", sender)
+	if err != nil { return err }
+
 	return nil
 }
 
