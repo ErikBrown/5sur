@@ -20,6 +20,20 @@ type DashListing struct {
 	Time string
 }
 
+type SpecificListing struct {
+	Day string
+	Month string
+	Origin string
+	Destination string
+	Alert bool
+	ListingId int
+	Seats int
+	Fee int
+	Time string
+	PendingUsers []PendingUser
+	RegisteredUsers []RegisteredUser
+}
+
 type DashMessages struct {
 	Id int
 	Name string
@@ -29,10 +43,12 @@ type DashMessages struct {
 
 type DashReservation struct {
 	ListingId int
+	Day string
+	Month string
 	Time string
 	Origin string
 	Destination string
-	Seats string
+	Seats int
 	Fee string
 }
 
@@ -52,29 +68,17 @@ type RegisteredUser struct{
 }
 
 type Reservation struct {
+	Day string
+	Month string
 	Time string
 	Origin string
 	Destination string
-	Seats string
+	Seats int
 	Fee string
 	ListingId int
 	DriverId int
 	DriverName string
 	DriverPicture string
-}
-
-type SpecificListing struct {
-	Day string
-	Month string
-	Origin string
-	Destination string
-	Alert bool
-	ListingId int
-	Seats int
-	Fee int
-	Time string
-	PendingUsers []PendingUser
-	RegisteredUsers []RegisteredUser
 }
 
 type MessageThread struct {
@@ -141,8 +145,10 @@ func GetDashListings(db *sql.DB, userId int) ([]DashListing, error) {
 func GetDashReservations(db *sql.DB, userId int) ([]DashReservation, error) {
 	results := make ([]DashReservation, 0)
 	stmt, err := db.Prepare(`
-		SELECT l.id, l.date_leaving, l.origin, l.destination, l.seats, l.fee
+		SELECT l.id, l.date_leaving, c.name, c2.name, l.seats, l.fee
 			FROM listings AS l
+			JOIN cities as c ON l.origin = c.id
+			LEFT JOIN cities as c2 ON l.destination = c2.id
 			JOIN reservations as r ON l.id = r.listing_id
 			WHERE r.passenger_id = ?
 			ORDER BY l.date_leaving;
@@ -161,10 +167,16 @@ func GetDashReservations(db *sql.DB, userId int) ([]DashReservation, error) {
 		// The last rows.Next() call will encounter an EOF error and call rows.Close()
 	for rows.Next() {
 		temp := DashReservation{}
-		err := rows.Scan(&temp.ListingId, &temp.Time, &temp.Origin, &temp.Destination, &temp.Seats, &temp.Fee)
+		date := ""
+		err := rows.Scan(&temp.ListingId, &date, &temp.Origin, &temp.Destination, &temp.Seats, &temp.Fee)
 		if err != nil {
 			return results, util.NewError(err, "Database error", 500)
 		}
+		convertedDate, err := util.PrettyDate(date, false)
+		if err != nil { return results, err }
+		temp.Day = convertedDate.Day
+		temp.Month = convertedDate.Month
+		temp.Time = convertedDate.Time
 		results = append(results, temp)
 	}
 
@@ -313,6 +325,8 @@ func SpecificDashReservation(db *sql.DB, reservations []DashReservation, listing
 	results := Reservation{}
 	for i := range reservations{
 		if reservations[i].ListingId == listingId {
+			results.Day = reservations[i].Day
+			results.Month = reservations[i].Month
 			results.Time = reservations[i].Time
 			results.Origin = reservations[i].Origin
 			results.Destination = reservations[i].Destination
@@ -641,6 +655,12 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 			if err != nil {
 				return err
 			}
+			pendingUsers, err := getPendingUsers(db, listingId)
+			if err != nil { return err }
+			if len(pendingUsers) == 0 {
+				err = DeleteAlert(db, userId, "pending", listingId)
+				if err != nil { return err }
+			}
 			err = CreateAlert(db, passengerId, "accepted", listingId)
 			if err != nil { return err }
 		}
@@ -668,8 +688,17 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 			if err != nil {
 				return err
 			}
+			err = DeleteAlert(db, passengerId, "accepted", listingId)
+			if err != nil { return err }
 			err = CreateAlert(db, passengerId, "removed", listingId)
 			if err != nil { return err }
+		} else {
+			pendingUsers, err := getPendingUsers(db, listingId)
+			if err != nil { return err }
+			if len(pendingUsers) == 0 {
+				err = DeleteAlert(db, userId, "pending", listingId)
+				if err != nil { return err }
+			}
 		}
 		return nil
 	}

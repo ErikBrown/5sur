@@ -19,7 +19,7 @@ import (
 	// "log"
 )
 
-var templates = template.Must(template.ParseFiles("templates/login.html","templates/dashMessages.html","templates/message.html"))
+var templates = template.Must(template.ParseFiles("templates/login.html","templates/dashMessages.html","templates/dashListings.html","templates/message.html","templates/dashReservations.html"))
 
 func openDb() (*sql.DB, error) {
 	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
@@ -151,11 +151,34 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request) error{
 		if err != nil { return err }
 	}
 
-	// HTML generation
-	dashListingsPage, err := gen.DashListingsPage(dashListings, listing, user);
+	alerts, err := gen.GetAlerts(db, userId)
 	if err != nil { return err }
 
-	fmt.Fprint(w, dashListingsPage)
+	header := &gen.HeaderHTML {
+		Username: user,
+		Alerts: len(alerts),
+		AlertText: alerts,
+		UserImage: "https://5sur.com/default.png",
+	}
+
+	body := &gen.DashListingsHTML{
+		Title: "Dashboard",
+		SidebarListings: dashListings,
+		Listing: listing,
+	}
+
+	page := struct {
+		Header gen.HeaderHTML
+		Body gen.DashListingsHTML
+	}{
+		*header,
+		*body,
+	}
+
+	err = templates.ExecuteTemplate(w, "dashListings.html", page)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
 	return nil
 }
 
@@ -257,10 +280,35 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request) error{
 		http.Redirect(w, r, url, 303)
 		return nil
 	}
-	// HTML generation
-	dashReservationsPage, err := gen.DashReservationsPage(dashReservations, reservation, user)
+	
+	alerts, err := gen.GetAlerts(db, userId)
 	if err != nil { return err }
-	fmt.Fprint(w, dashReservationsPage)
+
+	header := &gen.HeaderHTML {
+		Username: user,
+		Alerts: len(alerts),
+		AlertText: alerts,
+		UserImage: "https://5sur.com/default.png",
+	}
+
+	body := &gen.DashReservationsHTML{
+		Title: "Dashboard",
+		SidebarReservations: dashReservations,
+		Reservation: reservation,
+	}
+
+	page := struct {
+		Header gen.HeaderHTML
+		Body gen.DashReservationsHTML
+	}{
+		*header,
+		*body,
+	}
+
+	err = templates.ExecuteTemplate(w, "dashReservations.html", page)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
 	return nil
 }
 

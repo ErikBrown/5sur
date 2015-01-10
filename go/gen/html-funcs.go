@@ -31,17 +31,6 @@ func DashMessagesPage(dashMessages []DashMessages, dashMessage SpecificMessage, 
 	return dashMessagesPage, nil
 }
 */
-func DashReservationsPage(dashReservations []DashReservation, reservation Reservation, user string) (string, error) {
-	title := "Dashboard - Reservations"
-	headerInfo := Header {
-		Title: title,
-		User: user,
-	}
-	dashReservationsPage := HeaderHtml(&headerInfo)
-	dashReservationsPage += DashReservationsHtml(dashReservations, reservation)
-	dashReservationsPage += FooterHtml()
-	return dashReservationsPage, nil
-}
 
 func HomePage(db *sql.DB, user string) (string, error) {
 	title := "5Sur"

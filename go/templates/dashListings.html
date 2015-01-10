@@ -1,0 +1,147 @@
+<!doctype html>
+
+<html>
+
+<head>
+
+<meta charset='utf-8'>
+<meta name="viewport" content="width=device-width">
+
+<link rel="icon" type="image/png" href="https://5sur.com/graphics/favicon.png">
+<!-- remove the extra weights -->
+<link href='https://fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:400,400italic,600,300,700,800|Bitter:400,400italic,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="https://5sur.com/style2.css" />
+
+
+<title>5Sur - {{.Body.Title}}</title>
+
+</head>
+
+<body class="header_padding">
+
+<div id="header">
+	<a href="https://5sur.com/" id="header_logo"></a>
+	<ul id="nav">
+		<li id="nav_create"><a href="https://5sur.com/create"></a></li>
+		<li id="nav_alert"><span>{{.Header.Alerts}}</span></li>
+		<li id="nav_user">
+			<img src="https://5sur.com/usr.png" alt="user">
+		</li>
+	</ul>
+	<ul id="nav_dropdown">
+		<li id="nav_alert_dropdown" class="dropdown">
+			<span>{{.Header.Alerts}} Alert{{if ne .Header.Alerts 1}}s{{end}}</span>
+			<ul>
+				{{range $key, $value := .Header.AlertText}}{{$value}}
+				{{end}}
+			</ul>
+		</li>
+		<li id="nav_user_dropdown" class="dropdown">
+			<span>{{.Header.Username}}</span>
+			<ul>
+				<li><a href="https://5sur.com/user">Pr</a></li>
+				<li><a href="https://5sur.com/dashboard">Da</a></li>
+				<li><a href="https://5sur.com/logout">Lo</a></li>
+			</ul>
+		</li>
+	</ul>
+</div>
+
+<div class="sidebar" id="main_sidebar">
+	<ul>
+		<li class="message_icon">
+			<a href="https://5sur.com/dashboard/messages"></a>
+		</li>
+		<li class="listings_icon selected_dark">
+			<a href="https://5sur.com/dashboard/listings"></a>
+		</li>
+		<li class="reservation_icon">
+			<a href="https://5sur.com/dashboard/reservations"></a>
+		</li>
+		<li class="settings_icon">
+			<a href="https://5sur.com/dashboard/settings"></a>
+		</li>
+	</ul>
+</div>
+
+<div class="sidebar" id="sub_sidebar">
+	<h2>Listings</h2>
+	<ul>
+		{{range $key, $value := .Body.SidebarListings}}
+		{{if eq $value.ListingId $.Body.Listing.ListingId}}
+		<li class="selected_light">{{else}}
+		<li>{{end}}
+			<a href="https://5sur.com/dashboard/listings?i={{$value.ListingId}}">
+				<div class="calendar_icon">
+					<span class="calendar_icon_month">{{$value.Month}}</span>
+					<span class="calendar_icon_day">{{$value.Day}}</span>
+				</div>
+				<span class="sidebar_text">{{$value.Origin}} to {{$value.Destination}}</span>
+				{{if eq $value.Alert true}}
+				<span class="sidebar_alert">!</span>{{end}}
+			</a>
+		</li>
+		{{end}}
+	</ul>
+</div>
+
+<div id="dash_content" class="dash_listings">
+	{{if ne .Body.Listing.ListingId 0}}
+	<div id="dash_title">
+		<h3>{{.Body.Listing.Origin}} &#10132; {{.Body.Listing.Destination}}</h3>
+		<span id="dash_listing_date">{{.Body.Listing.Month}} {{.Body.Listing.Day}} - {{.Body.Listing.Time}}</span>
+		<span>&#8226;</span>
+		<span id="dash_listing_seats">{{.Body.Listing.Seats}} {{if eq .Body.Listing.Seats 1}}seat{{else}}seats{{end}}</span>
+		<span>&#8226;</span>
+		<span id="dash_listing_fee">${{.Body.Listing.Fee}}/seat</span>
+		<form id="delete_form" method="GET" action="https://5sur.com/dashboard/listings/delete">
+			<input name="i" value="{{$.Body.Listing.ListingId}}" id="delete_form_input" type="submit">
+		</form>
+	</div>
+	{{if index .Body.Listing.RegisteredUsers}}
+	<div id="registered_passengers" class="passengers">
+		<span>Registered</span>
+		<ul>
+			{{range $key, $value := .Body.Listing.RegisteredUsers}}
+			<li>
+				<img src="https://5sur.com/{{$value.Picture}}" alt="user image">
+				<div class="pending_passenger_info">
+					<p>{{$value.Name}}</p>
+				</div>
+				<form class="passenger_form" method="POST" action="https://5sur.com/dashboard/listings?i={{$.Body.Listing.ListingId}}">
+					<input name="r" value="{{$value.Id}}" id="passenger_reject" type="submit">
+				</form>
+				<span class="passenger_seats">{{$value.Seats}} {{if eq $value.Seats 1}}Seat{{else}}Seats{{end}}</span>
+			</li>
+			{{end}}
+		</ul>
+	</div>
+	{{end}}
+	{{if index .Body.Listing.PendingUsers}}
+	<div id="pending_passengers" class="passengers">
+		<span>Pending</span>
+		<ul>
+			{{range $key, $value := .Body.Listing.PendingUsers}}
+			<li>
+				<img src="https://5sur.com/{{$value.Picture}}" alt="user image">
+				<div class="pending_passenger_info">
+					<p>{{$value.Name}}<span>{{$value.Message}}</span></p>
+				</div>
+				<form class="passenger_form" method="POST" action="https://5sur.com/dashboard/listings?i={{$.Body.Listing.ListingId}}">
+					<input name="a" value="{{$value.Id}}" id="passenger_accept" type="submit">
+					<input name="r" value="{{$value.Id}}" id="passenger_reject" type="submit">
+				</form>
+				<span class="passenger_seats">{{$value.Seats}} {{if eq $value.Seats 1}}Seat{{else}}Seats{{end}}</span>
+			</li>
+			{{end}}
+		</ul>
+	</div>
+	{{end}}
+	{{end}}
+</div>
+
+<script src="https://5sur.com/header.js"></script>
+<script src="https://5sur.com/dashboard.js"></script>
+</body>
+
+</html>

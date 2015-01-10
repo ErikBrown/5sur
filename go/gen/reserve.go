@@ -33,6 +33,8 @@ func CreateReservation(db *sql.DB, userId int, listingId int, seats int, message
 	if err != nil {
 		return err
 	}
+	err = CreateAlert(db, ride.Driver, "pending", listingId)
+	if err != nil { return err }
 	return nil
 }
 

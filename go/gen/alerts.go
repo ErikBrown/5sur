@@ -50,10 +50,12 @@ func DeleteAlert(db *sql.DB, user int, category string, targetId int) error {
 			WHERE user = ?
 			AND category = ?
 			AND (
-				category = "removed" 
-				OR category = "deleted"
-				)
-			OR target_id = ?;
+					(
+					category = "removed" 
+					OR category = "deleted"
+					)
+					OR target_id = ?
+				);
 	`)
 	if err != nil {
 		return util.NewError(err, "Database error", 500)
@@ -139,8 +141,14 @@ func CreateAlert(db *sql.DB, user int, category string, targetId int) error {
 	
 	stmt, err := db.Prepare(`
 		INSERT INTO alerts (user, category, target_id, content)
-			VALUES (?,?,?,?)
-			ON DUPLICATE KEY UPDATE content = IF(category = "message", ?, content)
+			SELECT ? AS user, ? AS category, ? AS target_id, ? AS content FROM dual
+				WHERE NOT EXISTS(
+					SELECT user
+						FROM alerts
+						WHERE user = ?
+						AND category = ?
+						AND target_id = ?
+				) LIMIT 1;
 	`)
 	if err != nil {
 		return util.NewError(err, "Database error", 500)
@@ -149,7 +157,7 @@ func CreateAlert(db *sql.DB, user int, category string, targetId int) error {
 
 	// db.Query() prepares, executes, and closes a prepared statement - three round
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
-	_, err = stmt.Exec(user, category, targetId, content, content)
+	_, err = stmt.Exec(user, category, targetId, content, user, category, targetId)
 	if err != nil {
 		return util.NewError(err, "Database error", 500)
 	}
