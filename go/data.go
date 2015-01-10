@@ -191,16 +191,6 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 		}
 	}
 
-	// HTML generation
-	/*
-	dashMessagesPage, err := gen.DashMessagesPage(dashMessages, message, user);
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return
-	}
-	fmt.Fprint(w, dashMessagesPage)
-	*/
-
 	alerts, err := gen.GetAlerts(db, userId)
 	if err != nil { return err }
 
@@ -253,6 +243,11 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request) error{
 	token, err := util.ValidDashQuery(r.URL)
 	if err == nil {
 		reservation, err = gen.SpecificDashReservation(db, dashReservations, token)
+		if err != nil { return err }
+		err = gen.DeleteAlert(db, userId, "accepted", token)
+		if err != nil { return err }
+	} else {
+		err = gen.DeleteAlert(db, userId, "removed", 0)
 		if err != nil { return err }
 	}
 

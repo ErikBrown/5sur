@@ -641,24 +641,26 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 			if err != nil {
 				return err
 			}
+			err = CreateAlert(db, passengerId, "accepted", listingId)
+			if err != nil { return err }
 		}
 		return nil
 	}
 	if r.FormValue("r") != "" {
-		remove, err := strconv.Atoi(r.FormValue("r"))
+		passengerId, err := strconv.Atoi(r.FormValue("r"))
 		if err != nil {
 			return util.NewError(nil, "Invalid passenger", 400)
 		}
-		deleted, err := deleteFromQueue(db, userId, listingId, remove)
+		deleted, err := deleteFromQueue(db, userId, listingId, passengerId)
 		if err != nil {
 			return err
 		}
 		if deleted == false {
-			seats, err := findSeats(db, listingId, remove)
+			seats, err := findSeats(db, listingId, passengerId)
 			if err != nil {
 				return err
 			}
-			_, err = deleteFromReservations(db, userId, listingId, remove)
+			_, err = deleteFromReservations(db, userId, listingId, passengerId)
 			if err != nil {
 				return err
 			}
@@ -666,6 +668,8 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 			if err != nil {
 				return err
 			}
+			err = CreateAlert(db, passengerId, "removed", listingId)
+			if err != nil { return err }
 		}
 		return nil
 	}

@@ -46,10 +46,14 @@ func GetAlerts(db *sql.DB, user int) ([]template.HTML, error) {
 func DeleteAlert(db *sql.DB, user int, category string, targetId int) error {
 	stmt, err := db.Prepare(`
 		DELETE
-			FROM alerts
+			FROM alerts 
 			WHERE user = ?
 			AND category = ?
-			AND target_id = ?;
+			AND (
+				category = "removed" 
+				OR category = "deleted"
+				)
+			OR target_id = ?;
 	`)
 	if err != nil {
 		return util.NewError(err, "Database error", 500)
@@ -78,6 +82,16 @@ func createAlertContent(db *sql.DB, user int, category string, targetId int) (st
 					<b>New pending users</b> on ` + listing.Origin + ` > ` + listing.Destination + `
 				</a>
 			</li>`, nil
+		case "dropped":
+			listing, err := ReturnIndividualListing(db, targetId)
+			if err != nil {return "", err}
+			return `
+			<li>
+				<a href="https://5sur.com/dashboard/reservations?i=` + id + `">
+					User has <b>dropped</b> from ride ` + listing.Origin + ` > ` + listing.Destination + `
+				</a>
+			</li>
+			`, nil
 		case "message": // The target id is the user id
 			message, err := returnAlertMessage(db, user, targetId)
 			if err != nil {return "", err}
@@ -103,7 +117,7 @@ func createAlertContent(db *sql.DB, user int, category string, targetId int) (st
 			if err != nil {return "", err}
 			return `
 			<li>
-				<a href="https://5sur.com/dashboard/reservations?i=` + id + `">
+				<a href="https://5sur.com/dashboard/reservations">
 					You have been <b>removed</b> from ride ` + listing.Origin + ` > ` + listing.Destination + `
 				</a>
 			</li>
