@@ -49,28 +49,6 @@ func HomePage(db *sql.DB, user string) (string, error) {
 	return homePage, nil
 }
 
-func ListingsPage(db *sql.DB, query util.ListingQueryFields, user string) (string, error) {
-	title := "Listings"
-	cities, err := ReturnFilter(db)
-	if err != nil { return "", err }
-
-	listings, err := ReturnListings(db, query.Origin, query.Destination, query.Date + " " + query.Time)
-	if err != nil {
-		return "", err
-	}
-	headerInfo := Header {
-		Title: title,
-		User: user,
-	}
-
-	listPage := HeaderHtml(&headerInfo)
-	listPage += FilterHtml(cities, query)
-	listPage += ListingsHtml(listings)
-	listPage += FooterHtml()
-
-	return listPage, nil
-}
-
 func CreateListingPage(db *sql.DB, user string) (string, error) {
 	title := "Create Listing"
 

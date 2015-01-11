@@ -1,6 +1,6 @@
 <!doctype html>
 
-<html>
+<html lang="es" class="scrollbar">
 
 <head>
 
@@ -17,10 +17,36 @@
 
 </head>
 
-<body id="listings_page">
+<body id="listings_page" class="header_padding">
 
 <div id="header">
 	<a href="https://5sur.com/" id="header_logo"></a>
+	<ul id="nav">
+		<li id="nav_create"><a href="https://5sur.com/create"></a></li>
+		<li id="nav_alert"><span>4</span></li>
+		<li id="nav_user">
+			<img src="https://5sur.com/usr.png" alt="user">
+		</li>
+	</ul>
+	<ul id="nav_dropdown">
+		<li id="nav_alert_dropdown" class="dropdown">
+			<span>4 Alerts</span>
+			<ul>
+				<li><a href="https://5sur.com/dashboard/reservations"><b>Removed</b> from ride Santiago to Curico</a></li>
+				<li><a href="#"><img src="https://5sur.com/usr2.png" alt="user"><b>username</b><p>Hey man you left your keys and virginity in my car</p></a></li>
+				<li><a href="#"><b>New pending users</b> on Curico > Chillan</a></li>
+				<li><a href="#"><img src="https://5sur.com/usr2.png" alt="user"><b>alias</b><p>New message!</p></a></li>
+			</ul>
+		</li>
+		<li id="nav_user_dropdown" class="dropdown">
+			<span>ErikBrown</span>
+			<ul>
+				<li><a href="https://5sur.com/user">Pr</a></li>
+				<li><a href="https://5sur.com/dashboard">Da</a></li>
+				<li><a href="https://5sur.com/logout">Lo</a></li>
+			</ul>
+		</li>
+	</ul>
 </div>
 
 <div id="search_wrapper">
@@ -69,92 +95,86 @@
 	</form>
 </div>
 
-<div id="listing_item_wrapper">
-	<a href="https://5sur.com/reserve?l=">
-		<div class="listing_item">
-			<div class="listing_date">
-				<span class="listing_date_month">Jan</span>
-				<span class="listing_date_day">25th</span>
-				<span class="listing_date_time">12:30</span>
-			</div>
-			<div class="listing_user">
-				<img src="https://5sur.com/default.png" alt="User Image">
-				<span class="reputation_score">+78</span>
-			</div>
-			<div class="listing_cities">
-				<span>Chillán</span>
-				<span class="to">&#10132;</span>
-				<span>Curicó</span>
-			</div>
-			<div class="listing_seats">
-				<span class="listing_seats_number">4</span>
-				<span class="listing_seats_title">Seats</span>
-			</div>
-			<div class="listing_fee">
-				$1.50
-			</div>
-		</div>
-	</a>
-</div>
+<ul id="listing_items">
+	<li class="listing_header">
+		<ul>
+			<li class="list_driver">Driver</li>
+			<li>Route</li>
+			<li class="list_fee">Fee</li>
+			<li class="list_seats">Seats</li>
+			<li class="list_date">Date</li>
+		</ul>
+	</li>
+	<li class="listing_item">
+		<a href="https://5sur.com/reserve?l=">
+			<ul>
+				<li class="list_driver"><img src="https://5sur.com/graphics/usr2.png"><span class="positive">+74</span></li>
+				<li>Los Angeles <span class="to">&#10132;</span> Puerto Montt</li>
+				<li class="list_fee">$2/seat</li>
+				<li class="list_seats">4</li>
+				<li class="list_date"><span class="list_day">Jan 2</span><span class="list_time">14:30</span></li>
+			</ul>
+		</a>
+	</li>
+	<li class="listing_item">
+		<a href="https://5sur.com/reserve?l=">
+			<ul>
+				<li class="list_driver"><img src="https://5sur.com/graphics/usr.png"><span class="negative">-4</span></li>
+				<li>Los Angeles <span class="to">&#10132;</span> Puerto Montt</li>
+				<li class="list_fee">Free</li>
+				<li class="list_seats">2</li>
+				<li class="list_date"><span class="list_day">Jan 2</span><span class="list_time">12:30</span></li>
+			</ul>
+		</a>
+	</li>
+	<li class="listing_item">
+		<a href="https://5sur.com/reserve?l=">
+			<ul>
+				<li class="list_driver"><img src="https://5sur.com/graphics/usr2.png"><span class="positive">+74</span></li>
+				<li>Los Angeles <span class="to">&#10132;</span> Puerto Montt</li>
+				<li class="list_fee">$2/seat</li>
+				<li class="list_seats">4</li>
+				<li class="list_date"><span class="list_day">Jan 2</span><span class="list_time">14:30</span></li>
+			</ul>
+		</a>
+	</li>
+	<li class="listing_item">
+		<a href="https://5sur.com/reserve?l=">
+			<ul>
+				<li class="list_driver"><img src="https://5sur.com/graphics/usr.png"><span class="negative">-4</span></li>
+				<li>Los Angeles <span class="to">&#10132;</span> Puerto Montt</li>
+				<li class="list_fee">Free</li>
+				<li class="list_seats">2</li>
+				<li class="list_date"><span class="list_day">Jan 2</span><span class="list_time">12:30</span></li>
+			</ul>
+		</a>
+	</li>
+	<li class="listing_item">
+		<a href="https://5sur.com/reserve?l=">
+			<ul>
+				<li class="list_driver"><img src="https://5sur.com/graphics/usr2.png"><span class="positive">+74</span></li>
+				<li>Los Angeles <span class="to">&#10132;</span> Puerto Montt</li>
+				<li class="list_fee">$2/seat</li>
+				<li class="list_seats">4</li>
+				<li class="list_date"><span class="list_day">Jan 2</span><span class="list_time">14:30</span></li>
+			</ul>
+		</a>
+	</li>
+	<li class="listing_item">
+		<a href="https://5sur.com/reserve?l=">
+			<ul>
+				<li class="list_driver"><img src="https://5sur.com/graphics/usr.png"><span class="negative">-4</span></li>
+				<li>Los Angeles <span class="to">&#10132;</span> Puerto Montt</li>
+				<li class="list_fee">Free</li>
+				<li class="list_seats">2</li>
+				<li class="list_date"><span class="list_day">Jan 2</span><span class="list_time">12:30</span></li>
+			</ul>
+		</a>
+	</li>
+</ul>
 
-
-<div id="listing_item_wrapper">
-	<a href="https://5sur.com/reserve?l=">
-		<div class="listing_item">
-			<div class="listing_date">
-				<span class="listing_date_month">Jan</span>
-				<span class="listing_date_day">25th</span>
-				<span class="listing_date_time">13:00</span>
-			</div>
-			<div class="listing_user">
-				<img src="https://5sur.com/usr2.png" alt="User Image">
-				<span class="reputation_score">+64</span>
-			</div>
-			<div class="listing_cities">
-				<span>Chillán</span>
-				<span class="to">&#10132;</span>
-				<span>Curicó</span>
-			</div>
-			<div class="listing_seats">
-				<span class="listing_seats_number">1</span>
-				<span class="listing_seats_title">Seat</span>
-			</div>
-			<div class="listing_fee">
-				$1.50
-			</div>
-		</div>
-	</a>
-</div>
-
-<div id="listing_item_wrapper">
-	<a href="https://5sur.com/reserve?l=">
-		<div class="listing_item">
-			<div class="listing_date">
-				<span class="listing_date_month">Jan</span>
-				<span class="listing_date_day">25th</span>
-				<span class="listing_date_time">14:30</span>
-			</div>
-			<div class="listing_user">
-				<img src="https://5sur.com/default.png" alt="User Image">
-				<span class="reputation_score">+182</span>
-			</div>
-			<div class="listing_cities">
-				<span>Chillán</span>
-				<span class="to">&#10132;</span>
-				<span>Curicó</span>
-			</div>
-			<div class="listing_seats">
-				<span class="listing_seats_number">2</span>
-				<span class="listing_seats_title">Seats</span>
-			</div>
-			<div class="listing_fee">
-				$0
-			</div>
-		</div>
-	</a>
-</div>
-
-<script src="script.js"></script>
+<script src="header.js"></script>
+<script src="calendarScript.js"></script>
 </body>
 
 </html>

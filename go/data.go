@@ -19,7 +19,7 @@ import (
 	// "log"
 )
 
-var templates = template.Must(template.ParseFiles("templates/login.html","templates/dashMessages.html","templates/dashListings.html","templates/message.html","templates/dashReservations.html"))
+var templates = template.Must(template.ParseFiles("templates/login.html","templates/dashMessages.html","templates/dashListings.html","templates/message.html","templates/dashReservations.html","templates/listings.html"))
 
 func openDb() (*sql.DB, error) {
 	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
@@ -155,6 +155,7 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request) error{
 	if err != nil { return err }
 
 	header := &gen.HeaderHTML {
+		Title: "Dashboard",
 		Username: user,
 		Alerts: len(alerts),
 		AlertText: alerts,
@@ -162,7 +163,6 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request) error{
 	}
 
 	body := &gen.DashListingsHTML{
-		Title: "Dashboard",
 		SidebarListings: dashListings,
 		Listing: listing,
 	}
@@ -218,6 +218,7 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 	if err != nil { return err }
 
 	header := &gen.HeaderHTML {
+		Title: "Dashboard",
 		Username: user,
 		Alerts: len(alerts),
 		AlertText: alerts,
@@ -225,7 +226,6 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 	}
 
 	body := &gen.DashMessagesHTML{
-		Title: "Dashboard",
 		SidebarMessages: dashMessages,
 		MessageThread: messages,
 	}
@@ -285,6 +285,7 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request) error{
 	if err != nil { return err }
 
 	header := &gen.HeaderHTML {
+		Title: "Dashboard",
 		Username: user,
 		Alerts: len(alerts),
 		AlertText: alerts,
@@ -292,7 +293,6 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request) error{
 	}
 
 	body := &gen.DashReservationsHTML{
-		Title: "Dashboard",
 		SidebarReservations: dashReservations,
 		Reservation: reservation,
 	}
@@ -371,9 +371,10 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) error {
 
 	// Query string validation	
 	query, err := util.ValidListingQuery(r.URL)
-	if err != nil {
-		return err
-	}
+	if err != nil { return err }
+	query.Date, query.Time, err = util.ReturnTimeString(true, query.Date, query.Time)
+	if err != nil { return err }
+
 
 	// Database initialization
 	db, err := openDb()
@@ -383,16 +384,44 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	user, _, err := util.CheckCookie(r, db) // return "" if not logged in
+	user, userId, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 
-	// HTML generation (also does listing-specific SQL calls)
-	listPage, err := gen.ListingsPage(db, query, user);
-	if err != nil {
-		return err
+	alerts, err := gen.GetAlerts(db, userId)
+	if err != nil { return err }
+
+	header := &gen.HeaderHTML {
+		Title: "Listings",
+		Username: user,
+		Alerts: len(alerts),
+		AlertText: alerts,
+		UserImage: "https://5sur.com/default.png",
 	}
 
-	fmt.Fprint(w, listPage)
+	cities, err := gen.ReturnFilter(db)
+	if err != nil { return err }
+
+	listings, err := gen.ReturnListings(db, query.Origin, query.Destination, query.Date + " " + query.Time)
+	if err != nil { return err	}
+
+	body := &gen.ListingsHTML{
+		Filter: cities,
+		Listings: listings,
+		Query: query,
+	}
+
+	page := struct {
+		Header gen.HeaderHTML
+		Body gen.ListingsHTML
+	}{
+		*header,
+		*body,
+	}
+
+	err = templates.ExecuteTemplate(w, "listings.html", page)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
 	return nil
 }
 
@@ -739,6 +768,8 @@ func main() {
 	http.Handle("/reserve", handlerWrapper(ReserveFormHandler))
 	http.Handle("/create", handlerWrapper(CreateListingHandler))
 	http.Handle("/createSubmit", handlerWrapper(CreateSubmitHandler))
+	http.Handle("/dashboard", handlerWrapper(DashListingsHandler))
+	http.Handle("/dashboard/", handlerWrapper(DashListingsHandler))
 	http.Handle("/dashboard/listings", handlerWrapper(DashListingsHandler))
 	http.Handle("/dashboard/messages", handlerWrapper(DashMessagesHandler))
 	http.Handle("/dashboard/reservations", handlerWrapper(DashReservationsHandler))

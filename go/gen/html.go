@@ -14,6 +14,7 @@ type LoginHTML struct {
 }
 
 type HeaderHTML struct {
+	Title string
 	Username string
 	Alerts int
 	AlertText []template.HTML
@@ -21,21 +22,24 @@ type HeaderHTML struct {
 }
 
 type DashMessagesHTML struct {
-	Title string
 	SidebarMessages []DashMessages
 	MessageThread MessageThread
 }
 
 type DashListingsHTML struct {
-	Title string
 	SidebarListings []DashListing
 	Listing SpecificListing
 }
 
 type DashReservationsHTML struct {
-	Title string
 	SidebarReservations []DashReservation
 	Reservation Reservation
+}
+
+type ListingsHTML struct {
+	Filter []City
+	Listings []Listing
+	Query util.ListingQueryFields
 }
 
 type Header struct {

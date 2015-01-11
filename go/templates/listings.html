@@ -1,0 +1,119 @@
+<!doctype html>
+
+<html lang="es" class="scrollbar">
+
+<head>
+
+<meta charset='utf-8'>
+<meta name="viewport" content="width=device-width">
+
+<link rel="icon" type="image/png" href="https://5sur.com/graphics/favicon.png">
+<!-- remove the extra weights -->
+<link href='https://fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:400,400italic,600,300,700,800|Bitter:400,400italic,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="https://5sur.com/style2.css" />
+
+
+<title>5Sur - {{.Header.Title}}</title>
+
+</head>
+
+<body id="listings_page" class="header_padding">
+
+<div id="header">
+	<a href="https://5sur.com/" id="header_logo"></a>
+	<ul id="nav">
+		<li id="nav_create"><a href="https://5sur.com/create"></a></li>
+		<li id="nav_alert"><span>{{.Header.Alerts}}</span></li>
+		<li id="nav_user">
+			<img src="https://5sur.com/usr.png" alt="user">
+		</li>
+	</ul>
+	<ul id="nav_dropdown">
+		<li id="nav_alert_dropdown" class="dropdown">
+			<span>{{.Header.Alerts}} Alert{{if ne .Header.Alerts 1}}s{{end}}</span>
+			<ul>
+				{{range $key, $value := .Header.AlertText}}{{$value}}
+				{{end}}
+			</ul>
+		</li>
+		<li id="nav_user_dropdown" class="dropdown">
+			<span>{{.Header.Username}}</span>
+			<ul>
+				<li><a href="https://5sur.com/user">Pr</a></li>
+				<li><a href="https://5sur.com/dashboard">Da</a></li>
+				<li><a href="https://5sur.com/logout">Lo</a></li>
+			</ul>
+		</li>
+	</ul>
+</div>
+
+<div id="search_wrapper">
+	<form method="post" action="https://5sur.com/l/" id="search_form">
+		<select name="Origin" id="origin_select" class="search_option">
+			<option disabled {{if eq .Body.Query.Origin 0}}selected{{end}} class="blank_option"></option>
+			{{range $key, $value := .Body.Filter}}
+			<option {{if eq $.Body.Query.Origin $value.Id}}selected{{end}} value="{{$value.Id}}">{{$value.Name}}</option>{{end}}
+		</select>
+		<span class="to">&#10132;</span>
+		<select name="Destination" id="destination_select" class="search_option">
+			<option disabled {{if eq .Body.Query.Destination 0}}selected{{end}} class="blank_option"></option>
+			{{range $key, $value := .Body.Filter}}
+			<option {{if eq $.Body.Query.Destination $value.Id}}selected{{end}} value="{{$value.Id}}">{{$value.Name}}</option>{{end}}
+		</select>
+		<span class="to">&#128343;</span>
+		<input type="text" name="Date" placeholder="Select date..." autocomplete="off" id="date_box" class="search_option" value="{{.Body.Query.Date}}">
+		<input type="text" name="Time" placeholder="Select time..." autocomplete="off" id="time_box" class="search_option" value="{{.Body.Query.Time}}">
+		<div id="calendar_wrapper">
+			<div id="month_wrapper">
+				<span id="month_left">&#9664;</span>
+				<span id="month_title"></span>
+				<span id="month_right">&#9654;</span>
+			</div>
+			<table id="calendar">
+				<thead>
+					<tr>
+						<th>lu</th>
+						<th>ma</th>
+						<th>mi</th>
+						<th>ju</th>
+						<th>vi</th>
+						<th>sa</th>
+						<th>su</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	<input type="submit" name="FilterSubmit" value="Find a ride!" id="search_submit">
+	</form>
+</div>
+
+<ul id="listing_items">
+	<li class="listing_header">
+		<ul>
+			<li class="list_driver">Driver</li>
+			<li>Route</li>
+			<li class="list_fee">Fee</li>
+			<li class="list_seats">Seats</li>
+			<li class="list_date">Date</li>
+		</ul>
+	</li>
+	{{range $key, $value := .Body.Listings}}
+	<li class="listing_item">
+		<a href="https://5sur.com/reserve?l={{$value.Id}}">
+			<ul>
+				<li class="list_driver"><img src="https://5sur.com/{{$value.Picture}}"><span class="positive">+74</span></li>
+				<li>{{$value.Origin}} <span class="to">&#10132;</span> {{$value.Destination}}</li>
+				<li class="list_fee">{{if ne $value.Fee 0.0}}${{$value.Fee}}/seat{{else}}Free{{end}}</li>
+				<li class="list_seats">{{$value.Seats}}</li>
+				<li class="list_date"><span class="list_day">Jan 2</span><span class="list_time">14:30</span></li>
+			</ul>
+		</a>
+	</li>
+	{{end}}
+</ul>
+
+<script src="https://5sur.com/header.js"></script>
+<script src="https://5sur.com/calendarScript.js"></script>
+</body>
+
+</html>
