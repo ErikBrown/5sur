@@ -103,10 +103,14 @@ func ReturnListings(db *sql.DB, o int, d int, t string) ([]Listing, error) {
 	// The last rows.Next() call will encounter an EOF error and call rows.Close()
 	for rows.Next() {
 		var temp Listing
-		err := rows.Scan(&temp.Id, &temp.Driver, &temp.Picture, &temp.DateLeaving, &temp.Origin, &temp.Destination, &temp.Seats, &temp.Fee)
+		err := rows.Scan(&temp.Id, &temp.Driver, &temp.Picture, &temp.Timestamp, &temp.Origin, &temp.Destination, &temp.Seats, &temp.Fee)
 		if err != nil {
 			return results, util.NewError(err, "Database error", 500)
 		}
+		prettyTime, err := util.PrettyDate(temp.Timestamp, false)
+		if err != nil { return results, err }
+		temp.Date = prettyTime.Month + " " + prettyTime.Day
+		temp.Time = prettyTime.Time
 		results = append(results, temp)
 	}
 	return results, nil
@@ -152,7 +156,12 @@ func ReturnIndividualListing(db *sql.DB, id int) (Listing, error) {
 	}
 	defer stmt.Close()
 
-	err = stmt.QueryRow(id).Scan(&result.Id, &result.Driver, &result.Picture, &result.DateLeaving, &result.Origin, &result.Destination, &result.Seats, &result.Fee)
+	err = stmt.QueryRow(id).Scan(&result.Id, &result.Driver, &result.Picture, &result.Timestamp, &result.Origin, &result.Destination, &result.Seats, &result.Fee)
+	prettyTime, err := util.PrettyDate(result.Timestamp, false)
+	if err != nil { return result, err }
+	result.Date = prettyTime.Month + " " + prettyTime.Day
+	result.Time = prettyTime.Time
+
 	if err != nil {
 		return Listing{}, util.NewError(nil, "Listing does not exist", 400)
 	}

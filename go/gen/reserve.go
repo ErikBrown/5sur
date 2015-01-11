@@ -24,7 +24,7 @@ func CreateReservation(db *sql.DB, userId int, listingId int, seats int, message
 		return util.NewError(nil, "You must register for at least one seat", 400)
 	}
 	
-	err = validReservation(db, userId, listingId, ride.DateLeaving)
+	err = validReservation(db, userId, listingId, ride.Timestamp)
 	if err != nil {
 		return err
 	}

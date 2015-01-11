@@ -88,6 +88,7 @@
 </div>
 
 <ul id="listing_items">
+	{{if index .Body.Listings}}
 	<li class="listing_header">
 		<ul>
 			<li class="list_driver">Driver</li>
@@ -105,10 +106,13 @@
 				<li>{{$value.Origin}} <span class="to">&#10132;</span> {{$value.Destination}}</li>
 				<li class="list_fee">{{if ne $value.Fee 0.0}}${{$value.Fee}}/seat{{else}}Free{{end}}</li>
 				<li class="list_seats">{{$value.Seats}}</li>
-				<li class="list_date"><span class="list_day">Jan 2</span><span class="list_time">14:30</span></li>
+				<li class="list_date"><span class="list_day">{{$value.Date}}</span><span class="list_time">{{$value.Time}}</span></li>
 			</ul>
 		</a>
 	</li>
+	{{end}}
+	{{else}}
+	No listings to show
 	{{end}}
 </ul>
 

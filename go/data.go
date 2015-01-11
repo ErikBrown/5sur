@@ -570,14 +570,39 @@ func RootHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	user, _, err := util.CheckCookie(r, db) // return "" if not logged in
+		user, userId, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 
-	// HTML generation (also does listing-specific SQL calls)
-	homePage, err := gen.HomePage(db, user);
+	alerts, err := gen.GetAlerts(db, userId)
 	if err != nil { return err }
 
-	fmt.Fprint(w, homePage)
+	header := &gen.HeaderHTML {
+		Title: "Homepage",
+		Username: user,
+		Alerts: len(alerts),
+		AlertText: alerts,
+		UserImage: "https://5sur.com/default.png",
+	}
+
+	cities, err := gen.ReturnFilter(db)
+	if err != nil { return err }
+
+	body := &gen.ListingsHTML{
+		Filter: cities,
+	}
+
+	page := struct {
+		Header gen.HeaderHTML
+		Body gen.ListingsHTML
+	}{
+		*header,
+		*body,
+	}
+
+	err = templates.ExecuteTemplate(w, "listings.html", page)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
 	return nil
 }
 

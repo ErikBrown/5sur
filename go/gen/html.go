@@ -3,7 +3,6 @@ package gen
 import (
 	"strconv"
 	"data/util"
-	"fmt"
 	"html/template"
 )
 
@@ -57,7 +56,9 @@ type Listing struct {
 	Id int
 	Driver int
 	Picture string
-	DateLeaving string
+	Timestamp string
+	Date string
+	Time string
 	Origin string
 	Destination string
 	Seats int
@@ -159,40 +160,6 @@ func optionHtml(c City, i int) string {
 	}
 	return `
 					<option value="` + strconv.Itoa(c.Id) + `"` + selected + `>` + c.Name + `</option>`
-}
-
-func ListingsHtml(l []Listing) string{
-	output := ""
-	for i := range l {
-	date, _ := util.PrettyDate(l[i].DateLeaving, true)
-	output += `
-	<ul class="list_item">
-		<li class="listing_user">
-			<img src="https://5sur.com/` + l[i].Picture + `" alt="User Picture">
-			<span class="positive">+100</span>
-		</li>
-		<li class="date_leaving">
-			<div>
-				<span class="month">` + date.Month + `</span>
-				<span class="day">` + date.Day + `</span>
-				<span class="time">` + date.Time + `</span>
-			</div>
-		</li>
-		<li class="city">
-			<span>` + l[i].Origin + `</span>
-			<span class="to">&#10132;</span>
-			<span>` + l[i].Destination + `</span>
-		</li>
-		<li class="seats">
-			<span>` + strconv.Itoa(l[i].Seats) + `</span>
-		</li>
-			<li class="fee"><span>$` + fmt.Sprintf("%.2f", l[i].Fee) + `</span>
-			<li class="reserve"><a href="https://5sur.com/reserve?l=` + strconv.Itoa(l[i].Id) + `">Resrv</a></li>
-		</li>
-	</ul>
-	`
-	}
-	return output
 }
 
 func ReserveHtml(l Listing) string {
