@@ -19,33 +19,7 @@
 
 <body class="header_padding">
 
-<div id="header">
-	<a href="https://5sur.com/" id="header_logo"></a>
-	<ul id="nav">
-		<li id="nav_create"><a href="https://5sur.com/create"></a></li>
-		<li id="nav_alert"><span>{{.Header.Alerts}}</span></li>
-		<li id="nav_user">
-			<img src="https://5sur.com/usr.png" alt="user">
-		</li>
-	</ul>
-	<ul id="nav_dropdown">
-		<li id="nav_alert_dropdown" class="dropdown">
-			<span>{{.Header.Alerts}} Alert{{if ne .Header.Alerts 1}}s{{end}}</span>
-			<ul>
-				{{range $key, $value := .Header.AlertText}}{{$value}}
-				{{end}}
-			</ul>
-		</li>
-		<li id="nav_user_dropdown" class="dropdown">
-			<span>{{.Header.Username}}</span>
-			<ul>
-				<li><a href="https://5sur.com/user">Pr</a></li>
-				<li><a href="https://5sur.com/dashboard">Da</a></li>
-				<li><a href="https://5sur.com/logout">Lo</a></li>
-			</ul>
-		</li>
-	</ul>
-</div>
+{{template "header.html" .}}
 
 <div class="sidebar" id="main_sidebar">
 	<ul>

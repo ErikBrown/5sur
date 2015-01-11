@@ -16,10 +16,9 @@ import (
 	"image/png"
 	_ "image/jpeg"
 	_ "image/gif"
-	// "log"
 )
 
-var templates = template.Must(template.ParseFiles("templates/login.html","templates/dashMessages.html","templates/dashListings.html","templates/message.html","templates/dashReservations.html","templates/listings.html"))
+var templates = template.Must(template.ParseGlob("templates/*"))
 
 func openDb() (*sql.DB, error) {
 	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
