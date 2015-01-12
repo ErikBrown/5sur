@@ -78,15 +78,3 @@ func CreateReservePage(listingId int, seats int, user string, message string) st
 	reservePage += FooterHtml()
 	return reservePage
 }
-
-func CreateReserveFormPage(l Listing, user string) string {
-	// HTML generation
-	headerInfo := Header {
-		Title: "Reserve Page",
-		User: user,
-	}
-	reservePage := HeaderHtml(&headerInfo)
-	reservePage += ReserveHtml(l)
-	reservePage += FooterHtml()
-	return reservePage
-}

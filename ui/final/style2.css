@@ -315,14 +315,14 @@ h3 {
 	border-radius: 4px;
 }
 
-.form_standard input[type="text"], input[type="password"] {
+.form_standard input[type="text"], .form_standard input[type="password"], .form_standard select {
 	height: 50px;
 	outline: none;
 	font-weight: 600;
 	border: 1px solid #cccccc;
 }
 
-.form_standard input[type="text"]:focus, input[type="password"]:focus {
+.form_standard input[type="text"]:focus, .form_standard input[type="password"]:focus, .form_standard select:focus, .form_standard textarea:focus {
 	border: 2px solid #4DBBE6;
 	padding-left: 9px;
 }
@@ -346,6 +346,10 @@ h3 {
 	border: 1px solid #cccccc;
 }
 
+.form_standard textarea:focus {
+	padding: 9px;
+}
+
 #switch_form {
 	font-weight: 300;
 	font-size: 14px;
@@ -362,6 +366,29 @@ h3 {
 	font-weight: 700;
 	font-size: 14px;
 	color: #F2533C;
+}
+
+#driver_info {
+	font-size: 14px;
+	font-weight: 400;
+	width: 155px;
+	outline: none;
+	line-height: 30px;
+	color: #32A2C7;
+	-webkit-transition: .35s;
+	transition: .35s;
+}
+
+#driver_info > a {
+	display:block;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+#driver_info:hover {
+	background: #eeeeee;
 }
 
 /*** Listings ***/

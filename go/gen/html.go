@@ -41,6 +41,11 @@ type ListingsHTML struct {
 	Query util.ListingQueryFields
 }
 
+type ReserveHTML struct {
+	Listing Listing
+	Seats []int
+}
+
 type Header struct {
 	Title string
 	User string
@@ -160,37 +165,6 @@ func optionHtml(c City, i int) string {
 	}
 	return `
 					<option value="` + strconv.Itoa(c.Id) + `"` + selected + `>` + c.Name + `</option>`
-}
-
-func ReserveHtml(l Listing) string {
-	output := `<form method="post" action="https://5sur.com/reserveSubmit" id="reserve_form">
-		<span>This input will be hidden:</span>
-		<input name="Listing" type="text" id="listing_id_input" value="` + strconv.Itoa(l.Id) +`" readonly>
-		<br />
-		<span>Number of Seats</span>
-		<select name="Seats" id="seats_select" class="reserve_input">
-			`
-	for i := 1; i <= l.Seats; i++ {
-		output += reserveSeats(i)
-	}
-	output +=`
-		</select>
-		<br />
-		<span>Message</span>
-		<input type="text" name="Message" id="message_input" class="reserve_input">
-		<br />
-		<input type="submit" value="Go">
-	</form>`
-	return output
-}
-
-func reserveSeats(s int) string {
-	temp := strconv.Itoa(s)
-	if s == 1 {
-		return `<option selected value="1">1</option>`
-	} else {
-		return `<option value="`+ temp + `">` + temp + `</option>`
-	}
 }
 
 func CreateListingHtml(u string, c []City) string {

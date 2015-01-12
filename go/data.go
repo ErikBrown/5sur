@@ -533,8 +533,21 @@ func ReserveFormHandler(w http.ResponseWriter, r *http.Request) error {
 	listing, err := gen.ReturnIndividualListing(db, l)
 	if err != nil { return err }
 
-	reservePage := gen.CreateReserveFormPage(listing, user)
-	fmt.Fprint(w, reservePage)
+	seats := make ([]int, 0)
+
+	for i := 1; i <= listing.Seats ; i++ {
+		seats = append(seats, i)
+	}
+
+	reserve := &gen.ReserveHTML {
+		Listing: listing,
+		Seats: seats,
+	}
+
+	err = templates.ExecuteTemplate(w, "reserve.html", reserve)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
 	return nil
 }
 
