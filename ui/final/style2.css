@@ -271,6 +271,11 @@ h3 {
 	line-height: 100px;
 }
 
+#login_button {
+	font-size: 14px !important;
+	color: #000000;
+}
+
 /*** Forms ***/
 
 #form_page {
@@ -512,14 +517,14 @@ h3 {
 }
 
 .listing_header {
-	padding: 0 5px;
+	padding: 0 12px;
 }
 
 .listing_item a {
 	display: block;
 	height: 100%;
 	width: 100%;
-	padding: 12px 5px;
+	padding: 12px 12px;
 	border-top: 1px solid #cccccc;
 }
 
@@ -901,4 +906,15 @@ h3 {
 
 #dash_reservation_cancel {
 	background: url("https://5sur.com/graphics/x.png");
+}
+
+#delete_reservation > label {
+	padding-left: 25px;
+	cursor: pointer;
+}
+
+#delete_reservation_input {
+	font-size: 0;
+	border: 0;
+	background: none;
 }

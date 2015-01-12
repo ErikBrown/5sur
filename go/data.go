@@ -137,6 +137,8 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request) error{
 
 	// Check post data for if a button was clicked that directed the user here.
 	if specificListing {
+		err = gen.DeleteAlert(db, userId, "dropped", token)
+		if err != nil { return err }
 		err := gen.CheckPost(db, userId, r, token)
 		if err != nil { return err }
 	}

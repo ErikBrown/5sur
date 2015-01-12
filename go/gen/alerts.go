@@ -89,8 +89,8 @@ func createAlertContent(db *sql.DB, user int, category string, targetId int) (st
 			if err != nil {return "", err}
 			return `
 			<li>
-				<a href="https://5sur.com/dashboard/reservations?i=` + id + `">
-					User has <b>dropped</b> from ride ` + listing.Origin + ` > ` + listing.Destination + `
+				<a href="https://5sur.com/dashboard/listings?i=` + id + `">
+					Someone has <b>dropped</b> from ride ` + listing.Origin + ` > ` + listing.Destination + `
 				</a>
 			</li>
 			`, nil

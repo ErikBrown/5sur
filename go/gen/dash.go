@@ -623,6 +623,8 @@ func CheckReservePost(db *sql.DB, userId int, r *http.Request, listingId int) (s
 				return "", err
 			}
 		}
+		err = CreateAlert(db, driverId, "dropped", listingId)
+		if err != nil { return "", err }
 		return "https://5sur.com/dashboard/reservations", nil
 	}
 	if r.FormValue("m") != "" {
@@ -680,6 +682,8 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 			if err != nil {
 				return err
 			}
+			err = DeleteAlert(db, passengerId, "accepted", listingId)
+			if err != nil { return err }
 			_, err = deleteFromReservations(db, userId, listingId, passengerId)
 			if err != nil {
 				return err
@@ -688,8 +692,6 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 			if err != nil {
 				return err
 			}
-			err = DeleteAlert(db, passengerId, "accepted", listingId)
-			if err != nil { return err }
 			err = CreateAlert(db, passengerId, "removed", listingId)
 			if err != nil { return err }
 		} else {

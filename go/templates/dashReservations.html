@@ -70,7 +70,13 @@
 	<div id="dash_reservation">
 	<ul>
 		<li id="dash_reservation_message"><a href="https://5sur.com/message?i={{.Body.Reservation.DriverId}}">Message driver</a></li>
-		<li id="dash_reservation_cancel"><a href="#">Cancel reservation</a></li>
+		<li id="dash_reservation_cancel">
+			<form id="delete_reservation" method="POST" action="https://5sur.com/dashboard/reservations?i={{.Body.Reservation.ListingId}}">
+				<label for="delete_reservation_input">Cancel reservation
+				<input name="r" value="{{.Body.Reservation.DriverId}}" id="delete_reservation_input" type="submit">
+				</label>
+			</form>
+		</li>
 	</ul>
 	</div>
 	{{end}}
