@@ -116,11 +116,11 @@ func ReturnListings(db *sql.DB, o int, d int, t string) ([]Listing, error) {
 	return results, nil
 }
 
-func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, destination int, seats int, fee float64) error {
+func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, destination int, seats int, fee float64) (int64, error) {
 	// This needs to take in account the hour/minute!!! Concatinate the form values! CHANGE THIS
 	err := checkNearbyListings(db, date_leaving, driver)
 	if err !=nil {
-		return err // err is already util.MyError
+		return 0, err // err is already util.MyError
 	}
 
 	stmt, err := db.Prepare(`
@@ -128,16 +128,21 @@ func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, dest
 			VALUES (?, ?, ?, ?, ?, ?, false)
 		`)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return 0, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(date_leaving, driver, origin, destination, seats, fee)
+	res, err := stmt.Exec(date_leaving, driver, origin, destination, seats, fee)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return 0, util.NewError(err, "Database error", 500)
+	}
+
+	lastId, err := res.LastInsertId()
+	if err != nil {
+		return 0, util.NewError(err, "Database error", 500)
 	}
 	
-	return nil
+	return lastId, nil
 }
 
 func ReturnIndividualListing(db *sql.DB, id int) (Listing, error) {

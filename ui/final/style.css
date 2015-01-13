@@ -283,7 +283,7 @@ h3 {
 	text-align: center;
 }
 
-.form_standard {
+.card_page {
 	min-width: 400px;
 	width: 40%;
 	margin: 50px auto 0 auto;
@@ -302,7 +302,7 @@ h3 {
 	content:url('graphics/logo2.png');
 }
 
-.form_standard > * {
+.card_page > input, .card_page > textarea, .card_page > img, .card_page > select, .card_page > span {
 	display: block;
 	width: 300px;
 	padding: 0 10px;
@@ -315,26 +315,26 @@ h3 {
 	border-radius: 4px;
 }
 
-.form_standard input[type="text"], .form_standard input[type="password"], .form_standard select {
+.card_page input[type="text"], .card_page input[type="password"], .card_page select {
 	height: 50px;
 	outline: none;
 	font-weight: 600;
 	border: 1px solid #cccccc;
 }
 
-.form_standard input[type="text"]:focus, .form_standard input[type="password"]:focus, .form_standard select:focus, .form_standard textarea:focus {
+.card_page input[type="text"]:focus, .card_page input[type="password"]:focus, .card_page select:focus, .card_page textarea:focus {
 	border: 2px solid #4DBBE6;
 	padding-left: 9px;
 }
 
-.form_standard input[type="submit"] {
+.card_page input[type="submit"] {
 	height: 50px;
 	color: #ffffff;
 	background: #4DBBE6;
 	cursor: pointer;
 }
 
-.form_standard textarea {
+.card_page textarea {
 	display: block;
 	height: 205px;
 	outline: none;
@@ -346,8 +346,15 @@ h3 {
 	border: 1px solid #cccccc;
 }
 
-.form_standard textarea:focus {
+.card_page textarea:focus {
 	padding: 9px;
+}
+
+.card_page > p {
+	margin: 0 auto;
+	max-width: 500px;
+	padding: 0 10px;
+	margin-bottom: 15px;
 }
 
 #switch_form {

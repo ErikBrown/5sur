@@ -107,10 +107,10 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request) error{
 	createFormPost, err := util.ValidCreateSubmit(r)
 	if err != nil { return err }
 
-	err = gen.CreateListing(db, createFormPost.Date, userId, createFormPost.Origin, createFormPost.Destination, createFormPost.Seats, createFormPost.Fee)
+	listingId, err := gen.CreateListing(db, createFormPost.Date, userId, createFormPost.Origin, createFormPost.Destination, createFormPost.Seats, createFormPost.Fee)
 	if err != nil { return err }
 
-	fmt.Fprint(w, "listing created!")
+	http.Redirect(w, r, "https://5sur.com/dashboard/listings?i=" + strconv.FormatInt(listingId, 10), 303)
 	return nil
 }
 
@@ -571,9 +571,10 @@ func ReserveHandler(w http.ResponseWriter, r *http.Request) error {
 	err = gen.CreateReservation(db, userId, values.ListingId, values.Seats, r.FormValue("Message"))
 	if err != nil { return err }
 
-	reservePage := gen.CreateReservePage(values.ListingId, values.Seats, user, r.FormValue("Message"))
-
-	fmt.Fprint(w, reservePage)
+	err = templates.ExecuteTemplate(w, "reserveSubmit.html", "")
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
 	return nil
 }
 
