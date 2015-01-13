@@ -49,7 +49,6 @@ a, a:hover, a:visited, a:active {
 }
 
 html, body {
-	height: 100%;
 }
 
 .scrollbar {
@@ -369,7 +368,7 @@ h3 {
 	margin: 0 auto 18px auto;
 }
 
-#discard_message {
+#discard_form {
 	font-weight: 700;
 	font-size: 14px;
 	color: #F2533C;
@@ -423,16 +422,16 @@ h3 {
 	display: none;
 }
 
-#date_box, #time_box {
+.time_option {
 	max-width: 100px;
 }
 
 /* Calendar widget */
 
 #calendar_wrapper {
+	display: hidden;
 	overflow: hidden;
 	height: 0px;
-	margin-top: 25px;
 	margin-left: auto;
 	margin-right: auto;
 	background: #ffffff;

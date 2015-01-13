@@ -84,10 +84,13 @@ func CreateListingHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// HTML generation (also does listing-specific SQL calls)
-	createListingPage, err := gen.CreateListingPage(db, user)
+	cities, err := gen.ReturnFilter(db)
 	if err != nil { return err }
 
-	fmt.Fprint(w, createListingPage)
+	err = templates.ExecuteTemplate(w, "create.html", cities)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
 	return nil
 }
 

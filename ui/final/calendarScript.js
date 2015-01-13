@@ -5,7 +5,6 @@ var months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'a
 var monthColors = ['#35A6D0', '#D37056', '#61BE71', '#7C5498', '#AE75A3', '#54A7CF', '#60AE6D', '#C4BF66', '#D9B340', '#71ACB3', '#947C52', '#2D4B93'];
 
 
-var searchWrapper = document.getElementById('search_wrapper');
 var calendar = document.getElementById('calendar');
 var calendarWrapper = document.getElementById('calendar_wrapper');
 var dateInput = document.getElementById('date_box');
@@ -120,7 +119,7 @@ calendarWrapper.addEventListener('click', function(event) {
 }, false);
 
 
-searchWrapper.addEventListener('click', function() {
+document.addEventListener('click', function() {
 	if (hideCalendar == true) {
 		calendarWrapper.style.height = '0px';
 		calendarWrapper.style.opacity = '.8';
