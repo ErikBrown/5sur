@@ -61,7 +61,7 @@ func checkNearbyListings(db *sql.DB, date_leaving string, id int) error {
 	defer rows.Close()
 
 	for rows.Next() {
-		return util.NewError(err, "You already have a listing near this date", 400)
+		return util.NewError(nil, "You already have a listing near this date", 400)
 	}
 	return nil
 }
@@ -120,21 +120,36 @@ func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, dest
 	// This needs to take in account the hour/minute!!! Concatinate the form values! CHANGE THIS
 	err := checkNearbyListings(db, date_leaving, driver)
 	if err !=nil {
-		return 0, err // err is already util.MyError
+		return 0, err
 	}
 
 	stmt, err := db.Prepare(`
 		INSERT INTO listings (date_leaving,driver,origin,destination,seats,fee,reserved)
-			VALUES (?, ?, ?, ?, ?, ?, false)
+			SELECT ? AS date_leaving, ? AS driver, ? AS origin, ? AS destination, ? AS seats, ? AS fee, false AS reserved FROM dual
+			WHERE 2 = (
+				SELECT COUNT(*)
+					FROM cities
+					WHERE id = ?
+					OR id = ?
+				) LIMIT 1;
 		`)
 	if err != nil {
 		return 0, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
-	res, err := stmt.Exec(date_leaving, driver, origin, destination, seats, fee)
+	res, err := stmt.Exec(date_leaving, driver, origin, destination, seats, fee, origin, destination)
 	if err != nil {
 		return 0, util.NewError(err, "Database error", 500)
+	}
+
+	rowCnt, err := res.RowsAffected()
+	if err != nil {
+		return 0, util.NewError(err, "Database error", 500)
+	}
+
+	if rowCnt != 1 { // Invalid city id
+		return 0, util.NewError(nil, "Invalid create listing parameters", 400)
 	}
 
 	lastId, err := res.LastInsertId()
@@ -162,13 +177,13 @@ func ReturnIndividualListing(db *sql.DB, id int) (Listing, error) {
 	defer stmt.Close()
 
 	err = stmt.QueryRow(id).Scan(&result.Id, &result.Driver, &result.Picture, &result.Timestamp, &result.Origin, &result.Destination, &result.Seats, &result.Fee)
+	if err != nil {
+		return Listing{}, util.NewError(nil, "Listing does not exist", 400)
+	}
 	prettyTime, err := util.PrettyDate(result.Timestamp, false)
 	if err != nil { return result, err }
 	result.Date = prettyTime.Month + " " + prettyTime.Day
 	result.Time = prettyTime.Time
 
-	if err != nil {
-		return Listing{}, util.NewError(nil, "Listing does not exist", 400)
-	}
 	return result, nil
 }

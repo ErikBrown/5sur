@@ -408,14 +408,14 @@ func getPendingUser(db *sql.DB, listingId int, pendingUserId int) (PendingUser, 
 	`)
 	
 	if err != nil {
-		return PendingUser{}, err
+		return PendingUser{}, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
 	pendingUser := PendingUser{}
 	err = stmt.QueryRow(listingId, pendingUserId).Scan(&pendingUser.Message, &pendingUser.Id, &pendingUser.Name, &pendingUser.Picture, &pendingUser.Seats)
 	if err != nil {
-		return pendingUser, err
+		return pendingUser, util.NewError(err, "User does not exist", 400)
 	}
 	return pendingUser, nil
 }
