@@ -48,9 +48,6 @@ a, a:hover, a:visited, a:active {
 	box-sizing: border-box;
 }
 
-html, body {
-}
-
 .scrollbar {
 	overflow-y: scroll;
 }
@@ -735,8 +732,7 @@ h3 {
 }
 
 #dash_content {
-	overflow: hidden;
-	min-height: 100%;
+	margin-left: 450px;
 	text-align: center;
 }
 

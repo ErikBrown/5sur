@@ -333,8 +333,10 @@ func DeleteListingHandler(w http.ResponseWriter, r *http.Request) error {
 	if r.PostFormValue("d") == "" {
 		listingId, err := util.ValidDashQuery(r.URL)
 		if err != nil { return err }
-		deleteForm := gen.DeleteForm(listingId)
-		fmt.Fprint(w, deleteForm)
+		err = templates.ExecuteTemplate(w, "delete.html", listingId)
+		if err != nil {
+			return util.NewError(err, "Failed to load page", 500)
+		}
 		return nil
 	}
 	listingId, err := strconv.Atoi(r.FormValue("d"))

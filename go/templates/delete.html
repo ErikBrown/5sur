@@ -1,0 +1,31 @@
+<!doctype html>
+
+<html>
+
+<head>
+
+<meta charset='utf-8'>
+<meta name="viewport" content="width=device-width">
+
+<link rel="icon" type="image/png" href="graphics/favicon.png">
+<!-- remove the extra weights -->
+<link href='https://fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:400,400italic,600,300,700,800|Bitter:400,400italic,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="https://5sur.com/style2.css" />
+
+
+<title>5Sur - Delete Listing</title>
+<script src='https://www.google.com/recaptcha/api.js'></script>
+</head>
+
+<body id="form_page">
+	<form method="post" action="https://5sur.com/dashboard/listings/delete" class="card_page" id="plain_form">
+		<a href="https://5sur.com/" id="form_logo"></a>
+		<input type="hidden" name="d" value="{{.}}">
+		<input type="submit" value="Delete listing">
+		<a href="https://5sur.com/dashboard/listings" id="discard_form">Cancel</a>
+	</form>
+<script src="https://5sur.com/formScript.js"></script>
+
+</body>
+
+</html>

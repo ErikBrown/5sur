@@ -22,7 +22,7 @@
 		<span id="driver_info">
 			<a href="https://5sur.com/user">View driver's profile</a>
 		</span>
-		<input type="hidden" name="Listing" placeholder="Username" value="{{.Listing.Id}}">
+		<input type="hidden" name="Listing" value="{{.Listing.Id}}">
 		<select name="Seats">
 			<option disabled selected class="blank_option">Seats</option>
 			{{range $key, $value := .Seats}}
