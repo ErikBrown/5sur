@@ -16,11 +16,16 @@ import (
 	"image/png"
 	_ "image/jpeg"
 	_ "image/gif"
+	//"io/ioutil"
 )
 
 var templates = template.Must(template.ParseGlob("templates/*"))
 
-func openDb() (*sql.DB, error) {
+func openDb() (*sql.DB, error) {/*
+	password, err := ioutil.ReadFile(dbPassword)
+	if err != nil {
+		return db, util.NewError(err, "Internal server error", 500)
+	}*/
 	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
 	if err != nil {
 		return db, util.NewError(err, "Database connection failed", 500)
@@ -484,7 +489,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) error {
 	expiredCookie := util.DeleteCookie()
 	http.SetCookie(w, &expiredCookie)
 
-	fmt.Fprint(w, "you SHOULD be logged out")
+	http.Redirect(w, r, "https://5sur.com/", 303)
 	return nil
 }
 
@@ -783,6 +788,33 @@ func SendMessageSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func AppLoginHandler(w http.ResponseWriter, r *http.Request) error {
+	// POST validation
+	if r.FormValue("Password") == "" || r.FormValue("Username") == "" {
+		return util.NewError(nil, "Missing username or password", 400)
+	}
+
+	// Database initialization
+	db, err := openDb()
+	if err != nil { return err }
+	defer db.Close()
+	
+	// User authentication
+	authenticated, err := gen.CheckCredentials(db, r.FormValue("Username"), r.FormValue("Password"))
+	if err != nil { return err }
+	if authenticated {
+		myCookie, err := util.CreateCookie(r.FormValue("Username"), db) // This also stores a hashed cookie in the database
+		if err != nil { return err }
+		http.SetCookie(w, &myCookie)
+		w.WriteHeader(200)
+		fmt.Fprint(w, "Logged in as " + r.FormValue("Username"))
+		return nil
+	}else {
+		return util.NewError(nil, "Your username or password was incorrect", 400)
+	}
+	return nil
+}
+
 type handlerWrapper func(http.ResponseWriter, *http.Request) error
 
 func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -803,6 +835,7 @@ func main() {
 	http.Handle("/a/listings", handlerWrapper(AppListingsHandler))
 	http.Handle("/a/listings/", handlerWrapper(AppListingsHandler))
 	http.Handle("/a/cities", handlerWrapper(AppCityHandler))
+	http.Handle("/a/login", handlerWrapper(AppLoginHandler))
 	http.Handle("/login", handlerWrapper(LoginHandler))
 	http.Handle("/register", handlerWrapper(RegistrationHandler))
 	http.Handle("/loginForm", handlerWrapper(LoginFormHandler))
