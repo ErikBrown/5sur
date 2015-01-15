@@ -577,7 +577,9 @@ func findSeats(db *sql.DB, listingId int, toRemove int) (int, error) {
 	return seats, nil
 }
 
-func DeleteListing(db *sql.DB, userId int, listingId int) error {
+func DeleteListing(db *sql.DB, userId int, listingId int) ([]RegisteredUser, error) {
+	registeredUsers, err := getRegisteredUsers(db, listingId)
+	if err != nil {return registeredUsers, err}
 	stmt, err := db.Prepare(`
 		DELETE l, r, rq
 			FROM listings AS l
@@ -587,7 +589,7 @@ func DeleteListing(db *sql.DB, userId int, listingId int) error {
 				AND l.id = ?
 	`)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return registeredUsers, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
@@ -595,9 +597,9 @@ func DeleteListing(db *sql.DB, userId int, listingId int) error {
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	_, err = stmt.Exec(userId, listingId)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return registeredUsers, util.NewError(err, "Database error", 500)
 	}
-	return nil
+	return registeredUsers, nil
 }
 
 // userId in this case is passengerId because this is for a user removing themself from the reservation list
@@ -622,9 +624,9 @@ func CheckReservePost(db *sql.DB, userId int, r *http.Request, listingId int) (s
 			if err != nil {
 				return "", err
 			}
+			err = CreateAlert(db, driverId, "dropped", listingId)
+			if err != nil { return "", err }
 		}
-		err = CreateAlert(db, driverId, "dropped", listingId)
-		if err != nil { return "", err }
 		return "https://5sur.com/dashboard/reservations", nil
 	}
 	if r.FormValue("m") != "" {
@@ -711,13 +713,6 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 		}
 		// Deal with messenging
 	}
-	// if r.FormValue("d") != "" {
-	// 	listingToDelete, err := strconv.Atoi(r.FormValue("r"))
-	// 	if err != nil {
-	// 		return errors.New("Invalid")
-	// 	}
-	// 	deleteListing(db, userId, listingToDelete)
-	// }
 	return nil
 }
 

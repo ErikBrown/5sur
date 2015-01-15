@@ -287,6 +287,8 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request) error{
 	} else {
 		err = gen.DeleteAlert(db, userId, "removed", 0)
 		if err != nil { return err }
+		err = gen.DeleteAlert(db, userId, "deleted", 0)
+		if err != nil { return err }
 	}
 
 	url, err := gen.CheckReservePost(db, userId, r, token)
@@ -355,7 +357,17 @@ func DeleteListingHandler(w http.ResponseWriter, r *http.Request) error {
 		return util.NewError(nil, "Invalid listing", 400)
 	}
 
-	err = gen.DeleteListing(db, userId, listingId)
+	registeredUsers, err := gen.DeleteListing(db, userId, listingId)
+	if err != nil { return err }
+
+	for _, value := range registeredUsers {
+		err = gen.CreateAlert(db, value.Id, "deleted", listingId)
+		if err != nil { return err }
+		err = gen.DeleteAlert(db, value.Id, "accepted", listingId)
+		if err != nil { return err }
+	}
+
+	err = gen.DeleteAlert(db, userId, "pending", listingId)
 	if err != nil { return err }
 
 	http.Redirect(w, r, "https://5sur.com/dashboard/listings", 303)
