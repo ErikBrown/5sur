@@ -189,9 +189,17 @@ func mailUserAuth(username string, toAddress string, token string) error {
 	message += "\r\n" + body
 
 	// SMTP Server info
+	user, err := ioutil.ReadFile("sesUser")
+	if err != nil {
+		return util.NewError(err, "Internal server error", 500)
+	}
+	password, err := ioutil.ReadFile("sesPassword")
+	if err != nil {
+		return util.NewError(err, "Internal server error", 500)
+	}
 	servername := "email-smtp.us-west-2.amazonaws.com:465"
 	host := "email-smtp.us-west-2.amazonaws.com"
-	auth := smtp.PlainAuth("", "AKIAJ7SSYA65O5XALJVQ", "AmVDayL8URplvu+nRDaNqI46++jGqieyOJrNBYwDKN7Q", host)
+	auth := smtp.PlainAuth("", string(user[:]), string(password[:]), host)
 
 	// TLS config
 	tlsconfig := &tls.Config {
@@ -391,7 +399,11 @@ func CheckCredentials(db *sql.DB, username string, password string) (bool, error
 
 func CheckCaptcha(formValue string, userIp string) (bool, error){
 	// Get super secret password from external file at some point
-	resp, err := http.Get("https://www.google.com/recaptcha/api/siteverify?secret=6Lcjkf8SAAAAAMAxp-geyAYnkFwZwtkMR1uhLvjQ" + "&response="+ formValue + "&remoteip=" + userIp)
+	secretKey, err := ioutil.ReadFile("captchaPassword")
+	if err != nil {
+		return false, util.NewError(err, "Internal server error", 500)
+	}
+	resp, err := http.Get("https://www.google.com/recaptcha/api/siteverify?secret=" + string(secretKey[:]) + "&response="+ formValue + "&remoteip=" + userIp)
 	if err != nil {
 		return false, util.NewError(err, "Verification error. Please try again later.", 500)
 	}

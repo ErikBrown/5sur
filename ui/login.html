@@ -7,38 +7,25 @@
 <meta charset='utf-8'>
 <meta name="viewport" content="width=device-width">
 
-<!-- <link rel="icon" type="image/png" href="graphics/favicon.ico"> -->
+<link rel="icon" type="image/png" href="https://5sur.com/graphics/favicon.png">
 <!-- remove the extra weights -->
 <link href='https://fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:400,400italic,600,300,700,800|Bitter:400,400italic,700' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" type="text/css" href="style.css" />
 
 
-<title>LOGIN PAGE</title>
+<title>5Sur - Login</title>
 
 </head>
 
-<body>
-
-<div id="header">
-	<h1><a href="https://5sur.com/l/">RideChile</a></h1>
-	<ul id="account_nav">
-		<li>UserName</li>
-		<li>MsgIcon</li>
-		<li>Logout</li>
-	</ul>
-</div>
-	<form method="post" action="https://5sur.com/login" id="login_form">
-		<div id="city_wrapper">
-			<span>Username</span>
-			<input type="text" name="Username" id="username_input" class="login_input">
-			<br />
-			<span>Password</span>
-			<input type="text" name="Password" id="password_input" class="login_input">
-			<br />
-			<input type="submit" value="Go">
-		</div>
+<body id="form_page">
+	<form method="post" action="https://5sur.com/login" class="card_page" id="plain_form">
+		<a href="https://5sur.com/" id="form_logo"></a>
+		<input type="text" name="Username" placeholder="Username">
+		<input type="password" name="Password" placeholder="Password">
+		<input type="submit" value="Sign In">
+		<a href="https://5sur.com/register.html" id="switch_form">Don't have an account?</a>
 	</form>
-<script src="script.js"></script>
+<script src="formScript.js"></script>
 </body>
 
 </html>

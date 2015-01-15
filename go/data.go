@@ -16,17 +16,23 @@ import (
 	"image/png"
 	_ "image/jpeg"
 	_ "image/gif"
-	//"io/ioutil"
+	"io/ioutil"
 )
 
 var templates = template.Must(template.ParseGlob("templates/*"))
 
-func openDb() (*sql.DB, error) {/*
-	password, err := ioutil.ReadFile(dbPassword)
+func openDb() (*sql.DB, error) {
+	user, err := ioutil.ReadFile("dbUser")
 	if err != nil {
-		return db, util.NewError(err, "Internal server error", 500)
-	}*/
-	db, err := sql.Open("mysql", "gary:butthole@/rideshare")
+		return &sql.DB{}, util.NewError(err, "Internal server error", 500)
+	}
+
+	password, err := ioutil.ReadFile("dbPassword")
+	if err != nil {
+		return &sql.DB{}, util.NewError(err, "Internal server error", 500)
+	}
+
+	db, err := sql.Open("mysql", string(user[:]) + ":" + string(password[:]) + "@/rideshare")
 	if err != nil {
 		return db, util.NewError(err, "Database connection failed", 500)
 	}
@@ -710,7 +716,7 @@ func LoginFormHandler(w http.ResponseWriter, r *http.Request) error{
 	var script, captcha template.HTML
 	if attempts > 2 {
 		script = `<script src='https://www.google.com/recaptcha/api.js'></script>`
-		captcha = `<div class="g-recaptcha" data-sitekey="6Lcjkf8SAAAAAE242oMsYj9akkUm69jfYIlSBOLF"></div>`
+		captcha = `<div class="g-recaptcha" data-sitekey="6LfejAATAAAAAK1DA4l33OntwJy9LZz1GK3F2Egr"></div>`
 	}
 	registerData := &gen.LoginHTML{
 		Title: "Login",
