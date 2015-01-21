@@ -748,33 +748,6 @@ func SendMessageSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func AppLoginHandler(w http.ResponseWriter, r *http.Request) error {
-	// POST validation
-	if r.FormValue("Password") == "" || r.FormValue("Username") == "" {
-		return util.NewError(nil, "Missing username or password", 400)
-	}
-
-	// Database initialization
-	db, err := util.OpenDb()
-	if err != nil { return err }
-	defer db.Close()
-	
-	// User authentication
-	authenticated, err := gen.CheckCredentials(db, r.FormValue("Username"), r.FormValue("Password"))
-	if err != nil { return err }
-	if authenticated {
-		myCookie, err := util.CreateCookie(r.FormValue("Username"), db) // This also stores a hashed cookie in the database
-		if err != nil { return err }
-		http.SetCookie(w, &myCookie)
-		w.WriteHeader(200)
-		fmt.Fprint(w, "Logged in as " + r.FormValue("Username"))
-		return nil
-	}else {
-		return util.NewError(nil, "Your username or password was incorrect", 400)
-	}
-	return nil
-}
-
 type handlerWrapper func(http.ResponseWriter, *http.Request) error
 
 func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -792,7 +765,6 @@ func main() {
 	util.ConfigureLog()
 	http.Handle("/l/", handlerWrapper(ListingsHandler))
 	http.Handle("/u/", handlerWrapper(UserHandler))
-	http.Handle("/a/login", handlerWrapper(AppLoginHandler))
 	http.Handle("/login", handlerWrapper(LoginHandler))
 	http.Handle("/register", handlerWrapper(RegistrationHandler))
 	http.Handle("/loginForm", handlerWrapper(LoginFormHandler))
@@ -814,6 +786,7 @@ func main() {
 	http.Handle("/messageSubmit", handlerWrapper(SendMessageSubmitHandler))
 	http.Handle("/", handlerWrapper(RootHandler))
 
+	http.Handle("/a/login", handlerWrapper(app.LoginHandler))
 	http.Handle("/a/listings", handlerWrapper(app.ListingsHandler))
 	http.Handle("/a/listings/", handlerWrapper(app.ListingsHandler))
 	http.Handle("/a/cities", handlerWrapper(app.CityHandler))

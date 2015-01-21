@@ -43,3 +43,30 @@ func CityHandler(w http.ResponseWriter, r *http.Request) error {
 	fmt.Fprint(w, string(jsonCities))
 	return nil
 }
+
+func LoginHandler(w http.ResponseWriter, r *http.Request) error {
+	// POST validation
+	if r.FormValue("Password") == "" || r.FormValue("Username") == "" {
+		return util.NewError(nil, "Missing username or password", 400)
+	}
+
+	// Database initialization
+	db, err := util.OpenDb()
+	if err != nil { return err }
+	defer db.Close()
+	
+	// User authentication
+	authenticated, err := gen.CheckCredentials(db, r.FormValue("Username"), r.FormValue("Password"))
+	if err != nil { return err }
+	if authenticated {
+		myCookie, err := util.CreateCookie(r.FormValue("Username"), db) // This also stores a hashed cookie in the database
+		if err != nil { return err }
+		http.SetCookie(w, &myCookie)
+		w.WriteHeader(200)
+		fmt.Fprint(w, "Logged in as " + r.FormValue("Username"))
+		return nil
+	}else {
+		return util.NewError(nil, "Your username or password was incorrect", 400)
+	}
+	return nil
+}
