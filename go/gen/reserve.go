@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"data/util"
+	"unicode/utf8"
 )
 
 func CreateReservation(db *sql.DB, userId int, listingId int, seats int, message string) error {
@@ -22,6 +23,10 @@ func CreateReservation(db *sql.DB, userId int, listingId int, seats int, message
 
 	if seats <= 0 {
 		return util.NewError(nil, "You must register for at least one seat", 400)
+	}
+
+	if utf8.RuneCountInString(message) > 200 {
+		return util.NewError(nil, "Message too long (max characters: 200)", 400)
 	}
 	
 	err = validReservation(db, userId, listingId, ride.Timestamp)

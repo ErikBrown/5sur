@@ -5,10 +5,9 @@ import (
 	"net"
 	"net/http"
 	"encoding/json"
-	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
 	"data/gen"
 	"data/util"
+	"data/app"
 	"strconv"
 	"html/template"
 	"os"
@@ -16,32 +15,9 @@ import (
 	"image/png"
 	_ "image/jpeg"
 	_ "image/gif"
-	"io/ioutil"
 )
 
 var templates = template.Must(template.ParseGlob("templates/*"))
-
-func openDb() (*sql.DB, error) {
-	user, err := ioutil.ReadFile("dbUser")
-	if err != nil {
-		return &sql.DB{}, util.NewError(err, "Internal server error", 500)
-	}
-
-	password, err := ioutil.ReadFile("dbPassword")
-	if err != nil {
-		return &sql.DB{}, util.NewError(err, "Internal server error", 500)
-	}
-
-	db, err := sql.Open("mysql", string(user[:]) + ":" + string(password[:]) + "@/rideshare")
-	if err != nil {
-		return db, util.NewError(err, "Database connection failed", 500)
-	}
-	err = db.Ping()
-	if err != nil {
-		return db, util.NewError(err, "Database connection failed", 500)
-	}
-	return db, nil
-}
 
 func AccountAuthHandler(w http.ResponseWriter, r *http.Request) error {
 	// Query string validation
@@ -49,7 +25,7 @@ func AccountAuthHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	// Database initialization
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -61,29 +37,9 @@ func AccountAuthHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func AppListingsHandler(w http.ResponseWriter, r *http.Request) error {
-	query, err := util.ValidListingQuery(r.URL) // Returns util.QueryFields
-	if err != nil { return err }
-
-	// Database initialization
-	db, err := openDb()
-	if err != nil { return err }
-	defer db.Close()
-
-	listings, err := gen.ReturnListings(db, query.Origin, query.Destination, query.Date + " " + query.Time)
-	if err != nil { return err }
-	jsonListings, err := json.MarshalIndent(listings, "", "    ")
-	if err != nil {
-		return util.NewError(nil, "Json conversion failed", 500)
-	}
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprint(w, string(jsonListings))
-	return nil
-}
-
 func CreateListingHandler(w http.ResponseWriter, r *http.Request) error {
 	// Database initialization
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -107,7 +63,7 @@ func CreateListingHandler(w http.ResponseWriter, r *http.Request) error {
 
 func CreateSubmitHandler(w http.ResponseWriter, r *http.Request) error{
 	// Database initialization
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -137,7 +93,7 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request) error{
 		token = 0
 	}
 	// Database initialization
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -199,7 +155,7 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request) error{
 
 func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 	// Database initialization
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -262,7 +218,7 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 
 func DashReservationsHandler(w http.ResponseWriter, r *http.Request) error{
 	// Database initialization
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -331,7 +287,7 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request) error{
 
 func DeleteListingHandler(w http.ResponseWriter, r *http.Request) error {
 	// Database initialization
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -401,12 +357,10 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) error {
 	// Query string validation	
 	query, err := util.ValidListingQuery(r.URL)
 	if err != nil { return err }
-	query.Date, query.Time, err = util.ReturnTimeString(true, query.Date, query.Time)
-	if err != nil { return err }
 
 
 	// Database initialization
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err!=nil {
 		return err
 	}
@@ -432,6 +386,10 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) error {
 
 	listings, err := gen.ReturnListings(db, query.Origin, query.Destination, query.Date + " " + query.Time)
 	if err != nil { return err	}
+
+	// Convert date to be human readable
+	query.Date, query.Time, err = util.ReturnTimeString(true, query.Date, query.Time)
+	if err != nil { return err }
 
 	body := &gen.ListingsHTML{
 		Filter: cities,
@@ -461,7 +419,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Database initialization
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -516,7 +474,7 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	// Database initialization
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -547,7 +505,7 @@ func ReserveFormHandler(w http.ResponseWriter, r *http.Request) error {
 	l, err := util.ValidReserveURL(r)
 	if err != nil { return err }
 
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -585,7 +543,7 @@ func ReserveHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	// Database initialization
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -608,7 +566,7 @@ func ReserveHandler(w http.ResponseWriter, r *http.Request) error {
 
 func RootHandler(w http.ResponseWriter, r *http.Request) error {
 	// Database initialization
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -651,7 +609,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) error {
 
 func UploadHandler(w http.ResponseWriter, r *http.Request) error {
 	// Database initialization
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -695,7 +653,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) error {
 
 func UserHandler(w http.ResponseWriter, r *http.Request) error {
 	// Database initialization
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -711,7 +669,7 @@ func UserHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func LoginFormHandler(w http.ResponseWriter, r *http.Request) error{
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -742,27 +700,11 @@ func LoginFormHandler(w http.ResponseWriter, r *http.Request) error{
 	return nil
 }
 
-func AppCityHandler(w http.ResponseWriter, r *http.Request) error {
-	db, err := openDb()
-	if err != nil { return err }
-	defer db.Close()
-	cities, err := gen.ReturnFilter(db)
-	if err != nil { return err }
-
-	jsonCities, err := json.MarshalIndent(cities, "", "    ")
-	if err != nil {
-		return util.NewError(err, "Json conversion failed", 500)
-	}
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprint(w, string(jsonCities))
-	return nil
-}
-
 func SendMessageHandler(w http.ResponseWriter, r *http.Request) error {
 	recipientId, err := util.ValidMessageURL(r)
 	if err != nil { return err }
 
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -784,7 +726,7 @@ func SendMessageHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func SendMessageSubmitHandler(w http.ResponseWriter, r *http.Request) error {
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
@@ -813,7 +755,7 @@ func AppLoginHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Database initialization
-	db, err := openDb()
+	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 	
@@ -850,9 +792,6 @@ func main() {
 	util.ConfigureLog()
 	http.Handle("/l/", handlerWrapper(ListingsHandler))
 	http.Handle("/u/", handlerWrapper(UserHandler))
-	http.Handle("/a/listings", handlerWrapper(AppListingsHandler))
-	http.Handle("/a/listings/", handlerWrapper(AppListingsHandler))
-	http.Handle("/a/cities", handlerWrapper(AppCityHandler))
 	http.Handle("/a/login", handlerWrapper(AppLoginHandler))
 	http.Handle("/login", handlerWrapper(LoginHandler))
 	http.Handle("/register", handlerWrapper(RegistrationHandler))
@@ -874,5 +813,9 @@ func main() {
 	http.Handle("/message", handlerWrapper(SendMessageHandler))
 	http.Handle("/messageSubmit", handlerWrapper(SendMessageSubmitHandler))
 	http.Handle("/", handlerWrapper(RootHandler))
+
+	http.Handle("/a/listings", handlerWrapper(app.ListingsHandler))
+	http.Handle("/a/listings/", handlerWrapper(app.ListingsHandler))
+	http.Handle("/a/cities", handlerWrapper(app.CityHandler))
 	http.ListenAndServe(":8080", nil)
 }
