@@ -684,6 +684,13 @@ func LoginFormHandler(w http.ResponseWriter, r *http.Request) error{
 	if err != nil { return err }
 	defer db.Close()
 
+	_, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
+	if userId != 0 {
+		http.Redirect(w, r, "https://5sur.com/", 303)
+		return nil
+	}
+
 	userIp := ""
 	if ipProxy := r.Header.Get("X-Real-IP"); len(ipProxy) > 0 {
 		userIp = ipProxy
