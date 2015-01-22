@@ -9,7 +9,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func CreateCookie(u string, db *sql.DB) (http.Cookie, error) {
+func CreateCookie(u string, db *sql.DB, app bool) (http.Cookie, error) {
 	alphaNum := []byte("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv")
 	randValue := ""
 	for i := 0; i < 32; i++ {
@@ -28,14 +28,14 @@ func CreateCookie(u string, db *sql.DB) (http.Cookie, error) {
 		HttpOnly: true, // HTTP(S) only
 	}
 
-	err := updateSession(randValue, u, db)
+	err := updateSession(randValue, u, db, app)
 	if err != nil {
 		return http.Cookie{}, err
 	}
 	return authCookie, nil
 }
 
-func DeleteCookie() http.Cookie {
+func DeleteCookie(db *sql.DB, userId int, app bool) (error, http.Cookie) {
 	expiredCookie := http.Cookie{
 		Name: "RideChile",
 		Value: "",
@@ -46,31 +46,68 @@ func DeleteCookie() http.Cookie {
 		Secure: true, // SSL only
 		HttpOnly: true, // HTTP(S) only
 	}
-	return expiredCookie
+	err := deleteAuthToken(db, userId, app)
+	if err != nil {
+		return err, expiredCookie
+	}
+	return nil, expiredCookie
 }
 
-func updateSession(v string, u string, db *sql.DB) error {
+func deleteAuthToken(db *sql.DB, userId int, app bool) error {
+	stmtText := ""
+	if app {
+		stmtText = `UPDATE users SET ios_session = "" WHERE id = ?`
+	} else {
+		stmtText = `UPDATE users SET session = "" WHERE id = ?`
+	}
+	stmt, err := db.Prepare(stmtText)
+	if err != nil {
+		return NewError(err, "Database error", 500)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(userId)
+	if err != nil {
+		return NewError(err, "Database error", 500)
+	}
+	return nil
+}
+
+func updateSession(v string, u string, db *sql.DB, app bool) error {
 	// To save CPU cycles we'll use sha256; Bcrypt is an intentionally slow hash.
 	// We don't even need that secure of a hash function since our session ID is 
 	// sufficiently random and long.
 	hashed := sha256.New()
 	hashed.Write([]byte(v))
 	hashedStr := hex.EncodeToString(hashed.Sum(nil))
-	stmt, err := db.Prepare(`UPDATE users SET session = ? WHERE name = ?`)
+	stmtText := ""
+	if app {
+		stmtText = `UPDATE users SET ios_session = ? WHERE name = ?`
+	} else {
+		stmtText = `UPDATE users SET session = ? WHERE name = ?`
+	}
+	stmt, err := db.Prepare(stmtText)
 	if err != nil {
 		return NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
-	res, err := stmt.Exec(hashedStr, u)
-	if err != nil {
-		return NewError(err, "Database error", 500)
-	}
-	_, err = res.RowsAffected()
+	_, err = stmt.Exec(hashedStr, u)
 	if err != nil {
 		return NewError(err, "Database error", 500)
 	}
 	return nil
+}
+
+func CheckAppCookie(r *http.Request, db *sql.DB) (string, int, error) {
+	sessionID, err := r.Cookie("RideChile")
+	if err != nil {
+		return "", 0, nil // No cookie
+	}
+	n, i, err := checkSession(sessionID.Value, true, db)
+	if err != nil {return "", 0, err}
+
+	return n, i, nil
 }
 
 func CheckCookie(r *http.Request, db *sql.DB) (string, int, error) {
@@ -78,21 +115,33 @@ func CheckCookie(r *http.Request, db *sql.DB) (string, int, error) {
 	if err != nil {
 		return "", 0, nil // No cookie
 	}
-	n, i, err := checkSession(sessionID.Value, db)
+	n, i, err := checkSession(sessionID.Value, false, db)
 	if err != nil {return "", 0, err}
 
 	return n, i, nil
 }
 
-func checkSession(s string, db *sql.DB) (string, int, error){
+func checkSession(s string, app bool, db *sql.DB) (string, int, error){
 	hashed := sha256.New()
 	hashed.Write([]byte(s))
 	hashedStr := hex.EncodeToString(hashed.Sum(nil))
-	stmt, err := db.Prepare(`
+	stmtText := ""
+	if app {
+		stmtText = `
+	SELECT users.name, users.id
+		FROM users
+		WHERE users.ios_session = ?
+		AND users.ios_session != "";
+		`
+	} else {
+		stmtText = `
 	SELECT users.name, users.id
 		FROM users
 		WHERE users.session = ?
-		`)
+		AND users.session != "";
+		`
+	}
+	stmt, err := db.Prepare(stmtText)
 	
 	if err != nil {
 		return "", 0, NewError(err, "Database error", 500)

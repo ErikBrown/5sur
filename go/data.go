@@ -447,7 +447,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 	authenticated, err := gen.CheckCredentials(db, r.FormValue("Username"), r.FormValue("Password"))
 	if err != nil { return err }
 	if authenticated {
-		myCookie, err := util.CreateCookie(r.FormValue("Username"), db) // This also stores a hashed cookie in the database
+		myCookie, err := util.CreateCookie(r.FormValue("Username"), db, false) // This also stores a hashed cookie in the database
 		if err != nil { return err }
 		http.SetCookie(w, &myCookie)
 		http.Redirect(w, r, "https://5sur.com/", 303)
@@ -461,8 +461,19 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) error {
+	db, err := util.OpenDb()
+	if err!=nil {
+		return err
+	}
+	defer db.Close()
+
+	// User authentication
+	_, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
+
 	// Create gen.InvalidateCookie
-	expiredCookie := util.DeleteCookie()
+	err, expiredCookie := util.DeleteCookie(db, userId, false)
+	if err != nil { return err }
 	http.SetCookie(w, &expiredCookie)
 
 	http.Redirect(w, r, "https://5sur.com/", 303)
@@ -786,9 +797,11 @@ func main() {
 	http.Handle("/messageSubmit", handlerWrapper(SendMessageSubmitHandler))
 	http.Handle("/", handlerWrapper(RootHandler))
 
+	http.Handle("/a/logout", handlerWrapper(app.LogoutHandler))
 	http.Handle("/a/login", handlerWrapper(app.LoginHandler))
 	http.Handle("/a/listings", handlerWrapper(app.ListingsHandler))
 	http.Handle("/a/listings/", handlerWrapper(app.ListingsHandler))
 	http.Handle("/a/cities", handlerWrapper(app.CityHandler))
+	http.Handle("/a/reserve", handlerWrapper(app.ReserveHandler))
 	http.ListenAndServe(":8080", nil)
 }
