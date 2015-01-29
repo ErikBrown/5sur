@@ -134,8 +134,8 @@ func createAlertContent(db *sql.DB, user int, category string, targetId int) (st
 		case "rate":
 			return `
 			<li>
-				<a href="https://5sur.com/user/` + targetId + `/rate">
-					You can now give <b>`targetId`</b> a rating based on your recent ride with them.
+				<a href="https://5sur.com/user/` + id + `/rate">
+					You can now give <b>` + id + `</b> a rating based on your recent ride with them.
 				</a>
 			</li>`, nil
 	}
