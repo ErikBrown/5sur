@@ -423,6 +423,10 @@ h3 {
 	max-width: 100px;
 }
 
+#search_form > #time_box {
+	margin-bottom: 25px;
+}
+
 /* Calendar widget */
 
 #calendar_wrapper {

@@ -15,6 +15,7 @@ import (
 	"image/png"
 	_ "image/jpeg"
 	_ "image/gif"
+	"strings"
 )
 
 var templates = template.Must(template.ParseGlob("templates/*"))
@@ -668,13 +669,15 @@ func UserHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 	defer db.Close()
 
-	user, err := gen.ReturnUserInfo(db, r.URL.Path[3:])
+	splits := strings.Split(r.URL.Path, "/")
+	user, err := gen.ReturnUserInfo(db, splits[2])
 	if err != nil { return err }
 
 	formatted, err := json.MarshalIndent(user, "", "    ")
 	if err != nil {
 		return util.NewError(err, "Json conversion failed", 500)
 	}
+
 	fmt.Fprint(w, string(formatted))
 	return nil
 }

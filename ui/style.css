@@ -77,6 +77,13 @@ h3 {
 	color: #2E3436;
 }
 
+h4 {
+	font-size: 25px;
+	font-weight: 300;
+	color: #ffffff;
+	margin-top: 15px;
+}
+
 /*** Header ***/
 #header {
 	position: absolute;
@@ -946,4 +953,191 @@ h3 {
 	font-size: 0;
 	border: 0;
 	background: none;
+}
+
+/*** User Page ***/
+.user_page {
+	font-size: 0;
+	height: 100%;
+	background: #3E9ED2;
+}
+
+#user_sidebar {
+	position: relative;
+	float: left;
+	width: 35%;
+	height: 100%;
+	background: #3E9ED2;
+	text-align: center;
+	overflow: hidden;
+}
+
+#user_sidebar > img {
+	margin-top: 100px;
+	border-radius: 100%;
+}
+
+#user_sidebar > span {
+	display: block;
+	font-family: 'Bitter';
+	font-size: 22px;
+	font-weight: 600;
+}
+
+#sidebar_positive {
+	color: #ECE45B;
+}
+
+#sidebar_negative {
+	color: #992D0D;
+}
+
+.donut_chart {
+	position: relative;
+	display: inline-block;
+	width: 215px;
+	height: 225px;
+}
+
+.donut_chart canvas {
+	position: absolute;
+}
+
+#chart1 canvas {
+	right: 0;
+}
+
+#chart2 canvas {
+	left: 0;
+}
+
+.donut_labels {
+	cursor: pointer;
+	border-radius: 100%;
+	opacity: 0;
+	-webkit-transition: .4s;
+	transition: .4s;
+}
+
+.donut_labels:hover {
+	opacity: 1;
+}
+
+#user_comments {
+	float: right;
+	width: 65%;
+	min-height: 100%;
+	background: #EAEAEA;
+}
+
+#user_comments > span {
+	display: block;
+	font-family: 'Bitter', serif;
+	font-weight: 300;
+	font-size: 32px;
+	color: #333333;
+	margin: 3%;
+}
+
+#user_comments > ul {
+	font-size: 0;
+	margin-left: 3%;
+}
+
+.comment {
+	display: inline-block;
+	vertical-align: top;
+	overflow: hidden;
+	margin-bottom: 25px;
+	width: 30%;
+	margin-right: 3%;
+}
+
+.rating {
+	font-size: 50px;
+	line-height: 75px;
+	text-align: center;
+	color: #ffffff;
+	float: left;
+	width: 75px;
+	height: 75px;
+	margin-right: 10px;
+}
+
+.positive {
+	background: #27AF61;
+}
+
+.negative {
+	background: #EC4137;
+}
+
+.comment_text {
+	display: block;
+	font-size: 14px;
+	color: #666666;
+	min-height: 75px;
+	margin-right: 25px;
+	margin-left: 85px;
+}
+
+.comment_date {
+	display: block;
+	font-size: 12px;
+	color: #888888;
+	text-align: right;
+	margin-right: 25px;
+}
+
+@media all and (max-width: 1255px) {
+	.donut_chart {
+		width: 225px;
+	}
+
+	#user_sidebar {
+		float: none;
+		height: 455px;
+		width: 100%;
+		padding: 0;
+	}
+
+	#user_sidebar > img {
+		margin-top: 25px;
+	}
+
+	.donut_chart {
+	}
+
+	#user_comments {
+		width: 100%;
+		overflow: none;
+	}
+
+	#user_comments > span {
+		font-size: 26px;
+	}
+}
+
+@media all and (max-width: 858px) {
+	.comment {
+		width: 47%;
+	}
+}
+
+@media all and (max-width: 500px) {
+	#user_sidebar {
+		height: 225px;
+	}
+
+	.donut_chart {
+		display: none;
+	}
+
+	#user_comments > span {
+		font-size: 22px;
+	}
+
+	.comment {
+		width: 97%;
+	}
 }
