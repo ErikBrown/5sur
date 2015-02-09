@@ -957,9 +957,8 @@ h4 {
 
 /*** User Page ***/
 .user_page {
-	font-size: 0;
 	height: 100%;
-	background: #3E9ED2;
+	background: #3A5A6D;
 }
 
 #user_sidebar {
@@ -967,7 +966,8 @@ h4 {
 	float: left;
 	width: 35%;
 	height: 100%;
-	background: #3E9ED2;
+	font-size: 0;
+	background: #3A5A6D;
 	text-align: center;
 	overflow: hidden;
 }
@@ -1027,7 +1027,7 @@ h4 {
 	float: right;
 	width: 65%;
 	min-height: 100%;
-	background: #EAEAEA;
+	background: #F8F7F3;
 }
 
 #user_comments > span {

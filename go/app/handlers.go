@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"data/gen"
 	"data/util"
+	"strings"
 )
 
 func ListingsHandler(w http.ResponseWriter, r *http.Request) error {
@@ -97,7 +98,7 @@ func ReserveHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) error {
-		db, err := util.OpenDb()
+	db, err := util.OpenDb()
 	if err!=nil {
 		return err
 	}
@@ -114,5 +115,24 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) error {
 	w.WriteHeader(200)
 
 	fmt.Fprint(w, "You logged out")
+	return nil
+}
+
+func UserHandler(w http.ResponseWriter, r *http.Request) error {
+	// Database initialization
+	db, err := util.OpenDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	splits := strings.Split(r.URL.Path, "/")
+	user, err := gen.ReturnUserInfo(db, splits[3])
+	if err != nil { return err }
+
+	formatted, err := json.MarshalIndent(user, "", "    ")
+	if err != nil {
+		return util.NewError(err, "Json conversion failed", 500)
+	}
+
+	fmt.Fprint(w, string(formatted))
 	return nil
 }

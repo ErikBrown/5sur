@@ -813,5 +813,6 @@ func main() {
 	http.Handle("/a/listings/", handlerWrapper(app.ListingsHandler))
 	http.Handle("/a/cities", handlerWrapper(app.CityHandler))
 	http.Handle("/a/reserve", handlerWrapper(app.ReserveHandler))
+	http.Handle("/a/u/", handlerWrapper(app.UserHandler))
 	http.ListenAndServe(":8080", nil)
 }

@@ -7,7 +7,7 @@ var canvas4 = document.getElementById("donut_text2");
 var canvas4_2 = document.getElementById("donut_text2_2");
 var canvas5 = document.getElementById("line_graph");
 var canvas5_2 = document.getElementById("line_graph_text");
-var c = ["#6cc0e5", "#fbc93d", "#fb4f4f","#18B64B"];
+var c = ["#B0F9F9", "#fbc93d", "#fb4f4f","#63C76A"];
 var yearCreated = 2014;
 var graphWidth = 225;
 
@@ -104,13 +104,13 @@ function animateDonutChart(ctx, ctx2, ctx2_2, v, vT, l, text, inc, chartInt) {
 	// inner circle
 	ctx.beginPath();
 	ctx.arc(graphWidth/2,graphWidth/2,67,0,Math.PI*2,true); 
-	ctx.fillStyle = "#3E9ED2";
+	ctx.fillStyle = "#3A5A6D";
 	ctx.fill();
 
 	// border
 	ctx.beginPath();
 	ctx.arc(graphWidth/2,graphWidth/2,70,0,Math.PI*2,true);
-	ctx.strokeStyle = "#3E9ED2";
+	ctx.strokeStyle = "#3A5A6D";
 	ctx.lineWidth = 2;
 	ctx.stroke();
 
