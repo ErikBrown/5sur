@@ -1,0 +1,64 @@
+<!doctype html>
+
+<html lang="es" class="user_page">
+
+<head>
+
+<meta charset='utf-8'>
+<meta name="viewport" content="width=device-width">
+
+<link rel="icon" type="image/png" href="https://5sur.com/graphics/favicon.png">
+<!-- remove the extra weights -->
+<link href='https://fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:400,400italic,600,300,700,800|Bitter:400,400italic,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="https://5sur.com/style.css" />
+
+
+<title>5Sur - Username</title>
+
+</head>
+
+<body class="user_page header_padding">
+
+{{template "header.html" .}}
+
+<div id="user_sidebar">
+	<img src="https://5sur.com/usr.png" alt="user img">
+	<h4>{{.Body.Name}}</h4>
+	<span id="{{if lt .Body.Rating 0}}sidebar_negative{{else}}sidebar_positive{{end}}"><a href="#">{{if lt .Body.Rating 0}}-{{else}}+{{end}}{{.Body.Rating}}</a></span>
+	<div id="chart1" class="donut_chart">
+		<canvas id="donut_bars1" width="225" height="225"></canvas>
+		<canvas id="donut_text1" width="225" height="225"></canvas>
+		<canvas id="donut_text1_2" class="donut_labels" width="225" height="225"></canvas>
+	</div>
+	<div id="chart2" class="donut_chart">
+		<canvas id="donut_bars2" width="225" height="225"></canvas>
+		<canvas id="donut_text2" width="225" height="225"></canvas>
+		<canvas id="donut_text2_2" class="donut_labels" width="225" height="225"></canvas>
+	</div>
+</div>
+<div id="user_comments">
+	<span>Recent Comments</span>
+	{{if index .Body.Comments}}
+	<ul>
+		{{range $key, $value := .Body.Comments}}
+		<li class="comment">
+			{{if eq $value.Positive true}}
+			<div class="rating rating_positive">+</div>
+			{{else}}
+			<div class="rating rating_negative">-</div>
+			{{end}}
+			<span class="comment_text">{{$value.Text}}</span>
+			<span class="comment_date">{{$value.Date}}</span>
+		</li>
+		{{end}}
+	</ul>
+	{{else}}
+	<p>No comments yet</p>
+	{{end}}
+</div>
+
+<script src="https://5sur.com/header.js"></script>
+<script src="https://5sur.com/userScript.js"></script>
+</body>
+
+</html>

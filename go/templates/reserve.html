@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" href="https://5sur.com/graphics/favicon.png">
 <!-- remove the extra weights -->
 <link href='https://fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:400,400italic,600,300,700,800|Bitter:400,400italic,700' rel='stylesheet' type='text/css'>
-<link rel="stylesheet" type="text/css" href="https://5sur.com/style2.css" />
+<link rel="stylesheet" type="text/css" href="https://5sur.com/style.css" />
 
 
 <title>5Sur - Reserve</title>
@@ -20,9 +20,9 @@
 	<form method="post" action="https://5sur.com/reserveSubmit" class="card_page" id="plain_form">
 		<a href="https://5sur.com/" id="form_logo"></a>
 		<span id="driver_info">
-			<a href="https://5sur.com/user">View driver's profile</a>
+			<a href="https://5sur.com/u/{{.Driver}}">View driver's profile</a>
 		</span>
-		<input type="hidden" name="Listing" value="{{.Listing.Id}}">
+		<input type="hidden" name="Listing" value="{{.ListingId}}">
 		<select name="Seats">
 			<option disabled selected class="blank_option">Seats</option>
 			{{range $key, $value := .Seats}}

@@ -82,14 +82,15 @@ func unusedEmail(db *sql.DB, email string) error {
 }
 
 func CheckUserInfo(db *sql.DB, username string, email string) error {
-	err := unusedEmail(db, email)
-	if err != nil { return err }
-
-	err = invalidUsername(username)
+	err := invalidUsername(username)
 	if err != nil { return err }
 
 	err = invalidEmail(email)
 	if err != nil { return err }
+
+	err = unusedEmail(db, email)
+	if err != nil { return err }
+
 
 	uniqueUsername, err := unusedUsername(db, username)
 	if err != nil { return err }

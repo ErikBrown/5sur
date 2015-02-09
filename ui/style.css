@@ -305,7 +305,7 @@ h4 {
 	content:url('graphics/logo2.png');
 }
 
-.card_page > input, .card_page > textarea, .card_page > img, .card_page > select, .card_page > span {
+.card_page > input, .card_page > textarea, .card_page > img, .card_page > select, .card_page > span, .card_page > label {
 	display: block;
 	width: 300px;
 	padding: 0 10px;
@@ -316,6 +316,22 @@ h4 {
 	font-weight: 600;
 	color: #4D595E;
 	border-radius: 4px;
+}
+
+.card_page > label {
+	text-align: left;
+	line-height: 35px;
+	cursor: pointer;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.card_page input[type="checkbox"] {
+	margin-right: 10px;
+	cursor: pointer;
 }
 
 .card_page input[type="text"], .card_page input[type="password"], .card_page select {
@@ -1039,6 +1055,10 @@ h4 {
 	margin: 3%;
 }
 
+#user_comments > p {
+	margin: 3%;
+}
+
 #user_comments > ul {
 	font-size: 0;
 	margin-left: 3%;
@@ -1064,11 +1084,11 @@ h4 {
 	margin-right: 10px;
 }
 
-.positive {
+.rating_positive {
 	background: #27AF61;
 }
 
-.negative {
+.rating_negative {
 	background: #EC4137;
 }
 

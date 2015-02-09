@@ -24,6 +24,13 @@ type Comment struct {
 	Text string
 }
 
+type RateParams struct {
+	User int
+	Positive bool
+	Comment string
+	Public bool
+}
+
 func ReturnUserInfo(db *sql.DB, u interface{}) (User, error) {
 	var result User
 
@@ -126,7 +133,7 @@ func returnUserComments(db *sql.DB, u int) ([]Comment, error) {
 	results := make ([]Comment, 0)
 
 	stmt, err := db.Prepare(`
-		SELECT positive, date, comment
+		SELECT positive, DATE_FORMAT(date,'%d/%m/%Y'), comment
 			FROM comments 
 			WHERE user = ? 
 			AND public = true;
@@ -155,8 +162,8 @@ func returnUserComments(db *sql.DB, u int) ([]Comment, error) {
 	return results, nil
 }
 
-func CreateComment(db *sql.DB, user int, commenter int, comment string, positive bool, public bool) error {
-	err := duplicateComment(db, user, commenter)
+func SubmitRating(db *sql.DB, commenter int, user int, positive bool, comment string, public bool) error {
+	err := duplicateRating(db, user, commenter)
 	if err != nil { return err }
 
 	stmt, err := db.Prepare(`
@@ -167,8 +174,8 @@ func CreateComment(db *sql.DB, user int, commenter int, comment string, positive
 					SELECT r.listing_id
 						FROM reservations AS r
 						JOIN listings AS l on r.listing_id = l.id
-							WHERE ((r.driver_id = 10 AND r.passenger_id = 34)
-							OR (r.passenger_id = 10 AND r.driver_id= 34))
+							WHERE ((r.driver_id = ? AND r.passenger_id = ?)
+							OR (r.passenger_id = ? AND r.driver_id= ?))
 							AND l.date_leaving < NOW()
 				) LIMIT 1;
 		`)
@@ -177,7 +184,7 @@ func CreateComment(db *sql.DB, user int, commenter int, comment string, positive
 	}
 	defer stmt.Close()
 
-	res, err := stmt.Exec(user, commenter, comment, positive, public)
+	res, err := stmt.Exec(user, commenter, comment, positive, public, commenter, user, commenter, user)
 	if err != nil {
 		return util.NewError(err, "Database error", 500)
 	}
@@ -194,7 +201,7 @@ func CreateComment(db *sql.DB, user int, commenter int, comment string, positive
 	return nil
 }
 
-func duplicateComment(db *sql.DB, user int, commenter int) error {
+func duplicateRating(db *sql.DB, user int, commenter int) error {
 	stmt, err := db.Prepare(`
 		SELECT id FROM comments WHERE user = ? AND commenter = ?;
 		`)

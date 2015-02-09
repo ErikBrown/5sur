@@ -41,7 +41,8 @@ type ListingsHTML struct {
 }
 
 type ReserveHTML struct {
-	Listing Listing
+	ListingId int
+	Driver string
 	Seats []int
 }
 

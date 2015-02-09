@@ -247,3 +247,53 @@ func ValidMessagePost(r *http.Request) (int, string, error) {
 	}
 	return recipient, r.FormValue("Message"), nil
 }
+
+func ValidRateURL(r *http.Request) (int, error) {
+	u, err := url.Parse(r.URL.String())
+	if err != nil {
+		return 0, NewError(err, "Internal server error", 500)
+	}
+	m, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		return 0, NewError(err, "Internal server error", 500)
+	}
+	if _,ok := m["i"]; !ok {
+		return 0, NewError(nil, "Invalid URL", 400)
+	}
+	userId, err := strconv.Atoi(m["i"][0])
+	if err != nil {
+		return 0, NewError(nil, "Invalid URL", 400)
+	}
+	return userId, nil
+}
+
+func ValidRatePost(r *http.Request) (int, bool, string, bool, error) {
+	if r.FormValue("User") == "" || r.FormValue("Positive") == "" {
+		return 0, false, "", false, NewError(nil, "Missing required fields", 400)
+	}
+	
+	recipient, err := strconv.Atoi(r.FormValue("User"))
+	if err != nil {
+		return 0, false, "", false, NewError(nil, "Invalid recipient", 400)
+	}
+	if utf8.RuneCountInString(r.FormValue("Comment")) > 200 {
+		return 0, false, "", false, NewError(nil, "Comment too long (200 character max length)", 400)
+	}
+
+	var positive, public bool
+	if r.FormValue("Positive") == "true" {
+		positive = true
+	} else if r.FormValue("Positive") == "false" {
+		positive = false
+	} else {
+		return 0, false, "", false, NewError(nil, "Invalid rating selection", 400)
+	}
+
+	if r.FormValue("Public") == "true" {
+		public = true
+	} else {
+		positive = false
+	}
+
+	return recipient, positive, r.FormValue("Comment"), public, nil
+}

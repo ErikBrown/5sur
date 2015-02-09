@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"encoding/json"
 	"data/gen"
 	"data/util"
 	"data/app"
@@ -537,8 +536,11 @@ func ReserveFormHandler(w http.ResponseWriter, r *http.Request) error {
 		seats = append(seats, i)
 	}
 
+	driver, err := gen.ReturnUserInfo(db, listing.Driver)
+
 	reserve := &gen.ReserveHTML {
-		Listing: listing,
+		ListingId: listing.Id,
+		Driver: driver.Name,
 		Seats: seats,
 	}
 
@@ -665,20 +667,42 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) error {
 
 func UserHandler(w http.ResponseWriter, r *http.Request) error {
 	// Database initialization
+	// Database initialization
 	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
-	splits := strings.Split(r.URL.Path, "/")
-	user, err := gen.ReturnUserInfo(db, splits[2])
+	// User authentication
+	user, userId, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 
-	formatted, err := json.MarshalIndent(user, "", "    ")
-	if err != nil {
-		return util.NewError(err, "Json conversion failed", 500)
+	alerts, err := gen.GetAlerts(db, userId)
+	if err != nil { return err }
+
+	splits := strings.Split(r.URL.Path, "/")
+	userInfo, err := gen.ReturnUserInfo(db, splits[2])
+	if err != nil { return err }
+
+	header := &gen.HeaderHTML {
+		Title: user,
+		Username: user,
+		Alerts: len(alerts),
+		AlertText: alerts,
+		UserImage: "https://5sur.com/default.png",
 	}
 
-	fmt.Fprint(w, string(formatted))
+	page := struct {
+		Header gen.HeaderHTML
+		Body gen.User
+	}{
+		*header,
+		userInfo,
+	}
+
+	err = templates.ExecuteTemplate(w, "user.html", page)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
 	return nil
 }
 
@@ -769,6 +793,54 @@ func SendMessageSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func RateHandler(w http.ResponseWriter, r *http.Request) error {
+	recipientId, err := util.ValidRateURL(r)
+	if err != nil { return err }
+
+	db, err := util.OpenDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	// User authentication
+	_, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
+
+	if userId == 0 {
+		return util.NewError(nil, "Login required", 401)
+	}
+	userInfo, err := gen.ReturnUserInfo(db, recipientId)
+	if err != nil { return err }
+
+	err = templates.ExecuteTemplate(w, "rate.html", userInfo)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
+	return nil
+}
+
+func RateSubmitHandler(w http.ResponseWriter, r *http.Request) error {
+	db, err := util.OpenDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	// User authentication
+	_, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
+
+	if userId == 0 {
+		return util.NewError(nil, "Login required", 401)
+	}
+
+	userRate, positive, comment, public, err := util.ValidRatePost(r)
+	if err != nil { return err }
+
+	err = gen.SubmitRating(db, userId, userRate, positive, comment, public)
+	if err != nil { return err }
+	
+	fmt.Fprint(w, "Rating submitted!:")
+	return nil
+}
+
 type handlerWrapper func(http.ResponseWriter, *http.Request) error
 
 func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -805,6 +877,8 @@ func main() {
 	http.Handle("/upload", handlerWrapper(UploadHandler))
 	http.Handle("/message", handlerWrapper(SendMessageHandler))
 	http.Handle("/messageSubmit", handlerWrapper(SendMessageSubmitHandler))
+	http.Handle("/rate", handlerWrapper(RateHandler))
+	http.Handle("/rateSubmit", handlerWrapper(RateSubmitHandler))
 	http.Handle("/", handlerWrapper(RootHandler))
 
 	http.Handle("/a/logout", handlerWrapper(app.LogoutHandler))
