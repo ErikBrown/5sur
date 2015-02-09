@@ -8,7 +8,6 @@ var canvas4_2 = document.getElementById("donut_text2_2");
 var canvas5 = document.getElementById("line_graph");
 var canvas5_2 = document.getElementById("line_graph_text");
 var c = ["#B0F9F9", "#fbc93d", "#fb4f4f","#63C76A"];
-var yearCreated = 2014;
 var graphWidth = 225;
 
 /****** Donut charts ******/
@@ -154,8 +153,6 @@ window.onresize = function() {
 }
 
 window.onload = function() {
-	var values = [33,47,53];
-	var values2 = [11,9,4];
 	var ctx = canvas.getContext("2d");
 	var ctx2 = canvas2.getContext("2d");
 	var ctx2_2 = canvas2_2.getContext("2d");
@@ -163,8 +160,8 @@ window.onload = function() {
 	var ctx4 = canvas4.getContext("2d");
 	var ctx4_2 = canvas4_2.getContext("2d");
 	if (canvas.getContext) {
-		createDonutChart(ctx, ctx2, ctx2_2, values, "Rides Given");
-		createDonutChart(ctx3, ctx4, ctx4_2, values2, "Rides Taken");
+		createDonutChart(ctx, ctx2, ctx2_2, ridesGiven, "Rides Given");
+		createDonutChart(ctx3, ctx4, ctx4_2, ridesTaken, "Rides Taken");
 	} else {
 		// Browser is not supported
 	}

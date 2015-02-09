@@ -58,6 +58,17 @@
 </div>
 
 <script src="https://5sur.com/header.js"></script>
+<!-- Insert variables from server here, faster than ajax request -->
+<script type="text/javascript">
+	var yearsActive = [];
+	var ridesGiven = [];
+	{{range $key, $value := .Body.RidesGiven}}
+	yearsActive.push({{$key}});
+	ridesGiven.push({{$value}});{{end}}
+	var ridesTaken = [];
+	{{range $key, $value := .Body.RidesTaken}}ridesTaken.push({{$value}});{{end}}
+	var yearCreated = parseInt(yearsActive[yearsActive.length - 1]);
+</script>
 <script src="https://5sur.com/userScript.js"></script>
 </body>
 
