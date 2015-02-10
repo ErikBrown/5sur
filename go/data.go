@@ -811,6 +811,9 @@ func RateHandler(w http.ResponseWriter, r *http.Request) error {
 	userInfo, err := gen.ReturnUserInfo(db, recipientId)
 	if err != nil { return err }
 
+	err = gen.DeleteAlert(db, userId, "rate", userInfo.Id)
+	if err != nil { return err }
+
 	err = templates.ExecuteTemplate(w, "rate.html", userInfo)
 	if err != nil {
 		return util.NewError(err, "Failed to load page", 500)

@@ -17,7 +17,7 @@ type AlertMessage struct {
 func GetAlerts(db *sql.DB, user int) ([]template.HTML, error) {
 	var results []template.HTML
 	stmt, err := db.Prepare(`
-		SELECT content
+		SELECT category, target_id
 			FROM alerts
 			WHERE user = ?;
 	`)
@@ -33,12 +33,15 @@ func GetAlerts(db *sql.DB, user int) ([]template.HTML, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var temp string
-		err := rows.Scan(&temp)
+		var category string
+		var targetId int
+		err := rows.Scan(&category, &targetId)
 		if err != nil {
 			return results, util.NewError(err, "Database error", 500)
 		}
-		results = append(results, template.HTML(temp))
+		content, err := createAlertContent(db, user, category, targetId)
+		if err != nil {return results, err}
+		results = append(results, template.HTML(content))
 	}
 	return results, nil
 }
@@ -62,8 +65,6 @@ func DeleteAlert(db *sql.DB, user int, category string, targetId int) error {
 	}
 	defer stmt.Close()
 
-	// db.Query() prepares, executes, and closes a prepared statement - three round
-	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	_, err = stmt.Exec(user, category, targetId)
 	if err != nil {
 		return util.NewError(err, "Database error", 500)
@@ -132,10 +133,12 @@ func createAlertContent(db *sql.DB, user int, category string, targetId int) (st
 				</a>
 			</li>`, nil
 		case "rate":
+			user, err := ReturnUserInfo(db, targetId)
+			if err != nil {return "", err}
 			return `
 			<li>
-				<a href="https://5sur.com/user/` + id + `/rate">
-					You can now give <b>` + id + `</b> a rating based on your recent ride with them.
+				<a href="https://5sur.com/rate?i=` + id + `">
+					You can now give <b>` + user.Name + `</b> a rating based on your recent ride with them.
 				</a>
 			</li>`, nil
 	}
@@ -143,12 +146,9 @@ func createAlertContent(db *sql.DB, user int, category string, targetId int) (st
 }
 
 func CreateAlert(db *sql.DB, user int, category string, targetId int) error {
-	content, err := createAlertContent(db, user, category, targetId)
-	if err != nil {return err}
-	
 	stmt, err := db.Prepare(`
-		INSERT INTO alerts (user, category, target_id, content)
-			SELECT ? AS user, ? AS category, ? AS target_id, ? AS content FROM dual
+		INSERT INTO alerts (user, category, target_id)
+			SELECT ? AS user, ? AS category, ? AS target_id FROM dual
 				WHERE NOT EXISTS(
 					SELECT user
 						FROM alerts
@@ -162,9 +162,7 @@ func CreateAlert(db *sql.DB, user int, category string, targetId int) error {
 	}
 	defer stmt.Close()
 
-	// db.Query() prepares, executes, and closes a prepared statement - three round
-	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
-	_, err = stmt.Exec(user, category, targetId, content, user, category, targetId)
+	_, err = stmt.Exec(user, category, targetId, user, category, targetId)
 	if err != nil {
 		return util.NewError(err, "Database error", 500)
 	}

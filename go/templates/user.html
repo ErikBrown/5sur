@@ -67,7 +67,7 @@
 	ridesGiven.push({{$value}});{{end}}
 	var ridesTaken = [];
 	{{range $key, $value := .Body.RidesTaken}}ridesTaken.push({{$value}});{{end}}
-	var yearCreated = parseInt(yearsActive[yearsActive.length - 1]);
+	var yearCreated = parseInt(yearsActive[0]);
 </script>
 <script src="https://5sur.com/userScript.js"></script>
 </body>

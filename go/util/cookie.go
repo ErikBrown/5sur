@@ -82,9 +82,9 @@ func updateSession(v string, u string, db *sql.DB, app bool) error {
 	hashedStr := hex.EncodeToString(hashed.Sum(nil))
 	stmtText := ""
 	if app {
-		stmtText = `UPDATE users SET ios_session = ? WHERE name = ?`
+		stmtText = `UPDATE users SET ios_session = ?, ios_session_date = DATE_ADD(NOW(), INTERVAL 30 DAY) WHERE name = ?`
 	} else {
-		stmtText = `UPDATE users SET session = ? WHERE name = ?`
+		stmtText = `UPDATE users SET session = ?, session_date = DATE_ADD(NOW(), INTERVAL 30 DAY) WHERE name = ?;`
 	}
 	stmt, err := db.Prepare(stmtText)
 	if err != nil {
