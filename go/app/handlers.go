@@ -74,7 +74,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 
 func ReserveHandler(w http.ResponseWriter, r *http.Request) error {
 	//Check POST data
-	values, err := util.ValidRegisterPost(r)
+	values, err := util.ValidReservePost(r)
 	if err != nil { return err }
 
 	// Database initialization

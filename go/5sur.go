@@ -553,7 +553,7 @@ func ReserveFormHandler(w http.ResponseWriter, r *http.Request) error {
 
 func ReserveHandler(w http.ResponseWriter, r *http.Request) error {
 	//Check POST data
-	values, err := util.ValidRegisterPost(r)
+	values, err := util.ValidReservePost(r)
 	if err != nil { return err }
 
 	// Database initialization
@@ -745,6 +745,18 @@ func LoginFormHandler(w http.ResponseWriter, r *http.Request) error{
 	return nil
 }
 
+func RegisterFormHandler(w http.ResponseWriter, r *http.Request) error{
+	db, err := util.OpenDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	err = templates.ExecuteTemplate(w, "register.html", "")
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
+	return nil
+}
+
 func SendMessageHandler(w http.ResponseWriter, r *http.Request) error {
 	recipientId, err := util.ValidMessageURL(r)
 	if err != nil { return err }
@@ -861,10 +873,11 @@ func main() {
 	util.ConfigureLog()
 	http.Handle("/l/", handlerWrapper(ListingsHandler))
 	http.Handle("/u/", handlerWrapper(UserHandler))
-	http.Handle("/login", handlerWrapper(LoginHandler))
-	http.Handle("/register", handlerWrapper(RegistrationHandler))
-	http.Handle("/loginForm", handlerWrapper(LoginFormHandler))
-	http.Handle("/loginForm/", handlerWrapper(LoginFormHandler))
+	http.Handle("/register", handlerWrapper(RegisterFormHandler))
+	http.Handle("/registerSubmit", handlerWrapper(RegistrationHandler))
+	http.Handle("/login", handlerWrapper(LoginFormHandler))
+	http.Handle("/login/", handlerWrapper(LoginFormHandler))
+	http.Handle("/loginSubmit", handlerWrapper(LoginHandler))
 	http.Handle("/auth/", handlerWrapper(AccountAuthHandler))
 	http.Handle("/logout", handlerWrapper(LogoutHandler))
 	http.Handle("/reserveSubmit", handlerWrapper(ReserveHandler))

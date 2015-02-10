@@ -160,7 +160,7 @@ func ValidRegister(r *http.Request) error {
 	return nil
 }
 
-func ValidRegisterPost(r *http.Request) (ReservationPost, error) {
+func ValidReservePost(r *http.Request) (ReservationPost, error) {
 	reservePost := ReservationPost{}
 	err := errors.New("")
 	if r.FormValue("Seats") == "" || r.FormValue("Listing") == ""{
