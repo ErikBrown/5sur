@@ -1,7 +1,7 @@
 package gen
 
 import (
-	"data/util"
+	"5sur/util"
 	"html/template"
 )
 

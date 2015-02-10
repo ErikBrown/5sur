@@ -12,7 +12,7 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"crypto/tls"
-	"data/util"
+	"5sur/util"
 )
 
 type unauthedUser struct {

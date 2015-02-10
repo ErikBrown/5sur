@@ -2,7 +2,7 @@ package gen
 
 import (
 	"database/sql"
-	"data/util"
+	"5sur/util"
 	_ "github.com/go-sql-driver/mysql"
 )
 

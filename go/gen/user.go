@@ -1,7 +1,7 @@
 package gen
 
 import (
-	"data/util"
+	"5sur/util"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -176,7 +176,7 @@ func SubmitRating(db *sql.DB, commenter int, user int, positive bool, comment st
 						JOIN listings AS l on r.listing_id = l.id
 							WHERE ((r.driver_id = ? AND r.passenger_id = ?)
 							OR (r.passenger_id = ? AND r.driver_id= ?))
-							AND l.date_leaving < NOW()
+							AND l.date_leaving < DATE_SUB(NOW(), INTERVAL 23 HOUR)
 				) LIMIT 1;
 		`)
 	if err != nil {

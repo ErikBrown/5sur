@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"encoding/json"
-	"data/gen"
-	"data/util"
+	"5sur/gen"
+	"5sur/util"
 	"strings"
 )
 

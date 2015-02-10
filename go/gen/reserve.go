@@ -3,7 +3,7 @@ package gen
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	"data/util"
+	"5sur/util"
 	"unicode/utf8"
 )
 
