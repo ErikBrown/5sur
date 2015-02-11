@@ -76,7 +76,7 @@
 	<li class="listing_item">
 		<a href="https://5sur.com/reserve?l={{$value.Id}}">
 			<ul>
-				<li class="list_driver"><img src="https://5sur.com/{{$value.Picture}}"><span class="positive">+74</span></li>
+				<li class="list_driver"><img src="{{$value.Picture}}"><span class="positive">+74</span></li>
 				<li>{{$value.Origin}} <span class="to">&#10132;</span> {{$value.Destination}}</li>
 				<li class="list_fee">{{if ne $value.Fee 0.0}}${{$value.Fee}}/seat{{else}}Free{{end}}</li>
 				<li class="list_seats">{{$value.Seats}}</li>

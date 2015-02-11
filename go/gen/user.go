@@ -40,7 +40,7 @@ func ReturnUserInfo(db *sql.DB, u interface{}) (User, error) {
 		case string:
 			stmtText = `
 				SELECT * FROM 
-					(SELECT u.id, u.name, u.picture, (positive_ratings - negative_ratings), sum(r.rides_given), sum(r.rides_taken) 
+					(SELECT u.id, u.name, u.custom_picture, (positive_ratings - negative_ratings), sum(r.rides_given), sum(r.rides_taken) 
 						FROM users AS u 
 						LEFT JOIN ride_history AS r 
 							ON r.user_id = u.id 
@@ -51,7 +51,7 @@ func ReturnUserInfo(db *sql.DB, u interface{}) (User, error) {
 		case int:
 			stmtText = `
 				SELECT * FROM 
-					(SELECT u.id, u.name, u.picture, (positive_ratings - negative_ratings), sum(r.rides_given), sum(r.rides_taken)
+					(SELECT u.id, u.name, u.custom_picture, (positive_ratings - negative_ratings), sum(r.rides_given), sum(r.rides_taken)
 						FROM users AS u 
 						LEFT JOIN ride_history AS r 
 							ON r.user_id = u.id 
@@ -69,9 +69,16 @@ func ReturnUserInfo(db *sql.DB, u interface{}) (User, error) {
 
 	var given, taken sql.NullInt64
 
-	err = stmt.QueryRow(u).Scan(&result.Id, &result.Name, &result.Picture, &result.Rating, &given, &taken)
+	customPicture := false
+	err = stmt.QueryRow(u).Scan(&result.Id, &result.Name, &customPicture, &result.Rating, &given, &taken)
 	if err != nil {
 		return result, util.NewError(nil, "User does not exist", 404)
+	}
+
+	if customPicture {
+		result.Picture = "https://5sur.com/images/" + result.Name + ".png"
+	} else {
+		result.Picture = "https://5sur.com/default.png"
 	}
 
 	if given.Valid {
@@ -218,4 +225,31 @@ func duplicateRating(db *sql.DB, user int, commenter int) error {
 	}
 
 	return util.NewError(nil, "You have already left a rating for this user", 400)
+}
+
+func ReturnUserPicture(db *sql.DB, user int, size string) (string, error) {
+	picture := ""
+	stmt, err := db.Prepare(`
+		SELECT custom_picture, name FROM users WHERE id = ?;
+		`)
+	
+	if err != nil {
+		return picture, util.NewError(err, "Database error", 500)
+	}
+	defer stmt.Close()
+
+	customPicture := false
+	name := ""
+	err = stmt.QueryRow(user).Scan(&customPicture, &name)
+	if err != nil {
+		return picture, util.NewError(err, "User not found", 500)
+	}
+
+	if customPicture {
+		picture = "https://5sur.com/images/" + name + "_" + size + ".png"
+	} else {
+		picture = "https://5sur.com/default_" + size + ".png"
+	}
+
+	return picture, nil
 }

@@ -46,7 +46,7 @@
 		<li class="selected_light">{{else}}
 		<li>{{end}}
 			<a href="https://5sur.com/dashboard/messages?i={{$value.Id}}">
-				<img src="https://5sur.com/{{$value.Picture}}">
+				<img src="{{$value.Picture}}">
 				<span class="sidebar_text">{{$value.Name}}</span>
 				{{if ne $value.Count 0}}
 				<span class="sidebar_alert">{{$value.Count}}</span>{{end}}
@@ -66,7 +66,7 @@
 	</div>
 	{{range $key, $value := .Body.MessageThread.Messages}}
 	<div class="dash_message">
-		<a href="https://5sur.com/user"><img src="https://5sur.com/{{$.Body.MessageThread.Picture}}" alt="user image"></a>
+		<a href="https://5sur.com/u/{{if eq $value.Sent true}}{{$.Header.Username}}{{else}}{{$.Body.MessageThread.Name}}{{end}}"><img src="{{if eq $value.Sent true}}{{$.Body.MessageThread.UserPicture}}{{else}}{{$.Body.MessageThread.Picture}}{{end}}" alt="user image"></a>
 		<span class="dash_message_name">
 			{{if eq $value.Sent true}}{{$.Header.Username}}{{else}}{{$.Body.MessageThread.Name}}{{end}}
 		</span>

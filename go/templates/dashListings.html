@@ -78,7 +78,7 @@
 		<ul>
 			{{range $key, $value := .Body.Listing.RegisteredUsers}}
 			<li>
-				<img src="https://5sur.com/{{$value.Picture}}" alt="user image">
+				<img src="{{$value.Picture}}" alt="user image">
 				<div class="pending_passenger_info">
 					<p>{{$value.Name}}</p>
 				</div>
@@ -97,7 +97,7 @@
 		<ul>
 			{{range $key, $value := .Body.Listing.PendingUsers}}
 			<li>
-				<img src="https://5sur.com/{{$value.Picture}}" alt="user image">
+				<img src="{{$value.Picture}}" alt="user image">
 				<div class="pending_passenger_info">
 					<p>{{$value.Name}}<span>{{$value.Message}}</span></p>
 				</div>

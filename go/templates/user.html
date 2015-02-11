@@ -22,7 +22,7 @@
 {{template "header.html" .}}
 
 <div id="user_sidebar">
-	<img src="https://5sur.com/usr.png" alt="user img">
+	<img src="{{.Body.Picture}}" alt="user img">
 	<h4>{{.Body.Name}}</h4>
 	<span id="{{if lt .Body.Rating 0}}sidebar_negative{{else}}sidebar_positive{{end}}"><a href="#">{{if lt .Body.Rating 0}}-{{else}}+{{end}}{{.Body.Rating}}</a></span>
 	<div id="chart1" class="donut_chart">

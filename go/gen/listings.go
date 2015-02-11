@@ -71,7 +71,7 @@ func ReturnListings(db *sql.DB, o int, d int, t string) ([]Listing, error) {
 
 	// Always prepare queries to be used multiple times. The parameter placehold is ?
 	stmt, err := db.Prepare(`
-		SELECT l.id, u.id, u.picture, l.date_leaving, c.name, c2.name, l.seats, l.fee
+		SELECT l.id, u.id, u.name, u.custom_picture, l.date_leaving, c.name, c2.name, l.seats, l.fee
 			FROM listings AS l
 			JOIN users AS u ON l.driver = u.id
 			JOIN cities AS c ON l.origin = c.id
@@ -103,7 +103,9 @@ func ReturnListings(db *sql.DB, o int, d int, t string) ([]Listing, error) {
 	// The last rows.Next() call will encounter an EOF error and call rows.Close()
 	for rows.Next() {
 		var temp Listing
-		err := rows.Scan(&temp.Id, &temp.Driver, &temp.Picture, &temp.Timestamp, &temp.Origin, &temp.Destination, &temp.Seats, &temp.Fee)
+		customPicture := false
+		name := ""
+		err := rows.Scan(&temp.Id, &temp.Driver, &name, &customPicture, &temp.Timestamp, &temp.Origin, &temp.Destination, &temp.Seats, &temp.Fee)
 		if err != nil {
 			return results, util.NewError(err, "Database error", 500)
 		}
@@ -111,6 +113,12 @@ func ReturnListings(db *sql.DB, o int, d int, t string) ([]Listing, error) {
 		if err != nil { return results, err }
 		temp.Date = prettyTime.Month + " " + prettyTime.Day
 		temp.Time = prettyTime.Time
+
+		if customPicture {
+			temp.Picture = "https://5sur.com/images/" + name + "_50.png"
+		} else {
+			temp.Picture = "https://5sur.com/default_50.png"
+		}
 		results = append(results, temp)
 	}
 	return results, nil
@@ -163,7 +171,7 @@ func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, dest
 func ReturnIndividualListing(db *sql.DB, id int) (Listing, error) {
 	result := Listing{}
 	stmt, err := db.Prepare(`
-		SELECT l.id, u.id, u.picture, l.date_leaving, c.name, c2.name, l.seats, l.fee
+		SELECT l.id, u.id, u.name, u.custom_picture, l.date_leaving, c.name, c2.name, l.seats, l.fee
 			FROM listings AS l
 			JOIN users AS u ON l.driver = u.id
 			JOIN cities AS c ON l.origin = c.id
@@ -176,7 +184,9 @@ func ReturnIndividualListing(db *sql.DB, id int) (Listing, error) {
 	}
 	defer stmt.Close()
 
-	err = stmt.QueryRow(id).Scan(&result.Id, &result.Driver, &result.Picture, &result.Timestamp, &result.Origin, &result.Destination, &result.Seats, &result.Fee)
+	customPicture := false
+	name := ""
+	err = stmt.QueryRow(id).Scan(&result.Id, &result.Driver, &name, &customPicture, &result.Timestamp, &result.Origin, &result.Destination, &result.Seats, &result.Fee)
 	if err != nil {
 		return Listing{}, util.NewError(nil, "Listing does not exist", 400)
 	}
@@ -184,6 +194,13 @@ func ReturnIndividualListing(db *sql.DB, id int) (Listing, error) {
 	if err != nil { return result, err }
 	result.Date = prettyTime.Month + " " + prettyTime.Day
 	result.Time = prettyTime.Time
+
+
+	if customPicture {
+		result.Picture = "https://5sur.com/images/" + name + "_50.png"
+	} else {
+		result.Picture = "https://5sur.com/default_50.png"
+	}
 
 	return result, nil
 }

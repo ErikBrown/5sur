@@ -85,6 +85,7 @@ type MessageThread struct {
 	UserId int
 	Name string
 	Picture string
+	UserPicture string
 	Messages []SpecificMessage
 }
 
@@ -188,7 +189,7 @@ func GetDashMessages(db *sql.DB, userId int) ([]DashMessages, error) {
 
 	// Always prepare queries to be used multiple times. The parameter placehold is ?
 	stmt, err := db.Prepare(`
-		SELECT m.sender, u.name, u.picture, SUM(IF(m.opened = 0, 1, 0))
+		SELECT m.sender, u.name, u.custom_picture, SUM(IF(m.opened = 0, 1, 0))
 			FROM messages as m 
 			JOIN users AS u 
 				ON u.id = m.sender 
@@ -207,10 +208,18 @@ func GetDashMessages(db *sql.DB, userId int) ([]DashMessages, error) {
 
 	for rows.Next() {
 		var temp DashMessages
-		err := rows.Scan(&temp.Id, &temp.Name, &temp.Picture, &temp.Count)
+		customPicture := false
+		err := rows.Scan(&temp.Id, &temp.Name, &customPicture, &temp.Count)
 		if err != nil {
 			return results, util.NewError(err, "Database error", 500)
 		}
+
+		if customPicture {
+			temp.Picture = "https://5sur.com/images/" + temp.Name + "_50.png"
+		} else {
+			temp.Picture = "https://5sur.com/default_50.png"
+		}
+
 		results = append(results, temp)
 	}
 
@@ -233,7 +242,12 @@ func SpecificDashMessage(db *sql.DB, messages []DashMessages, recipient int, use
 	if !found {
 		return MessageThread{}, util.NewError(nil, "Could not find specific message", 400)
 	}
+
 	var err error
+
+	message.UserPicture, err = ReturnUserPicture(db, userId, "50")
+	if err !=nil { return MessageThread{}, err }
+
 	message.Messages, err = getMessages(db, recipient, userId)
 	if err != nil {
 		return MessageThread{}, err
@@ -343,7 +357,7 @@ func SpecificDashReservation(db *sql.DB, reservations []DashReservation, listing
 	}
 
 	stmt, err := db.Prepare(`
-		SELECT u.id, u.name, u.picture
+		SELECT u.id, u.name, u.custom_picture
 			FROM users as u
 			LEFT JOIN reservations as r ON u.id = r.driver_id
 			WHERE r.listing_id = ?
@@ -359,9 +373,15 @@ func SpecificDashReservation(db *sql.DB, reservations []DashReservation, listing
 	}
 
 	for rows.Next() {
-		err := rows.Scan(&results.DriverId, &results.DriverName, &results.DriverPicture)
+		customPicture := false
+		err := rows.Scan(&results.DriverId, &results.DriverName, &customPicture)
 		if err != nil {
-		return Reservation{}, util.NewError(err, "Database error", 500)
+			return Reservation{}, util.NewError(err, "Database error", 500)
+		}
+		if customPicture {
+			results.DriverPicture = "https://5sur.com/images/" + results.DriverName + "_50.png"
+		} else {
+			results.DriverPicture = "https://5sur.com/default_50.png"
 		}
 	}
 
@@ -371,7 +391,7 @@ func SpecificDashReservation(db *sql.DB, reservations []DashReservation, listing
 func getPendingUsers(db *sql.DB, listingId int) ([]PendingUser, error) {
 	var results []PendingUser
 	stmt, err := db.Prepare(`
-		SELECT r.message, u.id, u.name, u.picture, r.seats
+		SELECT r.message, u.id, u.name, u.custom_picture, r.seats
 			FROM reservation_queue as r
 			JOIN users AS u ON r.passenger_id = u.id
 			WHERE r.listing_id = ?;
@@ -390,9 +410,15 @@ func getPendingUsers(db *sql.DB, listingId int) ([]PendingUser, error) {
 
 	for rows.Next() {
 		var temp PendingUser
-		err := rows.Scan(&temp.Message, &temp.Id, &temp.Name, &temp.Picture, &temp.Seats)
+		customPicture := false
+		err := rows.Scan(&temp.Message, &temp.Id, &temp.Name, &customPicture, &temp.Seats)
 		if err != nil {
 			return results, util.NewError(err, "Database error", 500)
+		}
+		if customPicture {
+			temp.Picture = "https://5sur.com/images/" + temp.Name + "_50.png"
+		} else {
+			temp.Picture = "https://5sur.com/default_50.png"
 		}
 		results = append(results, temp)
 	}
@@ -401,7 +427,7 @@ func getPendingUsers(db *sql.DB, listingId int) ([]PendingUser, error) {
 
 func getPendingUser(db *sql.DB, listingId int, pendingUserId int) (PendingUser, error) {
 	stmt, err := db.Prepare(`
-		SELECT r.message, u.id, u.name, u.picture, r.seats
+		SELECT r.message, u.id, u.name, u.custom_picture, r.seats
 			FROM reservation_queue as r
 			JOIN users AS u ON r.passenger_id = u.id
 			WHERE r.listing_id = ? AND u.id = ?;
@@ -413,9 +439,16 @@ func getPendingUser(db *sql.DB, listingId int, pendingUserId int) (PendingUser, 
 	defer stmt.Close()
 
 	pendingUser := PendingUser{}
-	err = stmt.QueryRow(listingId, pendingUserId).Scan(&pendingUser.Message, &pendingUser.Id, &pendingUser.Name, &pendingUser.Picture, &pendingUser.Seats)
+	customPicture := false
+	err = stmt.QueryRow(listingId, pendingUserId).Scan(&pendingUser.Message, &pendingUser.Id, &pendingUser.Name, &customPicture, &pendingUser.Seats)
 	if err != nil {
 		return pendingUser, util.NewError(err, "User does not exist", 400)
+	}
+
+	if customPicture {
+		pendingUser.Picture = "https://5sur.com/images/" + pendingUser.Name + "_50.png"
+	} else {
+		pendingUser.Picture = "https://5sur.com/default_50.png"
 	}
 	return pendingUser, nil
 }
@@ -423,7 +456,7 @@ func getPendingUser(db *sql.DB, listingId int, pendingUserId int) (PendingUser, 
 func getRegisteredUsers(db *sql.DB, listingId int) ([]RegisteredUser, error) {
 	var results []RegisteredUser
 	stmt, err := db.Prepare(`
-		SELECT u.id, u.name, u.picture, r.seats
+		SELECT u.id, u.name, u.custom_picture, r.seats
 			FROM reservations as r
 			JOIN users AS u ON r.passenger_id = u.id
 			WHERE r.listing_id = ?;
@@ -441,10 +474,18 @@ func getRegisteredUsers(db *sql.DB, listingId int) ([]RegisteredUser, error) {
 
 	for rows.Next() {
 		var temp RegisteredUser
-		err := rows.Scan( &temp.Id, &temp.Name, &temp.Picture, &temp.Seats)
+		customPicture := false
+		err := rows.Scan( &temp.Id, &temp.Name, &customPicture, &temp.Seats)
 		if err != nil {
 			return results, util.NewError(err, "Database error", 500)
 		}
+
+		if customPicture {
+			temp.Picture = "https://5sur.com/images/" + temp.Name + "_50.png"
+		} else {
+			temp.Picture = "https://5sur.com/default_50.png"
+		}
+
 		results = append(results, temp)
 	}
 	return results, nil

@@ -9,11 +9,6 @@ import (
 	"5sur/app"
 	"strconv"
 	"html/template"
-	"os"
-	"image"
-	"image/png"
-	_ "image/jpeg"
-	_ "image/gif"
 	"strings"
 )
 
@@ -44,7 +39,7 @@ func CreateListingHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	user, _, err := util.CheckCookie(r, db) // return "" if not logged in
+	user, _, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 	if user == "" {
 		return util.NewError(nil, "Login required", 401)
@@ -68,7 +63,7 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request) error{
 	defer db.Close()
 
 	// User authentication
-	user, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	user, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 	if user == "" {
 		return util.NewError(nil, "Login required", 401)
@@ -98,7 +93,7 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request) error{
 	defer db.Close()
 
 	// User authentication
-	user, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	user, userId, userImg, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 
 	if user == "" {
@@ -130,7 +125,7 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request) error{
 		Username: user,
 		Alerts: len(alerts),
 		AlertText: alerts,
-		UserImage: "https://5sur.com/default.png",
+		UserImage: userImg,
 	}
 
 	body := &gen.DashListingsHTML{
@@ -160,7 +155,7 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 	defer db.Close()
 
 	// User authentication
-	user, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	user, userId, userImg, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 
 	if user == "" {
@@ -193,7 +188,7 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 		Username: user,
 		Alerts: len(alerts),
 		AlertText: alerts,
-		UserImage: "https://5sur.com/default.png",
+		UserImage: userImg,
 	}
 
 	body := &gen.DashMessagesHTML{
@@ -223,7 +218,7 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request) error{
 	defer db.Close()
 
 	// User authentication
-	user, userId, err := util.CheckCookie(r, db) // return "",0 if not logged in
+	user, userId, userImg, err := util.CheckCookie(r, db) // return "",0 if not logged in
 	if err != nil { return err }
 
 	if userId == 0 {
@@ -262,7 +257,7 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request) error{
 		Username: user,
 		Alerts: len(alerts),
 		AlertText: alerts,
-		UserImage: "https://5sur.com/default.png",
+		UserImage: userImg,
 	}
 
 	body := &gen.DashReservationsHTML{
@@ -292,7 +287,7 @@ func DeleteListingHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	_, userId, err := util.CheckCookie(r, db) // return "",0 if not logged in
+	_, userId, _, err := util.CheckCookie(r, db) // return "",0 if not logged in
 	if err != nil { return err }
 
 	if userId == 0 {
@@ -367,7 +362,7 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	user, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	user, userId, userImg, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 
 	alerts, err := gen.GetAlerts(db, userId)
@@ -378,7 +373,7 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) error {
 		Username: user,
 		Alerts: len(alerts),
 		AlertText: alerts,
-		UserImage: "https://5sur.com/default.png",
+		UserImage: userImg,
 	}
 
 	cities, err := gen.ReturnFilter(db)
@@ -468,7 +463,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	_, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	_, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 
 	// Create gen.InvalidateCookie
@@ -521,7 +516,7 @@ func ReserveFormHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	user, _, err := util.CheckCookie(r, db) // return "" if not logged in
+	user, _, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 
 	if user == "" {
@@ -562,7 +557,7 @@ func ReserveHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	user, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	user, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 	if user == "" {
 		return util.NewError(nil, "Login required", 401)
@@ -585,7 +580,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-		user, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	user, userId, userImg, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 
 	alerts, err := gen.GetAlerts(db, userId)
@@ -596,7 +591,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) error {
 		Username: user,
 		Alerts: len(alerts),
 		AlertText: alerts,
-		UserImage: "https://5sur.com/default.png",
+		UserImage: userImg,
 	}
 
 	cities, err := gen.ReturnFilter(db)
@@ -628,7 +623,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	user, _, err := util.CheckCookie(r, db) // return "" if not logged in
+	user, _, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 	if user == "" {
 		return util.NewError(nil, "Login required", 401)
@@ -640,25 +635,8 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer file.Close()
 
-	image, _, err := image.Decode(file)
-	if err != nil {
-		return util.NewError(nil, "Invalid image format", 400)
-	}
-
-	// This should be userId rather than uploadedFile.png.
-	// TODO
-	toimg, _ := os.Create("/var/www/html/images/uploadedFile.png")
-	defer toimg.Close()
-	err = png.Encode(toimg, image)	
-	if err != nil {
-		return util.NewError(err, "Image cannot be used", 500)
-	}
-
-	bounds := image.Bounds()
-	ratio:= float64(bounds.Dx())/float64(bounds.Dy())
-	if ratio < .8 || ratio > 1.2 {
-		return util.NewError(nil, "Invalid image dimensions", 400)
-	}
+	err = util.SaveImage(db, user, file, header)
+	if err != nil { return err }
 
 	fmt.Fprintf(w, "File uploaded successfully : ")
 	fmt.Fprintf(w, header.Filename)
@@ -667,13 +645,12 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) error {
 
 func UserHandler(w http.ResponseWriter, r *http.Request) error {
 	// Database initialization
-	// Database initialization
 	db, err := util.OpenDb()
 	if err != nil { return err }
 	defer db.Close()
 
 	// User authentication
-	user, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	user, userId, userImg, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 
 	alerts, err := gen.GetAlerts(db, userId)
@@ -688,7 +665,7 @@ func UserHandler(w http.ResponseWriter, r *http.Request) error {
 		Username: user,
 		Alerts: len(alerts),
 		AlertText: alerts,
-		UserImage: "https://5sur.com/default.png",
+		UserImage: userImg,
 	}
 
 	page := struct {
@@ -711,7 +688,7 @@ func LoginFormHandler(w http.ResponseWriter, r *http.Request) error{
 	if err != nil { return err }
 	defer db.Close()
 
-	_, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	_, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 	if userId != 0 {
 		http.Redirect(w, r, "https://5sur.com/", 303)
@@ -766,7 +743,7 @@ func SendMessageHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	_, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	_, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 
 	if userId == 0 {
@@ -788,7 +765,7 @@ func SendMessageSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	_, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	_, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 
 	if userId == 0 {
@@ -814,7 +791,7 @@ func RateHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	_, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	_, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 
 	if userId == 0 {
@@ -839,7 +816,7 @@ func RateSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// User authentication
-	_, userId, err := util.CheckCookie(r, db) // return "" if not logged in
+	_, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 
 	if userId == 0 {

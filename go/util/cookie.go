@@ -104,47 +104,47 @@ func CheckAppCookie(r *http.Request, db *sql.DB) (string, int, error) {
 	if err != nil {
 		return "", 0, nil // No cookie
 	}
-	n, i, err := checkSession(sessionID.Value, true, db)
+	n, i, _, err := checkSession(sessionID.Value, true, db)
 	if err != nil {return "", 0, err}
 
 	return n, i, nil
 }
 
-func CheckCookie(r *http.Request, db *sql.DB) (string, int, error) {
+func CheckCookie(r *http.Request, db *sql.DB) (string, int, string, error) {
 	sessionID, err := r.Cookie("RideChile")
 	if err != nil {
-		return "", 0, nil // No cookie
+		return "", 0, "", nil // No cookie
 	}
-	n, i, err := checkSession(sessionID.Value, false, db)
-	if err != nil {return "", 0, err}
+	n, i, p, err := checkSession(sessionID.Value, false, db)
+	if err != nil {return "", 0, "", err}
 
-	return n, i, nil
+	return n, i, p, nil
 }
 
-func checkSession(s string, app bool, db *sql.DB) (string, int, error){
+func checkSession(s string, app bool, db *sql.DB) (string, int, string, error){
 	hashed := sha256.New()
 	hashed.Write([]byte(s))
 	hashedStr := hex.EncodeToString(hashed.Sum(nil))
 	stmtText := ""
 	if app {
 		stmtText = `
-	SELECT users.name, users.id
+	SELECT name, id, custom_picture
 		FROM users
-		WHERE users.ios_session = ?
-		AND users.ios_session != "";
+		WHERE ios_session = ?
+		AND ios_session != "";
 		`
 	} else {
 		stmtText = `
-	SELECT users.name, users.id
+	SELECT name, id, custom_picture
 		FROM users
-		WHERE users.session = ?
-		AND users.session != "";
+		WHERE session = ?
+		AND session != "";
 		`
 	}
 	stmt, err := db.Prepare(stmtText)
 	
 	if err != nil {
-		return "", 0, NewError(err, "Database error", 500)
+		return "", 0, "", NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
@@ -152,7 +152,7 @@ func checkSession(s string, app bool, db *sql.DB) (string, int, error){
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	rows, err := stmt.Query(hashedStr)
 	if err != nil {
-		return "", 0, NewError(err, "Database error", 500)
+		return "", 0, "", NewError(err, "Database error", 500)
 	}
 	// Always defer rows.Close(), even if you explicitly Close it at the end of the
 	// loop. The connection will have the chance to remain open otherwise.
@@ -162,13 +162,21 @@ func checkSession(s string, app bool, db *sql.DB) (string, int, error){
 
 	name := ""
 	var id int
+	customPicture := false
 
 	for rows.Next() {
-		err := rows.Scan(&name, &id)
+		err := rows.Scan(&name, &id, &customPicture)
 		if err != nil {
-			return "", 0, NewError(err, "Database error", 500)
+			return "", 0, "", NewError(err, "Database error", 500)
 		}
-		
 	}
-	return name, id, nil
+
+	picture := ""
+
+	if customPicture {
+		picture = "https://5sur.com/images/" + name + "_35.png"
+	} else {
+		picture = "https://5sur.com/default_35.png"
+	}
+	return name, id, picture, nil
 }
