@@ -78,9 +78,11 @@
 		<ul>
 			{{range $key, $value := .Body.Listing.RegisteredUsers}}
 			<li>
-				<img src="{{$value.Picture}}" alt="user image">
+				<a href="https://5sur.com/u/{{$value.Name}}">
+					<img src="{{$value.Picture}}" alt="user image">
+				</a>
 				<div class="pending_passenger_info">
-					<p>{{$value.Name}}</p>
+					<p><a href="https://5sur.com/u/{{$value.Name}}">{{$value.Name}}</a></p>
 				</div>
 				<form class="passenger_form" method="POST" action="https://5sur.com/dashboard/listings?i={{$.Body.Listing.ListingId}}">
 					<input name="r" value="{{$value.Id}}" id="passenger_reject" type="submit">
@@ -100,9 +102,11 @@
 		<ul>
 			{{range $key, $value := .Body.Listing.PendingUsers}}
 			<li>
-				<img src="{{$value.Picture}}" alt="user image">
+				<a href="https://5sur.com/u/{{$value.Name}}">
+					<img src="{{$value.Picture}}" alt="user image">
+				</a>
 				<div class="pending_passenger_info">
-					<p>{{$value.Name}}<span>{{$value.Message}}</span></p>
+					<p><a href="https://5sur.com/u/{{$value.Name}}">{{$value.Name}}</a><span>{{$value.Message}}</span></p>
 				</div>
 				<form class="passenger_form" method="POST" action="https://5sur.com/dashboard/listings?i={{$.Body.Listing.ListingId}}">
 					<input name="a" value="{{$value.Id}}" id="passenger_accept" type="submit">
