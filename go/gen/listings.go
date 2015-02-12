@@ -71,7 +71,7 @@ func ReturnListings(db *sql.DB, o int, d int, t string) ([]Listing, error) {
 
 	// Always prepare queries to be used multiple times. The parameter placehold is ?
 	stmt, err := db.Prepare(`
-		SELECT l.id, u.id, u.name, u.custom_picture, l.date_leaving, c.name, c2.name, l.seats, l.fee
+		SELECT l.id, u.id, u.name, u.custom_picture, (u.positive_ratings - u.negative_ratings), l.date_leaving, c.name, c2.name, l.seats, l.fee
 			FROM listings AS l
 			JOIN users AS u ON l.driver = u.id
 			JOIN cities AS c ON l.origin = c.id
@@ -105,7 +105,7 @@ func ReturnListings(db *sql.DB, o int, d int, t string) ([]Listing, error) {
 		var temp Listing
 		customPicture := false
 		name := ""
-		err := rows.Scan(&temp.Id, &temp.Driver, &name, &customPicture, &temp.Timestamp, &temp.Origin, &temp.Destination, &temp.Seats, &temp.Fee)
+		err := rows.Scan(&temp.Id, &temp.Driver, &name, &customPicture, &temp.Rating, &temp.Timestamp, &temp.Origin, &temp.Destination, &temp.Seats, &temp.Fee)
 		if err != nil {
 			return results, util.NewError(err, "Database error", 500)
 		}
@@ -171,7 +171,7 @@ func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, dest
 func ReturnIndividualListing(db *sql.DB, id int) (Listing, error) {
 	result := Listing{}
 	stmt, err := db.Prepare(`
-		SELECT l.id, u.id, u.name, u.custom_picture, l.date_leaving, c.name, c2.name, l.seats, l.fee
+		SELECT l.id, u.id, u.name, u.custom_picture, (u.positive_ratings - u.negative_ratings), l.date_leaving, c.name, c2.name, l.seats, l.fee
 			FROM listings AS l
 			JOIN users AS u ON l.driver = u.id
 			JOIN cities AS c ON l.origin = c.id
@@ -186,7 +186,7 @@ func ReturnIndividualListing(db *sql.DB, id int) (Listing, error) {
 
 	customPicture := false
 	name := ""
-	err = stmt.QueryRow(id).Scan(&result.Id, &result.Driver, &name, &customPicture, &result.Timestamp, &result.Origin, &result.Destination, &result.Seats, &result.Fee)
+	err = stmt.QueryRow(id).Scan(&result.Id, &result.Driver, &name, &customPicture, &result.Rating, &result.Timestamp, &result.Origin, &result.Destination, &result.Seats, &result.Fee)
 	if err != nil {
 		return Listing{}, util.NewError(nil, "Listing does not exist", 400)
 	}

@@ -643,6 +643,26 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func UploadDeleteHandler(w http.ResponseWriter, r *http.Request) error {
+	// Database initialization
+	db, err := util.OpenDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	// User authentication
+	user, _, _, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
+	if user == "" {
+		return util.NewError(nil, "Login required", 401)
+	}	
+
+	err = util.DeletePicture(db, user)
+	if err != nil { return err }
+
+	fmt.Fprintf(w, "Picture Deleted")
+	return nil
+}
+
 func UserHandler(w http.ResponseWriter, r *http.Request) error {
 	// Database initialization
 	db, err := util.OpenDb()
@@ -868,6 +888,7 @@ func main() {
 	http.Handle("/dashboard/reservations", handlerWrapper(DashReservationsHandler))
 	http.Handle("/dashboard/listings/delete", handlerWrapper(DeleteListingHandler))
 	http.Handle("/upload", handlerWrapper(UploadHandler))
+	http.Handle("/deletePicture", handlerWrapper(UploadDeleteHandler))
 	http.Handle("/message", handlerWrapper(SendMessageHandler))
 	http.Handle("/messageSubmit", handlerWrapper(SendMessageSubmitHandler))
 	http.Handle("/rate", handlerWrapper(RateHandler))

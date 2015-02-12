@@ -61,6 +61,7 @@ type Listing struct {
 	Id int
 	Driver int
 	Picture string
+	Rating int
 	Timestamp string
 	Date string
 	Time string
