@@ -62,7 +62,7 @@
 		<h3>Conversation with {{.Body.MessageThread.Name}}</h3>
 		<span id="dash_listing_date">Latest message: Febuary 1st, 2015</span>
 		<span>&#8226;</span>
-		<span id="dash_message_warning"><a href="https://5sur.com/">Expires in 3 days</a></span>
+		<span id="dash_message_warning"><a href="https://5sur.com/">Expires {{.Body.MessageThread.Expires}}</a></span>
 	</div>
 	{{range $key, $value := .Body.MessageThread.Messages}}
 	<div class="dash_message">

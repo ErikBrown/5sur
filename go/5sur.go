@@ -799,10 +799,13 @@ func SendMessageSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 	recipient, message, err := util.ValidMessagePost(r)
 	if err != nil { return err }
 
+	err = gen.MessageLimit(db, userId)
+	if err != nil { return err }
+
 	err = gen.SendMessage(db, userId, recipient, message)
 	if err != nil { return err }
 	
-	fmt.Fprint(w, "Message submitted successfully!:" + "\n\n" + r.FormValue("Recipient") + "\n\n" + r.FormValue("Message"))
+	http.Redirect(w, r, "https://5sur.com/dashboard/messages?i=" + strconv.Itoa(recipient), 303)
 	return nil
 }
 

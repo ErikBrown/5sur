@@ -86,6 +86,7 @@ type MessageThread struct {
 	Name string
 	Picture string
 	UserPicture string
+	Expires string
 	Messages []SpecificMessage
 }
 
@@ -252,6 +253,10 @@ func SpecificDashMessage(db *sql.DB, messages []DashMessages, recipient int, use
 	if err != nil {
 		return MessageThread{}, err
 	}
+
+	message.Expires, err = getMessageExpiration(db, recipient, userId)
+	if err != nil { return message, err }
+
 	return message, nil
 }
 
@@ -295,6 +300,33 @@ func getMessages(db *sql.DB, recipient int, userId int) ([]SpecificMessage, erro
 	}
 
 	return results, nil
+}
+
+func getMessageExpiration(db *sql.DB, recipient int, userId int) (string, error) {
+	expiration := ""
+
+	stmt, err := db.Prepare(`
+		SELECT DATE_ADD(l.date_leaving, INTERVAL 1 WEEK)
+			FROM listings AS l 
+			JOIN reservations AS r 
+				ON r.driver_id = l.driver
+			WHERE (passenger_id = ? AND driver_id = ?)
+				OR (passenger_id = ? AND driver_id = ?)
+			ORDER BY l.date_leaving DESC
+			LIMIT 1;
+	`)
+	
+	if err != nil {
+		return expiration, util.NewError(err, "Database error", 500)
+	}
+	defer stmt.Close()
+
+	err = stmt.QueryRow(recipient, userId, userId, recipient).Scan(&expiration)
+	if err != nil {
+		return expiration, util.NewError(nil, "You do not have permissions to message this person", 400)
+	}
+
+	return expiration, nil
 }
 
 func SpecificDashListing(db *sql.DB, listings []DashListing, listingId int) (SpecificListing, error) {
@@ -442,7 +474,7 @@ func getPendingUser(db *sql.DB, listingId int, pendingUserId int) (PendingUser, 
 	customPicture := false
 	err = stmt.QueryRow(listingId, pendingUserId).Scan(&pendingUser.Message, &pendingUser.Id, &pendingUser.Name, &customPicture, &pendingUser.Seats)
 	if err != nil {
-		return pendingUser, util.NewError(err, "User does not exist", 400)
+		return pendingUser, util.NewError(nil, "User does not exist", 400)
 	}
 
 	if customPicture {
@@ -789,6 +821,32 @@ func SendMessage(db *sql.DB, sender int, receiver int, message string) error {
 
 	err = CreateAlert(db, receiver, "message", sender)
 	if err != nil { return err }
+
+	return nil
+}
+
+func MessageLimit(db *sql.DB, user int) error {
+	stmt, err := db.Prepare(`
+		SELECT count(*) 
+			FROM messages 
+			WHERE sender = ?
+			AND date BETWEEN DATE_SUB(NOW(), INTERVAL 1 DAY) AND NOW();
+	`)
+	
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+	defer stmt.Close()
+
+	messagesPastHour := 0
+	err = stmt.QueryRow(user).Scan(&messagesPastHour)
+	if err != nil {
+		return util.NewError(err, "Database Error", 500)
+	}
+
+	if messagesPastHour >= 50 {
+		return util.NewError(err, "You have sent too many messages in the past 24 hours, try again tomorrow", 400)
+	}
 
 	return nil
 }
