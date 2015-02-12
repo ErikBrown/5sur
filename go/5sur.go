@@ -442,7 +442,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 	authenticated, err := gen.CheckCredentials(db, r.FormValue("Username"), r.FormValue("Password"))
 	if err != nil { return err }
 	if authenticated {
-		myCookie, err := util.CreateCookie(r.FormValue("Username"), db, false) // This also stores a hashed cookie in the database
+		persistent := false
+		if r.FormValue("Persistent") == "true" {
+			persistent = true
+		}
+		myCookie, err := util.CreateCookie(r.FormValue("Username"), db, persistent, false) // This also stores a hashed cookie in the database
 		if err != nil { return err }
 		http.SetCookie(w, &myCookie)
 		http.Redirect(w, r, "https://5sur.com/", 303)

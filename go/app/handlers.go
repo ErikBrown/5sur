@@ -60,7 +60,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 	authenticated, err := gen.CheckCredentials(db, r.FormValue("Username"), r.FormValue("Password"))
 	if err != nil { return err }
 	if authenticated {
-		myCookie, err := util.CreateCookie(r.FormValue("Username"), db, true) // This also stores a hashed cookie in the database
+		myCookie, err := util.CreateCookie(r.FormValue("Username"), db, true, true) // This also stores a hashed cookie in the database
 		if err != nil { return err }
 		http.SetCookie(w, &myCookie)
 		w.WriteHeader(200)

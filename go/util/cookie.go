@@ -9,7 +9,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func CreateCookie(u string, db *sql.DB, app bool) (http.Cookie, error) {
+func CreateCookie(u string, db *sql.DB, persistent bool, app bool) (http.Cookie, error) {
 	alphaNum := []byte("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv")
 	randValue := ""
 	for i := 0; i < 32; i++ {
@@ -18,14 +18,19 @@ func CreateCookie(u string, db *sql.DB, app bool) (http.Cookie, error) {
 		randValue = randValue + string(alphaNum[num])
 	}
 
-	authCookie := http.Cookie{
+	authCookie := http.Cookie {
 		Name: "RideChile",
 		Value: randValue,
 		Path: "/",
 		Domain: "5sur.com", // Add domain name in the future
-		Expires: time.Now().AddDate(0,1,0), // One month from now
 		Secure: true, // SSL only
 		HttpOnly: true, // HTTP(S) only
+	}
+
+	if persistent {
+		authCookie.Expires = time.Now().AddDate(0,1,0) // One month from now
+	} else {
+		// Session cookie
 	}
 
 	err := updateSession(randValue, u, db, app)
