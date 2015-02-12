@@ -101,7 +101,7 @@ func createAlertContent(db *sql.DB, user int, category string, targetId int) (st
 			return `
 			<li>
 				<a href="https://5sur.com/dashboard/messages?i=` + id + `">
-					<img src="https://5sur.com/` + message.Picture + `" alt="user">
+					<img src="` + message.Picture + `" alt="user">
 					<b>` + message.Name + `</b><p>` + message.Message + `</p>
 				</a>
 			</li>`, nil
@@ -172,7 +172,7 @@ func CreateAlert(db *sql.DB, user int, category string, targetId int) error {
 func returnAlertMessage(db *sql.DB, recipient int, sender int) (AlertMessage, error) {
 	result := AlertMessage{}
 	stmt, err := db.Prepare(`
-		SELECT u.name, u.picture, m.message
+		SELECT u.name, u.custom_picture, m.message
 			FROM messages AS m
 			JOIN users AS u ON m.sender = u.id
 			WHERE m.receiver = ?
@@ -185,10 +185,16 @@ func returnAlertMessage(db *sql.DB, recipient int, sender int) (AlertMessage, er
 		return AlertMessage{}, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
-
-	err = stmt.QueryRow(recipient, sender).Scan(&result.Name, &result.Picture, &result.Message)
+	customPicture := false
+	err = stmt.QueryRow(recipient, sender).Scan(&result.Name, &customPicture, &result.Message)
 	if err != nil {
 		return AlertMessage{}, util.NewError(nil, "Message does not exist", 400)
+	}
+
+	if customPicture {
+		result.Picture = "https://5sur.com/images/" + result.Name + "_35.png"
+	} else {
+		result.Picture = "https://5sur.com/default_35.png"
 	}
 	return result, nil
 }

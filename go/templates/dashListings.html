@@ -85,6 +85,9 @@
 				<form class="passenger_form" method="POST" action="https://5sur.com/dashboard/listings?i={{$.Body.Listing.ListingId}}">
 					<input name="r" value="{{$value.Id}}" id="passenger_reject" type="submit">
 				</form>
+				<form class="passenger_form" method="POST" action="https://5sur.com/message?i={{$value.Id}}">
+					<input name="m" value="" id="passenger_message" type="submit">
+				</form>
 				<span class="passenger_seats">{{$value.Seats}} {{if eq $value.Seats 1}}Seat{{else}}Seats{{end}}</span>
 			</li>
 			{{end}}
