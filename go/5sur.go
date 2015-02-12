@@ -857,6 +857,58 @@ func RateSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func PasswordResetFormHandler(w http.ResponseWriter, r *http.Request) error {
+	err := templates.ExecuteTemplate(w, "passwordReset.html", "")
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
+	return nil
+}
+
+func PasswordResetHandler(w http.ResponseWriter, r *http.Request) error {
+	db, err := util.OpenDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	err = gen.ResetPassword(db, r.FormValue("Email"))
+	if err != nil { return err }
+
+	fmt.Fprint(w, "Email has been sent to whatever")
+	return nil
+}
+
+func PasswordChangeFormHandler(w http.ResponseWriter, r *http.Request) error {
+	token, user, err := util.ValidChangePasswordQuery(r.URL)
+	if err !=nil { return err }
+	body := struct {
+		User string
+		Token string
+	}{
+		user,
+		token,
+	}
+	err = templates.ExecuteTemplate(w, "passwordChange.html", body)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
+	return nil
+}
+
+func PasswordChangeHandler(w http.ResponseWriter, r *http.Request) error {
+	db, err := util.OpenDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	err = util.ValidChangePasswordSubmit(r)
+	if err != nil { return err }
+
+	err = gen.ChangePassword(db, r.FormValue("User"), r.FormValue("Token"), r.FormValue("Password"))
+	if err != nil { return err }
+
+	fmt.Fprint(w, "Password changed")
+	return nil
+}
+
 type handlerWrapper func(http.ResponseWriter, *http.Request) error
 
 func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -877,7 +929,6 @@ func main() {
 	http.Handle("/register", handlerWrapper(RegisterFormHandler))
 	http.Handle("/registerSubmit", handlerWrapper(RegistrationHandler))
 	http.Handle("/login", handlerWrapper(LoginFormHandler))
-	http.Handle("/login/", handlerWrapper(LoginFormHandler))
 	http.Handle("/loginSubmit", handlerWrapper(LoginHandler))
 	http.Handle("/auth/", handlerWrapper(AccountAuthHandler))
 	http.Handle("/logout", handlerWrapper(LogoutHandler))
@@ -886,7 +937,6 @@ func main() {
 	http.Handle("/create", handlerWrapper(CreateListingHandler))
 	http.Handle("/createSubmit", handlerWrapper(CreateSubmitHandler))
 	http.Handle("/dashboard", handlerWrapper(DashListingsHandler))
-	http.Handle("/dashboard/", handlerWrapper(DashListingsHandler))
 	http.Handle("/dashboard/listings", handlerWrapper(DashListingsHandler))
 	http.Handle("/dashboard/messages", handlerWrapper(DashMessagesHandler))
 	http.Handle("/dashboard/reservations", handlerWrapper(DashReservationsHandler))
@@ -897,6 +947,10 @@ func main() {
 	http.Handle("/messageSubmit", handlerWrapper(SendMessageSubmitHandler))
 	http.Handle("/rate", handlerWrapper(RateHandler))
 	http.Handle("/rateSubmit", handlerWrapper(RateSubmitHandler))
+	http.Handle("/passwordReset", handlerWrapper(PasswordResetFormHandler))
+	http.Handle("/passwordResetSubmit", handlerWrapper(PasswordResetHandler))
+	http.Handle("/passwordChange", handlerWrapper(PasswordChangeFormHandler))
+	http.Handle("/passwordChangeSubmit", handlerWrapper(PasswordChangeHandler))
 	http.Handle("/", handlerWrapper(RootHandler))
 
 	http.Handle("/a/logout", handlerWrapper(app.LogoutHandler))

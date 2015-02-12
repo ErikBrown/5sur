@@ -126,7 +126,14 @@ func ReturnListings(db *sql.DB, o int, d int, t string) ([]Listing, error) {
 
 func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, destination int, seats int, fee float64) (int64, error) {
 	// This needs to take in account the hour/minute!!! Concatinate the form values! CHANGE THIS
-	err := checkNearbyListings(db, date_leaving, driver)
+	listingTotal, err := checkListingTotal(db, driver)
+	if err != nil { return 0, err }
+
+	if listingTotal > 20 {
+		return 0, util.NewError(err, "You have too many current listings (max 20)", 400)
+	}
+
+	err = checkNearbyListings(db, date_leaving, driver)
 	if err !=nil {
 		return 0, err
 	}
@@ -166,6 +173,30 @@ func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, dest
 	}
 	
 	return lastId, nil
+}
+
+func checkListingTotal(db *sql.DB, driver int) (int, error) {
+	stmt, err := db.Prepare(`
+		SELECT COUNT(*)
+			FROM listings
+			WHERE user = ?
+			AND date_leaving < NOW()
+		`)
+	
+	if err != nil {
+		return 0, util.NewError(err, "Database error", 500)
+	}
+	defer stmt.Close()
+
+	listingTotal := 0
+	err = stmt.QueryRow(driver).Scan(&listingTotal)
+	if err != nil {
+		// This should never happen
+		return 0, util.NewError(err, "Database error", 500)
+	}
+
+	return listingTotal, nil
+
 }
 
 func ReturnIndividualListing(db *sql.DB, id int) (Listing, error) {

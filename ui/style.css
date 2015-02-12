@@ -382,6 +382,14 @@ h4 {
 	color: #32A2C7;
 }
 
+#reset_password {
+	display: block;
+	margin: 10px 0;
+	font-weight: 300;
+	font-size: 14px;
+	color: #32A2C7;
+}
+
 .g-recaptcha {
 	display: block;
 	width: 300px;

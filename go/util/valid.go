@@ -41,6 +41,37 @@ func ValidAuthQuery(u *url.URL) (string, error) {
 	return f, nil
 }
 
+func ValidChangePasswordQuery(u *url.URL) (string, string, error) {
+	m, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		return "", "", NewError(nil, "Authentication failed", 400)
+	}
+	if _,ok := m["t"]; !ok {
+		return "", "", NewError(nil, "Authentication failed", 400)
+	}
+	if _,ok := m["u"]; !ok {
+		return "", "", NewError(nil, "Authentication failed", 400)
+	}
+
+	return m["t"][0], m["u"][0], nil
+}
+
+func ValidChangePasswordSubmit(r *http.Request) error {
+	if r.FormValue("Password") == "" || r.FormValue("Password2") == "" || r.FormValue("User") == "" || r.FormValue("Token") == "" {
+		return NewError(nil, "Please fully fill out the form", 400)
+	}
+
+	if utf8.RuneCountInString(r.FormValue("Password")) < 6 {
+		return NewError(nil, "Password must be at least six characters", 400)
+	}
+
+	if r.FormValue("Password") != r.FormValue("Password2"){
+		return NewError(nil, "Passwords do not match", 400)
+	}
+
+	return nil
+}
+
 func ValidCreateSubmit(r *http.Request) (CreateSubmitPost, error) {
 	//if the values that should be ints actually are. If not, return error.
 	//Check if values are empty.

@@ -52,7 +52,7 @@ func unusedUsername(db *sql.DB, username string) (bool, error) {
 	return true, nil
 }
 
-func unusedEmail(db *sql.DB, email string) error {
+func unusedEmail(db *sql.DB, email string) (string, error) {
 	stmt, err := db.Prepare(`
 		SELECT users.name
 			FROM users
@@ -60,25 +60,17 @@ func unusedEmail(db *sql.DB, email string) error {
 	`)
 
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return "", util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
-	// db.Query() prepares, executes, and closes a prepared statement - three round
-	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
-	rows, err := stmt.Query(email)
+	username := ""
+	err = stmt.QueryRow(email).Scan(&username)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return "", nil
 	}
-	// Always defer rows.Close(), even if you explicitly Close it at the end of the
-	// loop. The connection will have the chance to remain open otherwise.
-	defer rows.Close()
 
-	// The last rows.Next() call will encounter an EOF error and call rows.Close()
-	for rows.Next() {
-		return util.NewError(nil, "Email is already in use", 400)
-	}
-	return nil
+	return username, nil
 }
 
 func CheckUserInfo(db *sql.DB, username string, email string) error {
@@ -88,8 +80,10 @@ func CheckUserInfo(db *sql.DB, username string, email string) error {
 	err = invalidEmail(email)
 	if err != nil { return err }
 
-	err = unusedEmail(db, email)
+	unused, err := unusedEmail(db, email)
 	if err != nil { return err }
+
+	if unused != "" { return util.NewError(nil, "Email is already in use", 400) }
 
 
 	uniqueUsername, err := unusedUsername(db, username)
@@ -121,7 +115,7 @@ func invalidEmail(email string) error {
 	if valid {
 		return nil
 	}
-	return util.NewError(nil, "Invalid username", 400)
+	return util.NewError(nil, "Invalid email", 400)
 }
 
 func deleteUserAuth(db *sql.DB, email string) error {
@@ -177,11 +171,10 @@ func createUserAuth(db *sql.DB, username string, password string, email string, 
 	return nil
 }
 
-func mailUserAuth(username string, toAddress string, token string) error {
+func mailUser(toAddress string, body string) error {
 	from := "admin@5sur.com"
 	to := toAddress
 	subject := "email subject"
-	body := "Boilerplate text about completing your registration process (in spanish):\nhttps://5sur.com/auth/?t=" + token 
 
 	// Setup message (need the carriage return \r before body)
 	message := "From: " + from + "\r\n"
@@ -266,7 +259,9 @@ func UserAuth(db *sql.DB, username string, password string, email string) error 
 	err = createUserAuth(db, username, password, email, hashedStr)
 	if err != nil { return err }
 
-	err = mailUserAuth(username, email, randValue)
+	body := "Boilerplate text about completing your registration process (in spanish):\nhttps://5sur.com/auth/?t=" + randValue 
+
+	err = mailUser(email, body)
 	if err != nil { return err }
 
 	return nil
@@ -465,11 +460,103 @@ func UpdateLoginAttempts(db *sql.DB, ip string) error {
 		return util.NewError(err, "Database error", 500)
 	}
 	
-	/*
-	rowCnt, err := res.RowsAffected()
-	if err != nil {
-		// Log the error
+	return nil
+}
+
+func ResetPassword(db *sql.DB, email string) error {
+	username, err := unusedEmail(db, email)
+	if err != nil { return err }
+
+	if username == "" { return util.NewError(nil, "Email is not registered by any user", 400) }
+
+	alphaNum := []byte("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv")
+	randValue := ""
+	for i := 0; i < 32; i++ {
+		num, err := util.RandKey(58)
+		if err != nil {return err}
+		randValue = randValue + string(alphaNum[num])
 	}
-	*/
+	hashed := sha256.New()
+	hashed.Write([]byte(randValue))
+	hashedStr := hex.EncodeToString(hashed.Sum(nil))
+
+	err = storePasswordToken(db, email, hashedStr)
+	if err != nil { return err }
+
+	body := "Username: " + username + "\nReset your password by clicking this link: https://5sur.com/passwordChange?t=" + randValue + "&u=" + username
+	err = mailUser(email, body)
+
+	return nil
+}
+
+func storePasswordToken(db *sql.DB, email string, token string) error {	
+	stmt, err := db.Prepare(`
+		INSERT INTO reset_password (email, auth)
+			VALUES (?, ?)
+			ON DUPLICATE KEY UPDATE
+			auth = ?, created = NOW();
+		`)
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(email, token, token)
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+	
+	return nil
+}
+
+func ChangePassword(db *sql.DB, user string, token string, password string) error {
+	hashedPassword, err := hashPassword(password)
+	if err != nil { return err }
+
+	hashed := sha256.New()
+	hashed.Write([]byte(token))
+	hashedToken := hex.EncodeToString(hashed.Sum(nil))
+
+	stmt, err := db.Prepare(`
+		UPDATE users AS u
+			LEFT JOIN reset_password AS r
+			ON u.email = r.email
+			SET u.password = ?
+			WHERE u.name = ?
+			AND r.auth = ?;
+	`)
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(hashedPassword, user, hashedToken)
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+
+	err = deletePasswordToken(db, hashedToken)
+	if err != nil { return err }
+
+	return nil
+}
+
+func deletePasswordToken(db *sql.DB, token string) error {	
+	stmt, err := db.Prepare(`
+		DELETE FROM reset_password
+			WHERE auth = ?;
+	`)
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(token)
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+	
 	return nil
 }
