@@ -425,6 +425,41 @@ h4 {
 	background: #eeeeee;
 }
 
+#upload_preview {
+	margin: 0 auto;
+}
+
+#upload_hidden {
+	display: absolute;
+	display: none;
+}
+
+#upload_preview img {
+	width: 100px;
+	height: 100px;
+	border-radius: 100%;
+}
+
+.card_page input[type="file"] {
+	padding: 0;
+	height: 35px;
+	font-family: 'Open Sans', sans-serif;
+}
+
+#current_picture {
+	width: 300px;
+	font-family: 'Bitter', sans-serif;
+	font-weight: 700;
+	margin: 0 auto 50px auto;
+	color: #3A4045;
+}
+
+#current_picture img {
+	display: block;
+	border-radius: 100%;
+	margin: 15px auto 0 auto;
+}
+
 /*** Listings ***/
 
 /* Listing filter */

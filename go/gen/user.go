@@ -245,10 +245,15 @@ func ReturnUserPicture(db *sql.DB, user int, size string) (string, error) {
 		return picture, util.NewError(err, "User not found", 500)
 	}
 
+	sizeSuffix := ""
+	if size != "100" {
+		sizeSuffix = "_" + size
+	}
+
 	if customPicture {
-		picture = "https://5sur.com/images/" + name + "_" + size + ".png"
+		picture = "https://5sur.com/images/" + name + sizeSuffix + ".png"
 	} else {
-		picture = "https://5sur.com/default_" + size + ".png"
+		picture = "https://5sur.com/default" + sizeSuffix + ".png"
 	}
 
 	return picture, nil

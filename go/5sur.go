@@ -647,7 +647,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func UploadDeleteHandler(w http.ResponseWriter, r *http.Request) error {
+func UploadFormHandler(w http.ResponseWriter, r *http.Request) error {
 	// Database initialization
 	db, err := util.OpenDb()
 	if err != nil { return err }
@@ -658,7 +658,61 @@ func UploadDeleteHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 	if user == "" {
 		return util.NewError(nil, "Login required", 401)
-	}	
+	}
+	err = templates.ExecuteTemplate(w, "upload.html", "")
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
+	return nil
+}
+
+func UploadDeleteFormHandler(w http.ResponseWriter, r *http.Request) error {
+	// Database initialization
+	db, err := util.OpenDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	// User authentication
+	user, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
+	if user == "" {
+		return util.NewError(nil, "Login required", 401)
+	}
+
+	picture, err := gen.ReturnUserPicture(db, userId, "100")
+	if err != nil { return err }
+
+	body := struct {
+		User int
+		Picture string
+	}{
+		userId,
+		picture,
+	}
+
+	err = templates.ExecuteTemplate(w, "deletePicture.html", body)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
+	return nil
+}
+
+func UploadDeleteHandler(w http.ResponseWriter, r *http.Request) error {
+	// Database initialization
+	db, err := util.OpenDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	// User authentication
+	user, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
+	if userId == 0 {
+		return util.NewError(nil, "Login required", 401)
+	}
+
+	if r.FormValue("User") != strconv.Itoa(userId) {
+		return util.NewError(nil, "Picture delete failed", 400)
+	}
 
 	err = util.DeletePicture(db, user)
 	if err != nil { return err }
@@ -944,8 +998,10 @@ func main() {
 	http.Handle("/dashboard/messages", handlerWrapper(DashMessagesHandler))
 	http.Handle("/dashboard/reservations", handlerWrapper(DashReservationsHandler))
 	http.Handle("/dashboard/listings/delete", handlerWrapper(DeleteListingHandler))
-	http.Handle("/upload", handlerWrapper(UploadHandler))
-	http.Handle("/deletePicture", handlerWrapper(UploadDeleteHandler))
+	http.Handle("/uploadSubmit", handlerWrapper(UploadHandler))
+	http.Handle("/upload", handlerWrapper(UploadFormHandler))
+	http.Handle("/deletePicture", handlerWrapper(UploadDeleteFormHandler))
+	http.Handle("/deletePictureSubmit", handlerWrapper(UploadDeleteHandler))
 	http.Handle("/message", handlerWrapper(SendMessageHandler))
 	http.Handle("/messageSubmit", handlerWrapper(SendMessageSubmitHandler))
 	http.Handle("/rate", handlerWrapper(RateHandler))
