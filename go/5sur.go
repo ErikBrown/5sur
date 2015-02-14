@@ -966,6 +966,42 @@ func PasswordChangeHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func DashSettingsHandler(w http.ResponseWriter, r *http.Request) error {	
+	db, err := util.OpenDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	user, userId, userImg, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
+
+	if userId == 0 {
+		return util.NewError(nil, "Login required", 401)
+	}
+
+	alerts, err := gen.GetAlerts(db, userId)
+	if err != nil { return err }
+
+	header := &gen.HeaderHTML {
+		Title: "Dashboard",
+		Username: user,
+		Alerts: len(alerts),
+		AlertText: alerts,
+		UserImage: userImg,
+	}
+
+	page := struct {
+		Header gen.HeaderHTML
+	}{
+		*header,
+	}
+
+	err = templates.ExecuteTemplate(w, "dashSettings.html", page)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
+	return nil
+}
+
 type handlerWrapper func(http.ResponseWriter, *http.Request) error
 
 func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -998,6 +1034,7 @@ func main() {
 	http.Handle("/dashboard/messages", handlerWrapper(DashMessagesHandler))
 	http.Handle("/dashboard/reservations", handlerWrapper(DashReservationsHandler))
 	http.Handle("/dashboard/listings/delete", handlerWrapper(DeleteListingHandler))
+	http.Handle("/dashboard/settings", handlerWrapper(DashSettingsHandler))
 	http.Handle("/uploadSubmit", handlerWrapper(UploadHandler))
 	http.Handle("/upload", handlerWrapper(UploadFormHandler))
 	http.Handle("/deletePicture", handlerWrapper(UploadDeleteFormHandler))

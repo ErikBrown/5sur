@@ -139,8 +139,8 @@ func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, dest
 	}
 
 	stmt, err := db.Prepare(`
-		INSERT INTO listings (date_leaving,driver,origin,destination,seats,fee,reserved)
-			SELECT ? AS date_leaving, ? AS driver, ? AS origin, ? AS destination, ? AS seats, ? AS fee, false AS reserved FROM dual
+		INSERT INTO listings (date_leaving,driver,origin,destination,seats,fee)
+			SELECT ? AS date_leaving, ? AS driver, ? AS origin, ? AS destination, ? AS seats, ? AS fee FROM dual
 			WHERE 2 = (
 				SELECT COUNT(*)
 					FROM cities
@@ -179,7 +179,7 @@ func checkListingTotal(db *sql.DB, driver int) (int, error) {
 	stmt, err := db.Prepare(`
 		SELECT COUNT(*)
 			FROM listings
-			WHERE user = ?
+			WHERE driver = ?
 			AND date_leaving < NOW()
 		`)
 	

@@ -1,0 +1,68 @@
+<!doctype html>
+
+<html>
+
+<head>
+
+<meta charset='utf-8'>
+<meta name="viewport" content="width=device-width">
+
+<!-- <link rel="icon" type="image/png" href="graphics/favicon.ico"> -->
+<!-- remove the extra weights -->
+<link href='https://fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:400,400italic,600,300,700,800|Bitter:400,400italic,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="https://5sur.com/style.css" />
+
+
+<title>5Sur - Settings</title>
+
+</head>
+
+<body class="header_padding">
+
+{{template "header.html" .}}
+
+<div class="sidebar" id="main_sidebar">
+	<ul>
+		<li class="message_icon">
+			<a href="https://5sur.com/dashboard/messages"></a>
+		</li>
+		<li class="listings_icon">
+			<a href="https://5sur.com/dashboard/listings"></a>
+		</li>
+		<li class="reservation_icon">
+			<a href="https://5sur.com/dashboard/reservations"></a>
+		</li>
+		<li class="settings_icon selected_dark">
+			<a href="https://5sur.com/dashboard/settings"></a>
+		</li>
+	</ul>
+</div>
+
+<div class="sidebar" id="sub_sidebar">
+	<h2>Settings</h2>
+	<ul>
+		<li>
+			<a href="https://5sur.com/upload">
+				<img src="https://5sur.com/graphics/x.png">
+				<span class="sidebar_text">Change Picture</span>
+			</a>
+		</li>
+		<li>
+			<a href="https://5sur.com/deletePicture">
+				<img src="https://5sur.com/graphics/x.png">
+				<span class="sidebar_text">Delete Picture</span>
+			</a>
+		</li>
+		<li>
+			<a href="https://5sur.com/passwordReset">
+				<img src="https://5sur.com/graphics/x.png">
+				<span class="sidebar_text">Change Password</span>
+			</a>
+		</li>
+	</ul>
+</div>
+
+<script src="https://5sur.com/dashboard.js"></script>
+</body>
+
+</html>

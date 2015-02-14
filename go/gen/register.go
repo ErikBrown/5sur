@@ -464,6 +464,10 @@ func UpdateLoginAttempts(db *sql.DB, ip string) error {
 }
 
 func ResetPassword(db *sql.DB, email string) error {
+	if email == "" {
+		return util.NewError(nil, "Email required", 400)
+	}
+
 	username, err := unusedEmail(db, email)
 	if err != nil { return err }
 
