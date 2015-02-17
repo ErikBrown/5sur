@@ -167,11 +167,11 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 	messages := gen.MessageThread{}
 	token, err := util.ValidDashQuery(r.URL) // Ignore error here
 	if err == nil {
+		err = gen.DeleteAlert(db, userId, "message", token)
+		if err != nil { return err }
 		messages, err = gen.SpecificDashMessage(db, dashMessages, token, userId)
 		if err != nil { return err }
 		err = gen.SetMessagesClosed(db, token, userId)
-		if err != nil { return err }
-		err = gen.DeleteAlert(db, userId, "message", token)
 		if err != nil { return err }
 		for key := range dashMessages {
 			if dashMessages[key].Name == messages.Name {
@@ -297,7 +297,7 @@ func DeleteListingHandler(w http.ResponseWriter, r *http.Request) error {
 	if r.PostFormValue("d") == "" {
 		listingId, err := util.ValidDashQuery(r.URL)
 		if err != nil { return err }
-		err = templates.ExecuteTemplate(w, "delete.html", listingId)
+		err = templates.ExecuteTemplate(w, "deleteListing.html", listingId)
 		if err != nil {
 			return util.NewError(err, "Failed to load page", 500)
 		}
@@ -1002,6 +1002,64 @@ func DashSettingsHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func DeleteAccountFormHandler(w http.ResponseWriter, r *http.Request) error {
+	db, err := util.OpenDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	// User authentication
+	user, _, _, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
+
+	if user == "" {
+		return util.NewError(nil, "Login required", 401)
+	}
+
+	err = templates.ExecuteTemplate(w, "deleteAccount.html", "")
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
+	return nil
+}
+
+func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) error {
+	db, err := util.OpenDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	// User authentication
+	user, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
+
+	if user == "" {
+		return util.NewError(nil, "Login required", 401)
+	}
+	// put this in valid
+	if r.FormValue("Password") == "" || r.FormValue("Password2") == "" {
+		fmt.Fprint(w, "Please fully fill out the form")
+		return nil
+	}
+
+	if r.FormValue("Password") != r.FormValue("Password2") {
+		fmt.Fprint(w, "Passwords don't match")
+		return nil
+	}
+
+	authenticated, err := gen.CheckCredentials(db, user, r.FormValue("Password"))
+	if err != nil { return err }
+
+	if !authenticated {
+		fmt.Fprint(w, "Incorrect password")
+		return nil
+	}
+
+	err = gen.DeleteAccount(db, userId)
+	if err !=nil { return err }
+
+	fmt.Fprint(w, "Account deleted")
+	return nil
+}
+
 type handlerWrapper func(http.ResponseWriter, *http.Request) error
 
 func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -1047,6 +1105,8 @@ func main() {
 	http.Handle("/passwordResetSubmit", handlerWrapper(PasswordResetHandler))
 	http.Handle("/passwordChange", handlerWrapper(PasswordChangeFormHandler))
 	http.Handle("/passwordChangeSubmit", handlerWrapper(PasswordChangeHandler))
+	http.Handle("/deleteAccount", handlerWrapper(DeleteAccountFormHandler))
+	http.Handle("/deleteAccountSubmit", handlerWrapper(DeleteAccountHandler))
 	http.Handle("/", handlerWrapper(RootHandler))
 
 	http.Handle("/a/logout", handlerWrapper(app.LogoutHandler))
