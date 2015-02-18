@@ -32,7 +32,8 @@ func deleteUpdateSeats(db *sql.DB, user int) error {
 func deleteAllAlerts(db *sql.DB, user int) error {
 	stmt, err := db.Prepare(`
 		DELETE FROM alerts
-		WHERE user = ?;
+			WHERE user = ?
+			OR ((category = "message" OR category="rate") AND target_id = ?);
 	`)
 
 	if err != nil {
@@ -40,7 +41,7 @@ func deleteAllAlerts(db *sql.DB, user int) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(user)
+	_, err = stmt.Exec(user, user)
 	if err != nil {
 		return util.NewError(err, "Database error", 500)
 	}
