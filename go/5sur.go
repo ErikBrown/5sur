@@ -332,10 +332,10 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) error {
 		convertedTime := ""
 		var err error
 		if r.FormValue("Date") == "" {
-			convertedDate, convertedTime = util.ReturnCurrentTimeString()
+			convertedDate, convertedTime = util.ReturnCurrentTimeString(true)
 		} else if r.FormValue("Time") == "" {
 			convertedDate, _, err = util.ReturnTimeString(false, r.FormValue("Date"), "00:00")
-			currentDate, currentTime := util.ReturnCurrentTimeString()
+			currentDate, currentTime := util.ReturnCurrentTimeString(true)
 			if currentDate == convertedDate {
 				convertedTime = currentTime
 			} else {

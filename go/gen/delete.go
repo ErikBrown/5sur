@@ -33,7 +33,7 @@ func deleteAllAlerts(db *sql.DB, user int) error {
 	stmt, err := db.Prepare(`
 		DELETE FROM alerts
 			WHERE user = ?
-			OR ((category = "message" OR category="rate") AND target_id = ?);
+			OR ((category = "message" OR category = "rate") AND target_id = ?);
 	`)
 
 	if err != nil {

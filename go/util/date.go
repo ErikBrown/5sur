@@ -105,8 +105,12 @@ func ReturnTimeString(humanReadable bool, d string, t string) (string, string, e
 	}
 }
 
-func ReturnCurrentTimeString() (string, string) {
-	return time.Now().Local().Format("2006-01-02"), time.Now().Local().Format("15:04")
+func ReturnCurrentTimeString(rounded bool) (string, string) {
+	if rounded {
+		return time.Now().Local().Format("2006-01-02"), time.Now().Local().Format("15") + ":00"
+	} else {
+		return time.Now().Local().Format("2006-01-02"), time.Now().Local().Format("15:04")
+	}
 }
 
 //FORM yyyy-mm-dd hh:mm:ss Drop the seconds. Parse the rest.

@@ -31,7 +31,7 @@ function createTable(d, n) {
 	calendarMonth.appendChild(monthText);
 	
 	var tableBody = document.createElement('tbody'); 
-	var tableRowRef = document.createElement('tr'); 
+	var tableRowRef = document.createElement('tr');
 	var tableCellRef = document.createElement('td');
 	for (var i = 0; i < 6; i++) {
 		tableRow = tableRowRef.cloneNode(true);
@@ -128,6 +128,6 @@ document.addEventListener('click', function() {
 	hideCalendar = true;
 }, false);
 
-window.onload = function() {
+window.addEventListener("load", function(){
 	createTable(today, true);
-}
+}, false);

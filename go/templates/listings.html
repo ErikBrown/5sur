@@ -34,28 +34,32 @@
 			{{range $key, $value := .Body.Filter}}
 			<option {{if eq $.Body.Query.Destination $value.Id}}selected{{end}} value="{{$value.Id}}">{{$value.Name}}</option>{{end}}
 		</select>
-		<span class="to">&#128343;</span>
-		<input type="text" name="Date" placeholder="Select date..." autocomplete="off" id="date_box" class="search_option" value="{{.Body.Query.Date}}">
-		<input type="text" name="Time" placeholder="Select time..." autocomplete="off" id="time_box" class="search_option" value="{{.Body.Query.Time}}">
-		<div id="calendar_wrapper">
-			<div id="month_wrapper">
-				<span id="month_left">&#9664;</span>
-				<span id="month_title"></span>
-				<span id="month_right">&#9654;</span>
+		<div id="search_date_wrapper">
+			<input type="text" name="Date" placeholder="Date" autocomplete="off" id="date_box" class="search_option time_option" value="{{.Body.Query.Date}}">
+			<span class="to">&#128343;</span>
+			<select name="Time" id="time_box" class="search_option time_option">
+				<option disabled {{if eq .Body.Query.Time ""}}selected{{end}} class="blank_option">Time</option>
+			</select>
+			<div id="calendar_wrapper">
+				<div id="month_wrapper">
+					<span id="month_left">&#9664;</span>
+					<span id="month_title"></span>
+					<span id="month_right">&#9654;</span>
+				</div>
+				<table id="calendar">
+					<thead>
+						<tr>
+							<th>lu</th>
+							<th>ma</th>
+							<th>mi</th>
+							<th>ju</th>
+							<th>vi</th>
+							<th>sa</th>
+							<th>su</th>
+						</tr>
+					</thead>
+				</table>
 			</div>
-			<table id="calendar">
-				<thead>
-					<tr>
-						<th>lu</th>
-						<th>ma</th>
-						<th>mi</th>
-						<th>ju</th>
-						<th>vi</th>
-						<th>sa</th>
-						<th>su</th>
-					</tr>
-				</thead>
-			</table>
 		</div>
 	<input type="submit" name="FilterSubmit" value="Find a ride!" id="search_submit">
 	</form>
@@ -99,6 +103,7 @@
 
 <script src="https://5sur.com/header.js"></script>
 <script src="https://5sur.com/calendarScript.js"></script>
+<script src="https://5sur.com/timeDropdown.js"></script>
 </body>
 
 </html>

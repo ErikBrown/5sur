@@ -52,7 +52,7 @@
 <div id="search_wrapper">
 	<form method="post" action="https://5sur.com/l/" id="search_form">
 		<select name="Origin" id="origin_select" class="search_option">
-			<option disabled selected class="blank_option"></option>
+			<option disabled selected class="blank_option">Origin</option>
 			<option value="1">City 1</option>
 			<option value="2">City 2</option>
 			<option value="3">City 3</option>
@@ -61,35 +61,39 @@
 		</select>
 		<span class="to">&#10132;</span>
 		<select name="Destination" id="destination_select" class="search_option">
-			<option disabled selected class="blank_option"></option>
+			<option disabled selected class="blank_option">Destination</option>
 			<option value="1">City 1</option>
 			<option value="2">City 2</option>
 			<option value="3">City 3</option>
 			<option value="4">City 4</option>
 			<option value="5">City 5</option>
 		</select>
-		<span class="to">&#128343;</span>
-		<input type="text" name="Date" placeholder="Select date..." autocomplete="off" id="date_box" class="search_option time_option">
-		<input type="text" name="Time" placeholder="Select time..." autocomplete="off" id="time_box" class="search_option time_option">
-		<div id="calendar_wrapper">
-			<div id="month_wrapper">
-				<span id="month_left">&#9664;</span>
-				<span id="month_title"></span>
-				<span id="month_right">&#9654;</span>
+		<div id="search_date_wrapper">
+			<input type="text" name="Date" placeholder="Date" autocomplete="off" id="date_box" class="search_option time_option">
+			<span class="to">&#128343;</span>
+			<select name="Time" id="time_box" class="search_option time_option">
+				<option disabled selected class="blank_option">Time</option>
+			</select>
+			<div id="calendar_wrapper">
+				<div id="month_wrapper">
+					<span id="month_left">&#9664;</span>
+					<span id="month_title"></span>
+					<span id="month_right">&#9654;</span>
+				</div>
+				<table id="calendar">
+					<thead>
+						<tr>
+							<th>lu</th>
+							<th>ma</th>
+							<th>mi</th>
+							<th>ju</th>
+							<th>vi</th>
+							<th>sa</th>
+							<th>su</th>
+						</tr>
+					</thead>
+				</table>
 			</div>
-			<table id="calendar">
-				<thead>
-					<tr>
-						<th>lu</th>
-						<th>ma</th>
-						<th>mi</th>
-						<th>ju</th>
-						<th>vi</th>
-						<th>sa</th>
-						<th>su</th>
-					</tr>
-				</thead>
-			</table>
 		</div>
 	<input type="submit" name="FilterSubmit" value="Find a ride!" id="search_submit">
 	</form>
@@ -175,6 +179,7 @@
 
 <script src="header.js"></script>
 <script src="calendarScript.js"></script>
+<script src="timeDropdown.js"></script>
 </body>
 
 </html>
