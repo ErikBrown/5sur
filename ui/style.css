@@ -514,8 +514,21 @@ h4 {
 }
 
 .to {
-	color: #ACACAC;
+	display: inline-block;
+	vertical-align: middle;
+	width: 30px;
+	height: 15px;
 	padding: 0 5px;
+	background: url("https://5sur.com/graphics/arrow.png") no-repeat center;
+}
+
+.clock {
+	display: inline-block;
+	vertical-align: middle;
+	width: 30px;
+	height: 15px;
+	padding: 0 5px;
+	background: url("https://5sur.com/graphics/clock.png") no-repeat center;
 }
 
 /* Calendar widget */

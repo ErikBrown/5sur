@@ -50,7 +50,7 @@
 					<span class="calendar_icon_month">{{$value.Month}}</span>
 					<span class="calendar_icon_day">{{$value.Day}}</span>
 				</div>
-				<span class="sidebar_text">{{$value.Origin}} to {{$value.Destination}}</span>
+				<span class="sidebar_text">{{$value.Origin}} <span class="to"></span> {{$value.Destination}}</span>
 			</a>
 		</li>
 		{{end}}
@@ -60,7 +60,7 @@
 <div id="dash_content" class="dash_listings">
 	{{if ne .Body.Reservation.ListingId 0}}
 	<div id="dash_title">
-		<h3>{{.Body.Reservation.Origin}} &#10132; {{.Body.Reservation.Destination}}</h3>
+		<h3>{{.Body.Reservation.Origin}} <span class="to"></span> {{.Body.Reservation.Destination}}</h3>
 		<span id="dash_listing_date">{{.Body.Reservation.Month}} {{.Body.Reservation.Day}} - {{.Body.Reservation.Time}}</span>
 		<span>&#8226;</span>
 		<span id="dash_listing_seats">Registered for {{.Body.Reservation.Seats}} {{if eq .Body.Reservation.Seats 1}}seat{{else}}seats{{end}}</span>

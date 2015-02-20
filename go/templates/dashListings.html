@@ -50,7 +50,7 @@
 					<span class="calendar_icon_month">{{$value.Month}}</span>
 					<span class="calendar_icon_day">{{$value.Day}}</span>
 				</div>
-				<span class="sidebar_text">{{$value.Origin}} to {{$value.Destination}}</span>
+				<span class="sidebar_text">{{$value.Origin}} <span class="to"></span> {{$value.Destination}}</span>
 				{{if eq $value.Alert true}}
 				<span class="sidebar_alert">!</span>{{end}}
 			</a>
@@ -62,7 +62,7 @@
 <div id="dash_content" class="dash_listings">
 	{{if ne .Body.Listing.ListingId 0}}
 	<div id="dash_title">
-		<h3>{{.Body.Listing.Origin}} &#10132; {{.Body.Listing.Destination}}</h3>
+		<h3>{{.Body.Listing.Origin}} <span class="to"></span> {{.Body.Listing.Destination}}</h3>
 		<span id="dash_listing_date">{{.Body.Listing.Month}} {{.Body.Listing.Day}} - {{.Body.Listing.Time}}</span>
 		<span>&#8226;</span>
 		<span id="dash_listing_seats">{{.Body.Listing.Seats}} {{if eq .Body.Listing.Seats 1}}seat{{else}}seats{{end}}</span>

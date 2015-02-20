@@ -28,7 +28,7 @@
 			{{range $key, $value := .Body.Filter}}
 			<option {{if eq $.Body.Query.Origin $value.Id}}selected{{end}} value="{{$value.Id}}">{{$value.Name}}</option>{{end}}
 		</select>
-		<span class="to">&#10132;</span>
+		<span class="to"></span>
 		<select name="Destination" id="destination_select" class="search_option">
 			<option disabled {{if eq .Body.Query.Destination 0}}selected{{end}} class="blank_option"></option>
 			{{range $key, $value := .Body.Filter}}
@@ -36,7 +36,7 @@
 		</select>
 		<div id="search_date_wrapper">
 			<input type="text" name="Date" placeholder="Date" autocomplete="off" id="date_box" class="search_option time_option" value="{{.Body.Query.Date}}">
-			<span class="to">&#128343;</span>
+			<span class="clock"></span>
 			<select name="Time" id="time_box" class="search_option time_option">
 				<option disabled {{if eq .Body.Query.Time ""}}selected{{end}} class="blank_option">Time</option>
 			</select>
@@ -88,7 +88,7 @@
 					<span class="positive">+{{$value.Rating}}</span>
 					{{end}}
 				</li>
-				<li>{{$value.Origin}} <span class="to">&#10132;</span> {{$value.Destination}}</li>
+				<li>{{$value.Origin}} <span class="to"></span> {{$value.Destination}}</li>
 				<li class="list_fee">{{if ne $value.Fee 0.0}}${{$value.Fee}}/seat{{else}}Free{{end}}</li>
 				<li class="list_seats">{{$value.Seats}}</li>
 				<li class="list_date"><span class="list_day">{{$value.Date}}</span><span class="list_time">{{$value.Time}}</span></li>
