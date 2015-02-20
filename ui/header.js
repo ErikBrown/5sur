@@ -16,7 +16,7 @@ document.addEventListener('click', function(event) {
 
 user.addEventListener('click', function(event) {
 	alertDropdown.style.height = '0';
-	userDropdown.style.height = '158px';
+	userDropdown.style.height = '210px';
 	event.stopPropagation();
 }, false);
 

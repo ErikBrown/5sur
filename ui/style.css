@@ -258,7 +258,7 @@ h4 {
 
 #nav_user_dropdown {
 	right: -5px;
-	width: 125px;
+	width: 175px;
 }
 
 #nav_user_dropdown:before {
@@ -270,9 +270,27 @@ h4 {
 }
 
 #nav_user_dropdown li {
-	display: inline-block;
-	line-height: 100px;
+	display: block;
 }
+
+#nav_user_dropdown a {
+	display: block;
+	width: 100%;
+	line-height: 50px;
+	padding-left: 50px;
+	text-align: left;
+	color: #666666;
+	font-weight: 300;
+	border-bottom: 1px solid #cccccc;
+}
+
+#nav_user_dropdown li:hover {
+	background-color: #EEEEEE;
+}
+
+#profile_icon { background: url("https://5sur.com/graphics/user.png") 12px 12px no-repeat; }
+#dashboard_icon { background: url("https://5sur.com/graphics/dashboard.png") 12px 12px no-repeat; }
+#logout_icon { background: url("https://5sur.com/graphics/logout.png") 12px 12px no-repeat; }
 
 #login_button {
 	font-size: 14px !important;
