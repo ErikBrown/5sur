@@ -456,7 +456,7 @@ h4 {
 #search_wrapper {
 	width: 100%;
 	margin-bottom: 50px;
-	padding: 50px 0;
+	padding: 40px 0;
 	text-align: center;
 	background: -webkit-linear-gradient(45deg, #F2F0DF 10%, #F1FBFE 90%);
 	background:     -ms-linear-gradient(45deg, #F2F0DF 10%, #F1FBFE 90%);
@@ -492,7 +492,7 @@ h4 {
 }
 
 #time_box {
-	margin-bottom: 25px;
+	margin-bottom: 40px;
 }
 
 #search_submit {
@@ -507,6 +507,7 @@ h4 {
 	background: #DE6049;
 	border-radius: 4px;
 	cursor: pointer;
+	outline: none
 }
 
 #search_submit:hover {

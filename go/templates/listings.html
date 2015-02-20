@@ -24,13 +24,13 @@
 <div id="search_wrapper">
 	<form method="post" action="https://5sur.com/l/" id="search_form">
 		<select name="Origin" id="origin_select" class="search_option">
-			<option disabled {{if eq .Body.Query.Origin 0}}selected{{end}} class="blank_option"></option>
+			<option disabled {{if eq .Body.Query.Origin 0}}selected{{end}} class="blank_option">Origin</option>
 			{{range $key, $value := .Body.Filter}}
 			<option {{if eq $.Body.Query.Origin $value.Id}}selected{{end}} value="{{$value.Id}}">{{$value.Name}}</option>{{end}}
 		</select>
 		<span class="to"></span>
 		<select name="Destination" id="destination_select" class="search_option">
-			<option disabled {{if eq .Body.Query.Destination 0}}selected{{end}} class="blank_option"></option>
+			<option disabled {{if eq .Body.Query.Destination 0}}selected{{end}} class="blank_option">Destination</option>
 			{{range $key, $value := .Body.Filter}}
 			<option {{if eq $.Body.Query.Destination $value.Id}}selected{{end}} value="{{$value.Id}}">{{$value.Name}}</option>{{end}}
 		</select>
