@@ -59,6 +59,7 @@ a, a:hover, a:visited, a:active {
 body {
 	font-family: 'Open Sans', sans-serif;
 	color: #1C2224;
+	background: #ffffff;
 }
 
 h2 {
@@ -82,6 +83,14 @@ h4 {
 	font-weight: 300;
 	color: #ffffff;
 	margin-top: 15px;
+}
+
+h5 {
+	font-family: 'Bitter', serif;
+	font-size: 25px;
+	font-weight: 700;
+	margin-bottom: 15px;
+	color: #EC3413;
 }
 
 /*** Header ***/

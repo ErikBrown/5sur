@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-var templates = template.Must(template.ParseGlob("templates/*"))
+var templates = template.Must(template.ParseGlob("templates/*.html"))
 
 func AccountAuthHandler(w http.ResponseWriter, r *http.Request) error {
 	// Query string validation
@@ -25,10 +25,10 @@ func AccountAuthHandler(w http.ResponseWriter, r *http.Request) error {
 	defer db.Close()
 
 	// Authenticate and create the user account
-	user, err := gen.CreateUser(db, token)
+	_, err = gen.CreateUser(db, token)
 	if err != nil { return err }
 
-	fmt.Fprint(w, user + ", your accout is activated!")
+	http.Redirect(w, r, "https://5sur.com/login", 303)
 	return nil
 }
 
@@ -327,7 +327,7 @@ func DeleteListingHandler(w http.ResponseWriter, r *http.Request) error {
 
 func ListingsHandler(w http.ResponseWriter, r *http.Request) error {	
 	// Convert POST to GET (also does a time validation)
-	if r.FormValue("Origin") != "" && r.FormValue("Destination") != "" {
+	if r.FormValue("Origin") != "" || r.FormValue("Destination") != "" {
 		convertedDate := ""
 		convertedTime := ""
 		var err error
@@ -349,7 +349,7 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}
 
-	// Query string validation	
+	// Query string validation
 	query, err := util.ValidListingQuery(r.URL)
 	if err != nil { return err }
 
@@ -642,8 +642,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) error {
 	err = util.SaveImage(db, user, file, header)
 	if err != nil { return err }
 
-	fmt.Fprintf(w, "File uploaded successfully : ")
-	fmt.Fprintf(w, header.Filename)
+	http.Redirect(w, r, "https://5sur.com/dashboard/settings", 303)
 	return nil
 }
 
@@ -717,7 +716,7 @@ func UploadDeleteHandler(w http.ResponseWriter, r *http.Request) error {
 	err = util.DeletePicture(db, user)
 	if err != nil { return err }
 
-	fmt.Fprintf(w, "Picture Deleted")
+	http.Redirect(w, r, "https://5sur.com/dashboard/settings", 303)
 	return nil
 }
 
@@ -1065,9 +1064,37 @@ type handlerWrapper func(http.ResponseWriter, *http.Request) error
 func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := fn(w, r); err != nil {
 		if myErr, ok := err.(util.MyError); ok {
-			http.Error(w, myErr.Message, myErr.Code)
+
+			PrevUrl := r.Referer()
+			PrevUrlText := "Return"
+			if myErr.StatusCode == 401{
+				PrevUrl = "https://5sur.com/login"
+				PrevUrlText = "Login"
+			}
+			if PrevUrl == "" {
+				PrevUrl = "https://5sur.com/"
+				PrevUrlText = "Go to homepage"
+			}
+
+			ErrorPage := struct {
+				Code int
+				Message string
+				PrevUrl string
+				PrevUrlText string
+			}{
+				myErr.StatusCode,
+				myErr.Message,
+				PrevUrl,
+				PrevUrlText,
+			}
+
 			if myErr.LogError != nil {
 				util.PrintLog(myErr)
+			}
+			w.WriteHeader(myErr.StatusCode)
+			err = templates.ExecuteTemplate(w, "error.html", ErrorPage)
+			if err != nil {
+				http.Error(w, err.Error(), myErr.StatusCode)
 			}
 		}
 	}

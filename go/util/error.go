@@ -12,23 +12,21 @@ type MyError struct {
 	LogError error
 	LogErrorPos string
 	Message string
-	Code int
+	StatusCode int
 }
 
 func (e MyError) Error() string {
-	if e.LogError != nil {
-		return e.LogError.Error()
-	}
+	if e.LogError != nil { return e.LogError.Error() }
 	return ""
 }
 
-func ErrorPosition() string {
+func errorPosition() string {
 	pc, _, line, _ := runtime.Caller(2)
 	return runtime.FuncForPC(pc).Name() + " " + strconv.Itoa(line)
 }
 
 func NewError(err error, message string, code int) error {
-	return MyError{err, ErrorPosition(), message, code}
+	return MyError{err, errorPosition(), message, code}
 }
 
 func ConfigureLog() {
@@ -38,5 +36,5 @@ func ConfigureLog() {
 }
 
 func PrintLog(err MyError) {
-	log.Println(err.LogErrorPos + ": " + err.LogError.Error() + "\r\n \r\n")
+	log.Println(err.LogErrorPos + ": " + err.Error() + "\r\n \r\n")
 }
