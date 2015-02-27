@@ -1100,6 +1100,19 @@ func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type appHandlerWrapper func(http.ResponseWriter, *http.Request) error
+
+func (fn appHandlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if err := fn(w, r); err != nil {
+		if myErr, ok := err.(util.MyError); ok {
+			w.WriteHeader(myErr.StatusCode)
+			fmt.Fprint(w, myErr.Message)
+		}
+	} else {
+		w.WriteHeader(200)
+	}
+}
+
 func main() {
 	util.ConfigureLog()
 	http.Handle("/l/", handlerWrapper(ListingsHandler))
@@ -1136,12 +1149,13 @@ func main() {
 	http.Handle("/deleteAccountSubmit", handlerWrapper(DeleteAccountHandler))
 	http.Handle("/", handlerWrapper(RootHandler))
 
-	http.Handle("/a/logout", handlerWrapper(app.LogoutHandler))
-	http.Handle("/a/login", handlerWrapper(app.LoginHandler))
-	http.Handle("/a/listings", handlerWrapper(app.ListingsHandler))
-	http.Handle("/a/listings/", handlerWrapper(app.ListingsHandler))
-	http.Handle("/a/cities", handlerWrapper(app.CityHandler))
-	http.Handle("/a/reserve", handlerWrapper(app.ReserveHandler))
-	http.Handle("/a/u/", handlerWrapper(app.UserHandler))
+	http.Handle("/a/logout", appHandlerWrapper(app.LogoutHandler))
+	http.Handle("/a/login", appHandlerWrapper(app.LoginHandler))
+	http.Handle("/a/listings", appHandlerWrapper(app.ListingsHandler))
+	http.Handle("/a/listings/", appHandlerWrapper(app.ListingsHandler))
+	http.Handle("/a/cities", appHandlerWrapper(app.CityHandler))
+	http.Handle("/a/reserve", appHandlerWrapper(app.ReserveHandler))
+	http.Handle("/a/u/", appHandlerWrapper(app.UserHandler))
+	http.Handle("/a/dashboard/listings", appHandlerWrapper(app.DashListingsHandler))
 	http.ListenAndServe(":8080", nil)
 }

@@ -19,7 +19,7 @@ func CreateCookie(u string, db *sql.DB, persistent bool, app bool) (http.Cookie,
 	}
 
 	authCookie := http.Cookie {
-		Name: "RideChile",
+		Name: "5sur",
 		Value: randValue,
 		Path: "/",
 		Domain: "5sur.com", // Add domain name in the future
@@ -42,7 +42,7 @@ func CreateCookie(u string, db *sql.DB, persistent bool, app bool) (http.Cookie,
 
 func DeleteCookie(db *sql.DB, userId int, app bool) (error, http.Cookie) {
 	expiredCookie := http.Cookie{
-		Name: "RideChile",
+		Name: "5sur",
 		Value: "",
 		Path: "/",
 		Domain: "5sur.com", // Add domain name in the future
@@ -105,7 +105,7 @@ func updateSession(v string, u string, db *sql.DB, app bool) error {
 }
 
 func CheckAppCookie(r *http.Request, db *sql.DB) (string, int, error) {
-	sessionID, err := r.Cookie("RideChile")
+	sessionID, err := r.Cookie("5sur")
 	if err != nil {
 		return "", 0, nil // No cookie
 	}
@@ -116,7 +116,7 @@ func CheckAppCookie(r *http.Request, db *sql.DB) (string, int, error) {
 }
 
 func CheckCookie(r *http.Request, db *sql.DB) (string, int, string, error) {
-	sessionID, err := r.Cookie("RideChile")
+	sessionID, err := r.Cookie("5sur")
 	if err != nil {
 		return "", 0, "", nil // No cookie
 	}

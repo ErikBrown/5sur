@@ -136,3 +136,54 @@ func UserHandler(w http.ResponseWriter, r *http.Request) error {
 	fmt.Fprint(w, string(formatted))
 	return nil
 }
+
+func DashListingsHandler(w http.ResponseWriter, r *http.Request) error{
+	token, err := util.ValidDashQuery(r.URL)
+	specificListing := false
+	if err == nil {
+		specificListing = true
+	} else {
+		token = 0
+	}
+	// Database initialization
+	db, err := util.OpenDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	// User authentication
+	user, userId, err := util.CheckAppCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
+	if user == "" {
+		return util.NewError(nil, "Login required", 401)
+	}
+
+	// Check post data for if a button was clicked that directed the user here.
+	if specificListing {
+		err = gen.DeleteAlert(db, userId, "dropped", token)
+		if err != nil { return err }
+		err := gen.CheckPost(db, userId, r, token)
+		if err != nil { return err }
+	}
+
+	dashListings, err := gen.GetDashListings(db, userId)
+	if err != nil { return err }
+
+	var listing gen.SpecificListing
+	if specificListing {
+		listing, err = gen.SpecificDashListing(db, dashListings, token)
+		if err != nil { return err }
+	}
+
+	body := &gen.DashListingsHTML{
+		SidebarListings: dashListings,
+		Listing: listing,
+	}
+
+	formatted, err := json.MarshalIndent(body, "", "    ")
+	if err != nil {
+		return util.NewError(err, "Json conversion failed", 500)
+	}
+	fmt.Fprint(w, string(formatted))
+	
+	return nil
+}
