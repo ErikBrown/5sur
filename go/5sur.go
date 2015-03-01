@@ -3,6 +3,7 @@ package main
 import (
 	"net"
 	"net/http"
+	"net/url"
 	"5sur/gen"
 	"5sur/util"
 	"5sur/app"
@@ -1121,16 +1122,23 @@ type handlerWrapper func(http.ResponseWriter, *http.Request) error
 func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := fn(w, r); err != nil {
 		if myErr, ok := err.(util.MyError); ok {
+			if myErr.LogError != nil {
+				util.PrintLog(myErr)
+			}
 
-			PrevUrl := r.Referer()
+			w.WriteHeader(myErr.StatusCode)
+
+			ref := r.Referer()
+			refUrl, _ := url.Parse(ref)
+			PrevUrl := refUrl.Host
 			PrevUrlText := "Return"
 			if myErr.StatusCode == 401{
 				PrevUrl = "https://5sur.com/login"
 				PrevUrlText = "Login"
 			}
-			if PrevUrl == "" {
+			if PrevUrl != "5sur.com" {
 				PrevUrl = "https://5sur.com/"
-				PrevUrlText = "Go to homepage"
+				PrevUrlText = "Return to homepage"
 			}
 
 			ErrorPage := struct {
@@ -1145,16 +1153,10 @@ func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				PrevUrlText,
 			}
 
-			if myErr.LogError != nil {
-				util.PrintLog(myErr)
-			}
-			w.WriteHeader(myErr.StatusCode)
 			err = templates.ExecuteTemplate(w, "error.html", ErrorPage)
 			if err != nil {
 				err = util.NewError(err, myErr.Error(), 500)
-				if tmplError, ok := err.(util.MyError); ok {
-					util.PrintLog(tmplError)
-				}
+				util.PrintLog(err.(util.MyError))
 			}
 		}
 	}
