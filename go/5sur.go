@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net"
 	"net/http"
 	"5sur/gen"
@@ -506,8 +505,20 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) error {
 	
 	err = gen.UserAuth(db, r.FormValue("Username"), r.FormValue("Password"), r.FormValue("Email"))
 	if err != nil { return err }
+	Page := struct {
+		Title string
+		MessageTitle string
+		Message string
+	}{
+		"Register",
+		"",
+		"Confirmation email has been sent to " + r.FormValue("Email"),
+	}
 
-	fmt.Fprint(w, "Confirmation email has been sent to " + r.FormValue("Email"))
+	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
 	return nil
 }
 
@@ -570,7 +581,17 @@ func ReserveHandler(w http.ResponseWriter, r *http.Request) error {
 	err = gen.CreateReservation(db, userId, values.ListingId, values.Seats, r.FormValue("Message"))
 	if err != nil { return err }
 
-	err = templates.ExecuteTemplate(w, "reserveSubmit.html", "")
+	Page := struct {
+		Title string
+		MessageTitle string
+		Message string
+	}{
+		"Reserve",
+		"You have been placed on the reservation queue",
+		"Note: This does not guarantee you a ride - you must first be accepted by the driver and will be notified when that happens.",
+	}
+
+	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)
 	if err != nil {
 		return util.NewError(err, "Failed to load page", 500)
 	}
@@ -909,7 +930,20 @@ func RateSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 	err = gen.SubmitRating(db, userId, userRate, positive, comment, public)
 	if err != nil { return err }
 	
-	fmt.Fprint(w, "Rating submitted!:")
+		Page := struct {
+		Title string
+		MessageTitle string
+		Message string
+	}{
+		"Rate",
+		"",
+		"Rating submitted!",
+	}
+
+	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
 	return nil
 }
 
@@ -929,7 +963,20 @@ func PasswordResetHandler(w http.ResponseWriter, r *http.Request) error {
 	err = gen.ResetPassword(db, r.FormValue("Email"))
 	if err != nil { return err }
 
-	fmt.Fprint(w, "Email has been sent to whatever")
+	Page := struct {
+		Title string
+		MessageTitle string
+		Message string
+	}{
+		"Password Reset",
+		"",
+		"Password reset email has been sent to " + r.FormValue("Email"),
+	}
+
+	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
 	return nil
 }
 
@@ -961,7 +1008,7 @@ func PasswordChangeHandler(w http.ResponseWriter, r *http.Request) error {
 	err = gen.ChangePassword(db, r.FormValue("User"), r.FormValue("Token"), r.FormValue("Password"))
 	if err != nil { return err }
 
-	fmt.Fprint(w, "Password changed")
+	http.Redirect(w, r, "https://5sur.com/login", 303)
 	return nil
 }
 
@@ -1035,27 +1082,37 @@ func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 	// put this in valid
 	if r.FormValue("Password") == "" || r.FormValue("Password2") == "" {
-		fmt.Fprint(w, "Please fully fill out the form")
-		return nil
+		return util.NewError(nil, "Please fully fill out the form", 400)
 	}
 
 	if r.FormValue("Password") != r.FormValue("Password2") {
-		fmt.Fprint(w, "Passwords don't match")
-		return nil
+		return util.NewError(nil, "Passwords don't match", 400)
 	}
 
 	authenticated, err := gen.CheckCredentials(db, user, r.FormValue("Password"))
 	if err != nil { return err }
 
 	if !authenticated {
-		fmt.Fprint(w, "Incorrect password")
-		return nil
+		return util.NewError(nil, "Incorrect Password", 400)
 	}
 
 	err = gen.DeleteAccount(db, userId)
 	if err !=nil { return err }
 
-	fmt.Fprint(w, "Account deleted")
+	Page := struct {
+		Title string
+		MessageTitle string
+		Message string
+	}{
+		"Delete Account",
+		"",
+		"Account deleted",
+	}
+
+	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
 	return nil
 }
 
@@ -1094,7 +1151,10 @@ func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(myErr.StatusCode)
 			err = templates.ExecuteTemplate(w, "error.html", ErrorPage)
 			if err != nil {
-				http.Error(w, err.Error(), myErr.StatusCode)
+				err = util.NewError(err, myErr.Error(), 500)
+				if tmplError, ok := err.(util.MyError); ok {
+					util.PrintLog(tmplError)
+				}
 			}
 		}
 	}
@@ -1105,11 +1165,11 @@ type appHandlerWrapper func(http.ResponseWriter, *http.Request) error
 func (fn appHandlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := fn(w, r); err != nil {
 		if myErr, ok := err.(util.MyError); ok {
-			w.WriteHeader(myErr.StatusCode)
-			fmt.Fprint(w, myErr.Message)
+			if myErr.LogError != nil {
+				util.PrintLog(myErr)
+			}
+			http.Error(w, err.Error(), myErr.StatusCode)
 		}
-	} else {
-		w.WriteHeader(200)
 	}
 }
 

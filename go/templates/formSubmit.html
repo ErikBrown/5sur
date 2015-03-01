@@ -13,15 +13,15 @@
 <link rel="stylesheet" type="text/css" href="https://5sur.com/style.css" />
 
 
-<title>5Sur - Reserve</title>
+<title>5Sur - {{.Title}}</title>
 
 </head>
 
 <body id="form_page">
 	<div class="card_page" id="plain_form">
 		<a href="https://5sur.com/" id="form_logo"></a>
-		<p><b>You have been placed on the reservation queue!</b></p>
-		<p>Note: This does not guarantee you a ride - you must first be accepted by the driver and will be notified when that happens.</p>
+		<p><b>{{.MessageTitle}}</b></p>
+		<p>{{.Message}}</p>
 		<a href="https://5sur.com/" id="switch_form">Return to homepage</a>
 	</form>
 <script src="https://5sur.com/formScript.js"></script>
