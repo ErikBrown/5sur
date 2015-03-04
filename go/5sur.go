@@ -1130,15 +1130,15 @@ func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 			ref := r.Referer()
 			refUrl, _ := url.Parse(ref)
-			PrevUrl := refUrl.Host
-			PrevUrlText := "Return"
+			refHost := refUrl.Host
+			prevUrlText := "Return"
 			if myErr.StatusCode == 401{
-				PrevUrl = "https://5sur.com/login"
-				PrevUrlText = "Login"
+				ref = "https://5sur.com/login"
+				prevUrlText = "Login"
 			}
-			if PrevUrl != "5sur.com" {
-				PrevUrl = "https://5sur.com/"
-				PrevUrlText = "Return to homepage"
+			if refHost != "5sur.com" {
+				ref = "https://5sur.com/"
+				prevUrlText = "Return to homepage"
 			}
 
 			ErrorPage := struct {
@@ -1149,8 +1149,8 @@ func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}{
 				myErr.StatusCode,
 				myErr.Message,
-				PrevUrl,
-				PrevUrlText,
+				ref,
+				prevUrlText,
 			}
 
 			err = templates.ExecuteTemplate(w, "error.html", ErrorPage)
