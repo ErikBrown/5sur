@@ -748,24 +748,45 @@ h5 {
 }
 
 #main_sidebar li:hover {
-	background-color: rgba(255,255,255,.1);
+	opacity: 1 !important;
 }
 
 #main_sidebar {
-	width: 100px;
-	background: #2b2e37;
+	width: 225px;
+	background: #262828;
+}
+
+#main_sidebar img {
+	display: block;
+	margin: 50px auto 0 auto;
+	border-radius: 100%;
+	width: 75px;
+}
+
+#main_sidebar span {
+	display: block;
+	color: #ffffff;
+	text-align: center;
+	margin-top: 10px;
+	margin-bottom: 50px;
 }
 
 #main_sidebar li {
-	height: 100px;
+	line-height: 35px;
+	margin-bottom: 20px;
 	background-repeat: no-repeat;
 	background-position: center;
+	font-weight: 400;
+	font-size: 16px;
+	color: #ffffff;
+	background-position: 20px 50%;
+	background-size: 25px;
+	opacity: .5;
 }
 
-.sidebar a {
+#main_sidebar > ul a {
 	display: block;
-	height: 100%;
-	width: 100%;
+	padding-left: 55px;
 }
 
 .message_icon{background-image: url("https://5sur.com/graphics/message.png");}
@@ -774,7 +795,7 @@ h5 {
 .settings_icon{background-image: url("https://5sur.com/graphics/settings.png");}
 
 .selected_dark {
-	background-color: rgba(255,255,255,.1);
+	opacity: 1 !important;
 }
 .selected_light {
 	background-color: rgba(0,0,0,.08);
@@ -796,6 +817,12 @@ h5 {
 
 #sub_sidebar li:hover {
 	background-color: rgba(0,0,0,.08);
+}
+
+#sub_sidebar a {
+	display: block;
+	height: 100%;
+	width: 100%;
 }
 
 #sub_sidebar li > a > * {
@@ -857,7 +884,7 @@ h5 {
 }
 
 #dash_content {
-	margin-left: 450px;
+	margin-left: 575px;
 	text-align: center;
 }
 
