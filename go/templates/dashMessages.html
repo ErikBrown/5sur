@@ -23,7 +23,7 @@
 
 <div class="sidebar" id="main_sidebar">
 	<a href="https://5sur.com/u/{{.Header.Username}}">
-		<img src="https://5sur.com/images/{{.Header.Username}}.png">
+		<img src="https://5sur.com/{{if eq .Header.UserImage false}}default{{else}}images/{{.Header.Username}}{{end}}.png" alt="user">
 		<span>{{.Header.Username}}</span>
 	</a>
 	<ul>

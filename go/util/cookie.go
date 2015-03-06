@@ -115,18 +115,18 @@ func CheckAppCookie(r *http.Request, db *sql.DB) (string, int, error) {
 	return n, i, nil
 }
 
-func CheckCookie(r *http.Request, db *sql.DB) (string, int, string, error) {
+func CheckCookie(r *http.Request, db *sql.DB) (string, int, bool, error) {
 	sessionID, err := r.Cookie("5sur")
 	if err != nil {
-		return "", 0, "", nil // No cookie
+		return "", 0, false, nil // No cookie
 	}
 	n, i, p, err := checkSession(sessionID.Value, false, db)
-	if err != nil {return "", 0, "", err}
+	if err != nil {return "", 0, false, err}
 
 	return n, i, p, nil
 }
 
-func checkSession(s string, app bool, db *sql.DB) (string, int, string, error){
+func checkSession(s string, app bool, db *sql.DB) (string, int, bool, error){
 	hashed := sha256.New()
 	hashed.Write([]byte(s))
 	hashedStr := hex.EncodeToString(hashed.Sum(nil))
@@ -149,7 +149,7 @@ func checkSession(s string, app bool, db *sql.DB) (string, int, string, error){
 	stmt, err := db.Prepare(stmtText)
 	
 	if err != nil {
-		return "", 0, "", NewError(err, "Database error", 500)
+		return "", 0, false, NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
@@ -157,7 +157,7 @@ func checkSession(s string, app bool, db *sql.DB) (string, int, string, error){
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	rows, err := stmt.Query(hashedStr)
 	if err != nil {
-		return "", 0, "", NewError(err, "Database error", 500)
+		return "", 0, false, NewError(err, "Database error", 500)
 	}
 	// Always defer rows.Close(), even if you explicitly Close it at the end of the
 	// loop. The connection will have the chance to remain open otherwise.
@@ -172,16 +172,9 @@ func checkSession(s string, app bool, db *sql.DB) (string, int, string, error){
 	for rows.Next() {
 		err := rows.Scan(&name, &id, &customPicture)
 		if err != nil {
-			return "", 0, "", NewError(err, "Database error", 500)
+			return "", 0, false, NewError(err, "Database error", 500)
 		}
 	}
 
-	picture := ""
-
-	if customPicture {
-		picture = "https://5sur.com/images/" + name + "_35.png"
-	} else {
-		picture = "https://5sur.com/default_35.png"
-	}
-	return name, id, picture, nil
+	return name, id, customPicture, nil
 }

@@ -31,7 +31,6 @@ func NewError(err error, message string, code int) error {
 
 func ConfigureLog() {
 	f, _ := os.OpenFile("error.log", os.O_WRONLY|os.O_APPEND|os.O_SYNC, 0770)
-	defer f.Close()
 	log.SetOutput(f)
 	log.SetFlags(log.Ldate | log.Ltime)
 }

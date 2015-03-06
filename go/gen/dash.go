@@ -190,19 +190,31 @@ func GetDashMessages(db *sql.DB, userId int) ([]DashMessages, error) {
 
 	// Always prepare queries to be used multiple times. The parameter placehold is ?
 	stmt, err := db.Prepare(`
-		SELECT m.sender, u.name, u.custom_picture, SUM(IF(m.opened = 0, 1, 0))
-			FROM messages as m 
-			JOIN users AS u 
-				ON u.id = m.sender 
-			WHERE m.receiver = ?
-			GROUP BY m.sender;
+		SELECT sender, name, picture, unread FROM (
+			SELECT m.sender AS sender, u.name AS name, u.custom_picture AS picture, SUM(IF(m.opened = 0, 1, 0)) AS unread
+				FROM messages as m 
+				JOIN users AS u 
+					ON u.id = m.sender 
+				WHERE m.receiver = ?
+				GROUP BY m.sender
+
+			UNION ALL
+
+			SELECT m.receiver AS sender, u.name AS name, u.custom_picture AS picture, 0 AS unread
+				FROM messages as m 
+				JOIN users AS u 
+					ON u.id = m.receiver
+				WHERE m.sender = ?
+				GROUP BY m.sender
+			) AS tmp
+			GROUP BY sender;
 		`)
 	if err != nil {
 		return results, util.NewError(err, "Database error", 500)
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query(userId)
+	rows, err := stmt.Query(userId, userId)
 	if err != nil {
 		return results, util.NewError(err, "Database error", 500)
 	}

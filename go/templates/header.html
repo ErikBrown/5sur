@@ -5,7 +5,7 @@
 		<li id="nav_create"><a href="https://5sur.com/create"></a></li>
 		<li id="nav_alert">{{if ne .Header.Alerts 0}}<span>{{.Header.Alerts}}</span>{{end}}</li>
 		<li id="nav_user">
-			<img src="{{.Header.UserImage}}" alt="user">
+			<img src="https://5sur.com/{{if eq .Header.UserImage false}}default_35{{else}}images/{{.Header.Username}}_35{{end}}.png" alt="user">
 		</li>
 	</ul>
 	<ul id="nav_dropdown">

@@ -16,7 +16,7 @@ type HeaderHTML struct {
 	Username string
 	Alerts int
 	AlertText []template.HTML
-	UserImage string
+	UserImage bool
 }
 
 type DashMessagesHTML struct {
