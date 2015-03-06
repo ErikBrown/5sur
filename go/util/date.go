@@ -61,7 +61,11 @@ func ReturnTime(d string, t string) (time.Time, error) {
 	layout := returnTimeLayout(d)
 	splits := strings.Split(t, ":")
 	if len(splits) == 1 {
-		layout += " 15"
+		if utf8.RuneCountInString(t) == 2 {
+			layout += " 15"
+		} else {
+			layout += " 1500"
+		}
 	} else {
 		layout += " 15:04"
 	}
