@@ -64,7 +64,7 @@ func ReturnTime(d string, t string) (time.Time, error) {
 		if utf8.RuneCountInString(t) == 2 {
 			layout += " 15"
 		} else {
-			layout += " 1500"
+			layout += " 1504"
 		}
 	} else {
 		layout += " 15:04"
