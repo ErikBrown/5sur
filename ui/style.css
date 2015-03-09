@@ -790,7 +790,7 @@ h5 {
 	padding-left: 55px;
 }
 
-.message_icon{background-image: url("https://5sur.com/graphics/message.png");}
+.message_icon{background-image: url("https://5sur.com/graphics/messages.png");}
 .listings_icon{background-image: url("https://5sur.com/graphics/listings.png");}
 .reservation_icon{background-image: url("https://5sur.com/graphics/reservations.png");}
 .settings_icon{background-image: url("https://5sur.com/graphics/settings.png");}
@@ -868,6 +868,10 @@ h5 {
 	line-height: 19px;
 }
 
+.no_border_radius {
+	border-radius: 0 !important;
+}
+
 /* Add max-width to sidebar_text */
 
 .sidebar_alert {
@@ -922,7 +926,7 @@ h5 {
 	height: 35px;
 	font-size: 0;
 	border: 0;
-	background: url("https://5sur.com/graphics/x.png");
+	background: url("https://5sur.com/graphics/delete.png");
 	background-size: 35px;
 	cursor: pointer;
 }
@@ -1122,7 +1126,7 @@ h5 {
 }
 
 #dash_reservation_message {
-	background: url("https://5sur.com/graphics/check.png");
+	background: url("https://5sur.com/graphics/envelope.png");
 }
 
 #dash_reservation_cancel {
