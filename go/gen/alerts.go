@@ -40,8 +40,11 @@ func GetAlerts(db *sql.DB, user int) ([]template.HTML, error) {
 			return results, util.NewError(err, "Database error", 500)
 		}
 		content, err := createAlertContent(db, user, category, targetId)
-		if err != nil {return results, err}
-		results = append(results, template.HTML(content))
+		if err != nil {
+			// Log this probably
+		} else {
+			results = append(results, template.HTML(content))
+		}
 	}
 	return results, nil
 }

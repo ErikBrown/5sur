@@ -106,7 +106,7 @@ func GetDashListings(db *sql.DB, userId int) ([]DashListing, error) {
 			FROM listings AS l
 			JOIN cities as c ON l.origin = c.id
 			LEFT JOIN cities as c2 ON l.destination = c2.id
-			WHERE l.date_leaving >= NOW() AND l.driver = ?
+			WHERE l.driver = ?
 			ORDER BY l.date_leaving;
 		`)
 
@@ -665,6 +665,18 @@ func findSeats(db *sql.DB, listingId int, toRemove int) (int, error) {
 func DeleteListing(db *sql.DB, userId int, listingId int) ([]RegisteredUser, error) {
 	registeredUsers, err := getRegisteredUsers(db, listingId)
 	if err != nil {return registeredUsers, err}
+
+	// Check if listing is in the past
+	listing, err := ReturnIndividualListing(db, listingId)
+	if err != nil { return registeredUsers, err }
+
+	pastTime, err := util.TimeStringInPast(listing.Timestamp)
+	if err != nil { return registeredUsers, err }
+
+	if pastTime {
+		return registeredUsers, util.NewError(nil, "Cannot modify past listings", 400)
+	}
+
 	stmt, err := db.Prepare(`
 		DELETE l, r, rq
 			FROM listings AS l
@@ -696,6 +708,18 @@ func CheckReservePost(db *sql.DB, userId int, r *http.Request, listingId int) (s
 		if err != nil {
 			return "", util.NewError(nil, "Invalid user", 400)
 		}
+
+		// Check if reservation is in the past
+		listing, err := ReturnIndividualListing(db, listingId)
+		if err != nil { return "", err }
+
+		pastTime, err := util.TimeStringInPast(listing.Timestamp)
+		if err != nil { return "", err }
+
+		if pastTime {
+			return "", util.NewError(nil, "Cannot modify past reservations", 400)
+		}
+
 		seats, err := findSeats(db, listingId, userId)
 		if err != nil {
 			return "", err
@@ -727,10 +751,27 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 		if err != nil {
 			return util.NewError(nil, "Invalid passenger", 400)
 		}
+
+		// Check if listing is in the past
+		listing, err := ReturnIndividualListing(db, listingId)
+		if err != nil { return err }
+
+		pastTime, err := util.TimeStringInPast(listing.Timestamp)
+		if err != nil { return err }
+
+		if pastTime {
+			return util.NewError(nil, "Cannot modify past listings", 400)
+		}
+
 		pendingUser, err := getPendingUser(db, listingId, passengerId)
 		if err != nil {
 			return err
 		}
+
+		if pendingUser.Seats > listing.Seats {
+			return util.NewError(nil, "Not enough seats available", 400)
+		}
+
 		deleted, err := deleteFromQueue(db, userId, listingId, passengerId)
 		if err != nil {
 			return err
@@ -760,6 +801,18 @@ func CheckPost(db *sql.DB, userId int, r *http.Request, listingId int) error {
 		if err != nil {
 			return util.NewError(nil, "Invalid passenger", 400)
 		}
+
+		// Check if listing is in the past
+		listing, err := ReturnIndividualListing(db, listingId)
+		if err != nil { return err }
+
+		pastTime, err := util.TimeStringInPast(listing.Timestamp)
+		if err != nil { return err }
+
+		if pastTime {
+			return util.NewError(nil, "Cannot modify past listings", 400)
+		}
+
 		deleted, err := deleteFromQueue(db, userId, listingId, passengerId)
 		if err != nil {
 			return err

@@ -316,9 +316,13 @@ func DeleteListingHandler(w http.ResponseWriter, r *http.Request) error {
 		if err != nil { return err }
 		err = gen.DeleteAlert(db, value.Id, "accepted", listingId)
 		if err != nil { return err }
+		err = gen.DeleteAlert(db, value.Id, "removed", listingId)
+		if err != nil { return err }
 	}
 
 	err = gen.DeleteAlert(db, userId, "pending", listingId)
+	if err != nil { return err }
+	err = gen.DeleteAlert(db, userId, "dropped", listingId)
 	if err != nil { return err }
 
 	http.Redirect(w, r, "https://5sur.com/dashboard/listings", 303)

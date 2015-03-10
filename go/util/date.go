@@ -63,10 +63,13 @@ func ReturnTime(d string, t string) (time.Time, error) {
 	if len(splits) == 1 {
 		if utf8.RuneCountInString(t) == 2 {
 			layout += " 15"
-		} else {
+		} else if utf8.RuneCountInString(t) == 1 {
+			t = "0" + t
+			layout += " 15"
+		} else if utf8.RuneCountInString(t) == 4{
 			layout += " 1504"
 		}
-	} else {
+	} else if len(splits) == 2 {
 		layout += " 15:04"
 	}
 
@@ -94,10 +97,18 @@ func ReturnTimeString(humanReadable bool, d string, t string) (string, string, e
 	layout := returnTimeLayout(d)
 	splits := strings.Split(t, ":")
 	if len(splits) == 1 {
-		layout += " 15"
-	} else {
+		if utf8.RuneCountInString(t) == 2 {
+			layout += " 15"
+		} else if utf8.RuneCountInString(t) == 1 {
+			t = "0" + t
+			layout += " 1"
+		} else if utf8.RuneCountInString(t) == 4{
+			layout += " 1504"
+		}
+	} else if len(splits) == 2 {
 		layout += " 15:04"
 	}
+
 	timeVar, err := time.ParseInLocation(layout, d + " " + t, loc)
 	if err != nil {
 		return "", "", NewError(nil, "Invalid time format", 400)
@@ -147,4 +158,17 @@ func PrettyDate(timestamp string, suffix bool) (Date, error) {
 	date.Day = day
 	date.Time = splits[11] + splits[12] + ":" + splits[14] + splits[15]
 	return date, nil
+}
+
+func TimeStringInPast(t string) (bool, error) {
+	loc, err := time.LoadLocation("America/Santiago")
+	if err != nil {
+		return false, NewError(err, "Internal server error", 500)
+	}
+	timeVar, err := time.ParseInLocation("2006-01-02 15:04:05", t, loc)
+	if err != nil {
+		return false, NewError(nil, "Invalid time format", 400)
+	}
+
+	return timeVar.Before(time.Now()), nil
 }
