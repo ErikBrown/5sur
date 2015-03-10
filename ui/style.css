@@ -831,7 +831,7 @@ h5 {
 }
 
 #sub_sidebar img {
-	width: 45px;
+	width: 50px;
 	border-radius: 100%;
 	margin-top: 15px;
 	margin-left: 25px;
@@ -1045,7 +1045,7 @@ h5 {
 .dash_message {
 	width: 400px;
 	min-height: 50px;
-	margin: 20px 0 0 25px;
+	margin: 15px 0 0 25px;
 	padding-bottom: 20px;
 	font-size: 14px;
 	text-align: left;
@@ -1054,13 +1054,13 @@ h5 {
 
 .dash_message img {
 	float: left;
-	width: 45px;
+	width: 50px;
 	margin-right: 15px;
 	border-radius: 100%;
 }
 
 .dash_message > p {
-	margin-top: 3px;
+	margin-top: 5px;
 	margin-left: 60px;
 	color: #373F42;
 }
