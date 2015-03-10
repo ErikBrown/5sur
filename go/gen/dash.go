@@ -275,7 +275,7 @@ func SpecificDashMessage(db *sql.DB, messages []DashMessages, recipient int, use
 func getMessages(db *sql.DB, recipient int, userId int) ([]SpecificMessage, error) {
 	results := make ([]SpecificMessage, 0)
 	stmt, err := db.Prepare(`
-		SELECT m.id, m.sender, m.date, m.message 
+		SELECT m.id, m.sender, DATE_FORMAT(m.date, "%d-%m-%Y %H:%I"), m.message 
 			FROM messages AS m 
 			WHERE (receiver = ? AND sender = ?) 
 				OR (receiver = ? AND sender = ?);
@@ -318,7 +318,7 @@ func getMessageExpiration(db *sql.DB, recipient int, userId int) (string, error)
 	expiration := ""
 
 	stmt, err := db.Prepare(`
-		SELECT DATE_ADD(l.date_leaving, INTERVAL 1 WEEK)
+		SELECT DATE_FORMAT(DATE_ADD(l.date_leaving, INTERVAL 1 WEEK), "%d-%m-%Y %H:%I")
 			FROM listings AS l 
 			JOIN reservations AS r 
 				ON r.driver_id = l.driver
