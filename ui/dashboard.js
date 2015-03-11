@@ -1,22 +1,25 @@
-var sidebar1 = document.getElementById('main_sidebar');
-var sidebar2 = document.getElementById('sub_sidebar');
-var header = document.getElementById('header');
-
-function setSidebarHeight() {
+function adjustHeight() {
+		document.getElementById("sub_sidebar").style.height = "0px";
+		document.getElementById("main_sidebar").style.height = "0px";
 	var body = document.body,
-		html = document.documentElement;
+	html = document.documentElement;
 
-	var height = Math.max(body.scrollHeight, body.offsetHeight, 
-				html.clientHeight, html.scrollHeight, html.offsetHeight);
-	sidebar1.style.height = height - header.offsetHeight + "px";
-	sidebar2.style.height = height - header.offsetHeight + "px";
-	console.log(height - header.offsetHeight + "px");
+	var h = Math.max( body.scrollHeight, body.offsetHeight, 
+		html.clientHeight, html.scrollHeight, html.offsetHeight );
+	var w = window.innerWidth;
+	if (w > 1050) {
+		document.getElementById("main_sidebar").style.height = h - 75 + "px";
+		document.getElementById("sub_sidebar").style.height = h - 75 + "px";
+	} else {
+		document.getElementById("main_sidebar").style.height = "250px";
+		document.getElementById("sub_sidebar").style.height = h - 325 + "px";
+	}
 }
 
-window.onload = function() {
-	setSidebarHeight();
-}
+window.addEventListener("load", function(){
+	adjustHeight();
+}, false);
 
-window.onresize = function() {
-	setSidebarHeight();
-}
+window.addEventListener("resize", function(){
+	adjustHeight();
+}, false);

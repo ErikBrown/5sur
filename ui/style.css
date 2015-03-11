@@ -56,10 +56,19 @@ a, a:hover, a:visited, a:active {
 	padding-top: 75px;
 }
 
+html {
+	height: 100%;
+}
+
+body {
+	height: 100%;
+}
+
 body {
 	font-family: 'Open Sans', sans-serif;
 	color: #1C2224;
 	background: #ffffff;
+	min-width: 325px;
 }
 
 h2 {
@@ -99,6 +108,7 @@ h5 {
 	top: 0;
 	height: 75px;
 	width: 100%;
+	min-width: 325px;
 	background: #ffffff;
 	box-shadow: 2px 0px 2px #888888;
 }
@@ -804,7 +814,6 @@ h5 {
 }
 
 #sub_sidebar {
-	position: relative;
 	width: 350px;
 	font-weight: 400;
 	font-size: 16px;
@@ -821,6 +830,7 @@ h5 {
 }
 
 #sub_sidebar a {
+	position: relative;
 	display: block;
 	height: 100%;
 	width: 100%;
@@ -934,6 +944,93 @@ h5 {
 #dash_message_warning {
 	font-weight: 600 !important;
 	color: #E9534B;
+}
+
+@media all and (max-width: 1050px) {
+	#main_sidebar {
+		width: 100%;
+		min-height: auto;
+		height: 250px !important;
+		text-align: center;
+	}
+
+	#main_sidebar img {
+		margin: 25px auto 0 auto;
+	}
+
+	#main_sidebar li {
+		display: inline-block;
+		color: transparent;
+		width: 25px;
+		height: 25px;
+		background-position: 0 50%;
+		overflow: hidden;
+		vertical-align: top;
+	}
+
+	#main_sidebar li+li {
+		margin-left: 20px;
+	}
+
+	#dash_content {
+		margin-top: 250px;
+		margin-left: 350px;
+	}
+}
+
+@media all and (max-width: 800px) {
+	.messages_sidebar {
+		width: 125px !important;
+	}
+
+	.settings_sidebar {
+		width: 100% !important;
+	}
+
+	.reservations_sidebar, .listings_sidebar {
+		width: 125px !important;
+	}
+
+	.resevations_sidebar a, .listings_sidebar a {
+		text-align: center;
+	}
+
+	.sidebar_text {
+		display: none;
+	}
+
+	.settings_sidebar .sidebar_text {
+		display: block !important;
+	}
+
+	.sidebar_alert {
+		position: absolute;
+		right: 35px;
+		top: 45px;
+		margin: 0;
+	}
+
+	.calendar_icon {
+		display: inline-block;
+		float: none !important;
+	}
+
+	#sub_sidebar h2 {
+		font-size: 14px;
+	}
+
+	#sub_sidebar a {
+		text-align: center;
+	}
+
+	.messages_sidebar img {
+		float: none !important;
+	}
+
+	#dash_content {
+		margin-left: 125px !important;
+		min-width: 400px;
+	}
 }
 
 /* dash listings */
