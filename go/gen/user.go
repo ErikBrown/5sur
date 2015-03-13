@@ -202,7 +202,7 @@ func SubmitRating(db *sql.DB, commenter int, user int, positive bool, comment st
 	}
 
 	if rowCnt != 1 {
-		return util.NewError(nil, "You cannot rate this user. Possible reasons: no past transactions with this user or one week has passed since last transaction", 400)
+		return util.NewError(nil, "You cannot rate this user. You either have no past transactions with this user or one week has passed since last transaction", 400)
 	}
 
 	return nil

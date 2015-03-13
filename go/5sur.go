@@ -438,7 +438,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 		human, err := gen.CheckCaptcha(r.FormValue("g-recaptcha-response"), userIp)
 		if err != nil { return err }
 		if !human {
-			return util.NewError(nil, "Incorrect Captcha", 400)
+			return util.NewError(nil, "Invalid Captcha", 400)
 		}
 	}
 	
@@ -505,7 +505,7 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) error {
 	human, err := gen.CheckCaptcha(r.FormValue("g-recaptcha-response"), userIp)
 	if err != nil { return err }
 	if !human {
-		return util.NewError(nil, "Incorrect Captcha", 400)
+		return util.NewError(nil, "Invalid Captcha", 400)
 	}
 	
 	err = gen.UserAuth(db, r.FormValue("Username"), r.FormValue("Password"), r.FormValue("Email"))
@@ -1091,7 +1091,7 @@ func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if r.FormValue("Password") != r.FormValue("Password2") {
-		return util.NewError(nil, "Passwords don't match", 400)
+		return util.NewError(nil, "Passwords do not match", 400)
 	}
 
 	authenticated, err := gen.CheckCredentials(db, user, r.FormValue("Password"))

@@ -135,7 +135,7 @@ func ValidListingQuery(u *url.URL) (ListingQueryFields, error) {
 	// ParseQuery always returns a non-nil map containing all the valid query parameters found
 	urlParsed, err := url.Parse(u.String())
 	if err != nil {
-		return ListingQueryFields{}, NewError(nil, "Incorrect url", 400)
+		return ListingQueryFields{}, NewError(nil, "Invalid url", 400)
 	}
 
 	m, err := url.ParseQuery(urlParsed.RawQuery)
@@ -174,7 +174,7 @@ func ValidListingQuery(u *url.URL) (ListingQueryFields, error) {
 func ValidRegister(r *http.Request) error {
 		// POST validation
 	if r.FormValue("Password") == "" || r.FormValue("Username") == "" || r.FormValue("Email") == "" {
-		return NewError(nil, "Fill out all fields", 400)
+		return NewError(nil, "Please fully fill out the form", 400)
 	}
 
 	if utf8.RuneCountInString(r.FormValue("Password")) < 6 {
@@ -195,7 +195,7 @@ func ValidReservePost(r *http.Request) (ReservationPost, error) {
 	reservePost := ReservationPost{}
 	err := errors.New("")
 	if r.FormValue("Seats") == "" || r.FormValue("Listing") == ""{
-		return ReservationPost{}, NewError(nil, "Missing required fields", 400)
+		return ReservationPost{}, NewError(nil, "Please fully fill out the form", 400)
 	}
 	
 	reservePost.ListingId, err = strconv.Atoi(r.FormValue("Listing"))
@@ -220,11 +220,11 @@ func ValidReserveURL(r *http.Request) (int, error) {
 		return 0, NewError(err, "Internal server error", 500)
 	}
 	if _,ok := m["l"]; !ok {
-		return 0, NewError(nil, "Missing listing id", 400)
+		return 0, NewError(nil, "Missing listing ID", 400)
 	}
 	listingId, err := strconv.Atoi(m["l"][0])
 	if err != nil {
-		return 0, NewError(nil, "Invalid listing id", 400)
+		return 0, NewError(nil, "Invalid listing", 400)
 	}
 	return listingId, nil
 }
@@ -232,7 +232,7 @@ func ValidReserveURL(r *http.Request) (int, error) {
 func ValidDashQuery(u *url.URL) (int, error) {
 	m, err := url.ParseQuery(u.RawQuery)
 	if err != nil {
-		return 0, NewError(nil, "Empty query string", 400)
+		return 0, NewError(nil, "Invalid url", 400)
 	}
 	if _,ok := m["i"]; !ok {
 		return 0, NewError(nil, "Invalid url", 400)
@@ -266,7 +266,7 @@ func ValidMessageURL(r *http.Request) (int, error) {
 
 func ValidMessagePost(r *http.Request) (int, string, error) {
 	if r.FormValue("Recipient") == "" || r.FormValue("Message") == ""{
-		return 0, "", NewError(nil, "Missing required fields", 400)
+		return 0, "", NewError(nil, "Please fully fill out the form", 400)
 	}
 	
 	recipient, err := strconv.Atoi(r.FormValue("Recipient"))
@@ -289,18 +289,18 @@ func ValidRateURL(r *http.Request) (int, error) {
 		return 0, NewError(err, "Internal server error", 500)
 	}
 	if _,ok := m["i"]; !ok {
-		return 0, NewError(nil, "Invalid URL", 400)
+		return 0, NewError(nil, "Invalid url", 400)
 	}
 	userId, err := strconv.Atoi(m["i"][0])
 	if err != nil {
-		return 0, NewError(nil, "Invalid URL", 400)
+		return 0, NewError(nil, "Invalid url", 400)
 	}
 	return userId, nil
 }
 
 func ValidRatePost(r *http.Request) (int, bool, string, bool, error) {
 	if r.FormValue("User") == "" || r.FormValue("Positive") == "" {
-		return 0, false, "", false, NewError(nil, "Missing required fields", 400)
+		return 0, false, "", false, NewError(nil, "Please fully fill out the form", 400)
 	}
 	
 	recipient, err := strconv.Atoi(r.FormValue("User"))

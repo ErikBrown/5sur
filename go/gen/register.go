@@ -259,7 +259,7 @@ func UserAuth(db *sql.DB, username string, password string, email string) error 
 	err = createUserAuth(db, username, password, email, hashedStr)
 	if err != nil { return err }
 
-	body := "Boilerplate text about completing your registration process (in spanish):\nhttps://5sur.com/auth/?t=" + randValue 
+	body := "Welcome to 5sur.com! Click on the following link to complete the registration process:\nhttps://5sur.com/auth/?t=" + randValue 
 
 	err = mailUser(email, body)
 	if err != nil { return err }
@@ -285,13 +285,13 @@ func CreateUser(db *sql.DB, token string) (string, error){
 		WHERE u.auth = ?
 		`)
 	if err != nil {
-		return "", util.NewError(err, "Creating user failed, please try again later", 500)
+		return "", util.NewError(err, "Creating user failed", 500)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(hashedStr)
 	if err != nil {
-		return "", util.NewError(err, "Creating user failed, please try again later", 500)
+		return "", util.NewError(err, "Creating user failed", 500)
 	}
 	defer rows.Close()
 
@@ -302,7 +302,7 @@ func CreateUser(db *sql.DB, token string) (string, error){
 	for rows.Next() {
 		err := rows.Scan(&userInfo.name, &userInfo.email, &userInfo.password, &userInfo.auth)
 		if err != nil {
-			return "", util.NewError(err, "Creating user failed, please try again later", 500)
+			return "", util.NewError(err, "Creating user failed", 500)
 		}
 	}
 
@@ -317,7 +317,7 @@ func CreateUser(db *sql.DB, token string) (string, error){
 	}
 	if !uniqueUsername {
 		deleteUserAuth(db, userInfo.email)
-		return "", util.NewError(nil, "Username already taken", 400)
+		return "", util.NewError(nil, "Username is taken", 400)
 	}
 
 	err = createUser(db, userInfo)
@@ -394,19 +394,18 @@ func CheckCredentials(db *sql.DB, username string, password string) (bool, error
 }
 
 func CheckCaptcha(formValue string, userIp string) (bool, error){
-	// Get super secret password from external file at some point
 	secretKey, err := ioutil.ReadFile("captchaPassword")
 	if err != nil {
 		return false, util.NewError(err, "Internal server error", 500)
 	}
 	resp, err := http.Get("https://www.google.com/recaptcha/api/siteverify?secret=" + string(secretKey[:]) + "&response="+ formValue + "&remoteip=" + userIp)
 	if err != nil {
-		return false, util.NewError(err, "Verification error. Please try again later.", 500)
+		return false, util.NewError(err, "Captcha authentication error", 500)
 	}
 	defer resp.Body.Close() 
 	contents, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return false, util.NewError(err, "Verification error. Please try again later.", 500)
+		return false, util.NewError(err, "Captcha authentication error", 500)
 	}
 
 	type Captcha struct {
@@ -417,7 +416,7 @@ func CheckCaptcha(formValue string, userIp string) (bool, error){
 	var captcha Captcha
 	err = json.Unmarshal(contents, &captcha)
 	if err != nil {
-		return false, util.NewError(err, "Verification error. Please try again later.", 500)
+		return false, util.NewError(err, "Captcha authentication error", 500)
 	}
 	return captcha.Success, nil
 }
@@ -487,7 +486,7 @@ func ResetPassword(db *sql.DB, email string) error {
 	err = storePasswordToken(db, email, hashedStr)
 	if err != nil { return err }
 
-	body := "Username: " + username + "\nReset your password by clicking this link: https://5sur.com/passwordChange?t=" + randValue + "&u=" + username
+	body := "Username: " + username + "\nTo reset your password, click the following link: https://5sur.com/passwordChange?t=" + randValue + "&u=" + username
 	err = mailUser(email, body)
 
 	return nil

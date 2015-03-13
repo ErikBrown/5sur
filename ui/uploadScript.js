@@ -7,7 +7,7 @@ function checkFileName() {
 		return true;
 	}
 	else {
-		alert("File with " + fileName.split(".")[1] + " is invalid. Images have to be png, jpg, or non-animated gif");
+		alert("File type " + fileName.split(".")[1] + " is invalid. Images have to be png, jpg, or non-animated gif");
 		inputform.value = "";
 		return false;
 	}
@@ -49,7 +49,7 @@ function handleFiles() {
 	img.onload = function(){
 		var ratio = img.width / img.height;
 		if (ratio < .8 || ratio > 1.2) {
-			alert("Invalid image dimesions. Try to use a more square image");
+			alert("Invalid image dimensions. Try to use a more square image");
 			inputform.value = "";
 			return
 		}

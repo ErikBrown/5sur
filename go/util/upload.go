@@ -85,11 +85,11 @@ func DeletePicture(db *sql.DB, user string) error {
 	if err != nil { return err }
 
 	err = os.Remove("/var/www/html/images/" + user + ".png")
-	if err != nil { return NewError(err, "Could not delete existing image", 500) }
+	if err != nil { return NewError(err, "Error deleting existing image", 500) }
 	err = os.Remove("/var/www/html/images/" + user + "_50.png")
-	if err != nil { return NewError(err, "Could not delete existing image", 500) }
+	if err != nil { return NewError(err, "Error deleting existing image", 500) }
 	err = os.Remove("/var/www/html/images/" + user + "_35.png")
-	if err != nil { return NewError(err, "Could not delete existing image", 500) }
+	if err != nil { return NewError(err, "Error deleting existing image", 500) }
 
 	return nil
 }

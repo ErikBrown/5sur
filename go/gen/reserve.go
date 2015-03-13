@@ -14,7 +14,7 @@ func CreateReservation(db *sql.DB, userId int, listingId int, seats int, message
 	}
 
 	if userId == ride.Driver {
-		return util.NewError(nil, "Cannot register for a ride you own", 400)
+		return util.NewError(nil, "Cannot register for your own ride", 400)
 	}
 
 	if seats > ride.Seats {

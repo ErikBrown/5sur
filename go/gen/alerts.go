@@ -132,7 +132,7 @@ func createAlertContent(db *sql.DB, user int, category string, targetId int) (st
 			return `
 			<li>
 				<a href="https://5sur.com/dashboard/reservations">
-					A ride you were registered for has been <b>deleted</b>.
+					A ride you were registered for has been <b>deleted</b>
 				</a>
 			</li>`, nil
 		case "rate":
@@ -141,7 +141,7 @@ func createAlertContent(db *sql.DB, user int, category string, targetId int) (st
 			return `
 			<li>
 				<a href="https://5sur.com/rate?i=` + id + `">
-					You can now give <b>` + user.Name + `</b> a rating based on your recent ride with them.
+					You can now give <b>` + user.Name + `</b> a rating based on your recent ride with them
 				</a>
 			</li>`, nil
 	}
