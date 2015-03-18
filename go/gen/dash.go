@@ -205,7 +205,7 @@ func GetDashMessages(db *sql.DB, userId int) ([]DashMessages, error) {
 				JOIN users AS u 
 					ON u.id = m.receiver
 				WHERE m.sender = ?
-				GROUP BY m.sender
+				GROUP BY m.receiver
 			) AS tmp
 			GROUP BY sender;
 		`)
