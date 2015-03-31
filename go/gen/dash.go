@@ -341,11 +341,11 @@ func getMessageExpiration(db *sql.DB, recipient int, userId int) (string, error)
 
 	stmt, err := db.Prepare(`
 		SELECT DATE_FORMAT(DATE_ADD(l.date_leaving, INTERVAL 1 WEEK), "%d-%m-%Y %H:%I")
-			FROM listings AS l 
-			JOIN reservations AS r 
-				ON r.driver_id = l.driver
-			WHERE (passenger_id = ? AND driver_id = ?)
-				OR (passenger_id = ? AND driver_id = ?)
+			FROM reservations AS r
+			JOIN listings AS l
+				ON r.listing_id = l.id
+			WHERE (r.passenger_id = ? AND r.driver_id = ?)
+			OR (r.passenger_id = ? AND r.driver_id = ?)
 			ORDER BY l.date_leaving DESC
 			LIMIT 1;
 	`)
