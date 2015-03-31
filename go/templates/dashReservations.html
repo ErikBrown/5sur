@@ -1,6 +1,6 @@
 <!doctype html>
 
-<html>
+<html lang="es">
 
 <head>
 
@@ -23,27 +23,27 @@
 
 <div class="sidebar" id="main_sidebar">
 	<a href="https://5sur.com/u/{{.Header.Username}}">
-		<img src="https://5sur.com/{{if eq .Header.UserImage false}}default{{else}}images/{{.Header.Username}}{{end}}.png" alt="user">
+		<img src="https://5sur.com/{{if eq .Header.UserImage false}}default{{else}}images/{{.Header.Username}}{{end}}.png" alt="usuario">
 		<span>{{.Header.Username}}</span>
 	</a>
 	<ul>
 		<li class="message_icon">
-			<a href="https://5sur.com/dashboard/messages">Messages</a>
+			<a href="https://5sur.com/dashboard/messages">Mensajes</a>
 		</li>
 		<li class="listings_icon">
-			<a href="https://5sur.com/dashboard/listings">My Listings</a>
+			<a href="https://5sur.com/dashboard/listings">Mis viajes</a>
 		</li>
 		<li class="reservation_icon selected_dark">
-			<a href="https://5sur.com/dashboard/reservations">My Reservations</a>
+			<a href="https://5sur.com/dashboard/reservations">Mis reservaciónes</a>
 		</li>
 		<li class="settings_icon">
-			<a href="https://5sur.com/dashboard/settings">Settings</a>
+			<a href="https://5sur.com/dashboard/settings">Ajustes</a>
 		</li>
 	</ul>
 </div>
 
 <div class="sidebar reservations_sidebar" id="sub_sidebar">
-	<h2>Reservations</h2>
+	<h2>Reservaciónes</h2>
 	<ul>
 		{{range $key, $value := .Body.SidebarReservations}}
 		{{if eq $value.ListingId $.Body.Reservation.ListingId}}
@@ -67,16 +67,16 @@
 		<h3>{{.Body.Reservation.Origin}} <span class="to"></span> {{.Body.Reservation.Destination}}</h3>
 		<span id="dash_listing_date">{{.Body.Reservation.Month}} {{.Body.Reservation.Day}} - {{.Body.Reservation.Time}}</span>
 		<span>&#8226;</span>
-		<span id="dash_listing_seats">Registered for {{.Body.Reservation.Seats}} {{if eq .Body.Reservation.Seats 1}}seat{{else}}seats{{end}}</span>
+		<span id="dash_listing_seats">Registrado por {{.Body.Reservation.Seats}} {{if eq .Body.Reservation.Seats 1}}cupo{{else}}cupos{{end}}</span>
 		<span>&#8226;</span>
-		<span id="dash_listing_fee">${{.Body.Reservation.Fee}}/seat</span>
+		<span id="dash_listing_fee">${{.Body.Reservation.Fee}}/cupo</span>
 	</div>
 	<div id="dash_reservation">
 	<ul>
-		<li id="dash_reservation_message"><a href="https://5sur.com/message?i={{.Body.Reservation.DriverId}}">Message driver</a></li>
+		<li id="dash_reservation_message"><a href="https://5sur.com/message?i={{.Body.Reservation.DriverId}}">Mandar mensaje al conductor</a></li>
 		<li id="dash_reservation_cancel">
 			<form id="delete_reservation" method="POST" action="https://5sur.com/dashboard/reservations?i={{.Body.Reservation.ListingId}}">
-				<label for="delete_reservation_input">Cancel reservation
+				<label for="delete_reservation_input">Cancela reservación 
 				<input name="r" value="{{.Body.Reservation.DriverId}}" id="delete_reservation_input" type="submit">
 				</label>
 			</form>

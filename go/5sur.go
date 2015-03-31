@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"5sur/gen"
 	"5sur/util"
-	"5sur/app"
 	"strconv"
 	"html/template"
 	"strings"
@@ -1166,6 +1165,7 @@ func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+/*
 type appHandlerWrapper func(http.ResponseWriter, *http.Request) error
 
 func (fn appHandlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -1178,6 +1178,7 @@ func (fn appHandlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+*/
 
 func main() {
 	util.ConfigureLog()
@@ -1215,6 +1216,7 @@ func main() {
 	http.Handle("/deleteAccountSubmit", handlerWrapper(DeleteAccountHandler))
 	http.Handle("/", handlerWrapper(RootHandler))
 
+	/*
 	http.Handle("/a/logout", appHandlerWrapper(app.LogoutHandler))
 	http.Handle("/a/login", appHandlerWrapper(app.LoginHandler))
 	http.Handle("/a/listings", appHandlerWrapper(app.ListingsHandler))
@@ -1223,5 +1225,6 @@ func main() {
 	http.Handle("/a/reserve", appHandlerWrapper(app.ReserveHandler))
 	http.Handle("/a/u/", appHandlerWrapper(app.UserHandler))
 	http.Handle("/a/dashboard/listings", appHandlerWrapper(app.DashListingsHandler))
+	*/
 	http.ListenAndServe(":8080", nil)
 }

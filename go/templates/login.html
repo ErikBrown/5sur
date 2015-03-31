@@ -1,6 +1,6 @@
 <!doctype html>
 
-<html>
+<html lang="es">
 
 <head>
 
@@ -20,13 +20,13 @@
 <body id="form_page">
 	<form method="post" action="https://5sur.com/loginSubmit" class="card_page" id="plain_form">
 		<a href="https://5sur.com/" id="form_logo"></a>
-		<input type="text" name="Username" placeholder="Username">
-		<input type="password" name="Password" placeholder="Password">
+		<input type="text" name="Username" placeholder="Usuario">
+		<input type="password" name="Password" placeholder="Contraseña">
 		{{.Captcha}}
-		<label><input type="checkbox" name="Persistent" value="true">Keep me logged in</label>
-		<input type="submit" value="Sign In">
-		<a href="https://5sur.com/register" id="switch_form">Don't have an account?</a>
-		<a href="https://5sur.com/passwordReset" id="reset_password">Forgot your password?</a>
+		<label><input type="checkbox" name="Persistent" value="true">Mantener sesión iniciada</label>
+		<input type="submit" value="Acceder a cuenta">
+		<a href="https://5sur.com/register" id="switch_form">No tienes cuenta?</a>
+		<a href="https://5sur.com/passwordReset" id="reset_password">Olvidaste tu contraseña?</a>
 	</form>
 <script src="https://5sur.com/formScript.js"></script>
 </body>

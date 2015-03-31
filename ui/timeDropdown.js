@@ -1,4 +1,4 @@
-/***** Calendar Widget *****/
+/***** Time dropdown box *****/
 // http://stackoverflow.com/a/901144/2547044
 function getParameterByName(name) {
 	name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -7,7 +7,7 @@ function getParameterByName(name) {
 	return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-function buildDropdown(h) {
+function buildDropdown() {
 	var h = getParameterByName("h");
 	var select = document.getElementById("time_box")
 	var option = document.createElement('option');

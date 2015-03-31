@@ -1,6 +1,6 @@
 <!doctype html>
 
-<html class="scrollbar">
+<html lang="es" class="scrollbar">
 
 <head>
 
@@ -13,23 +13,23 @@
 <link rel="stylesheet" type="text/css" href="https://5sur.com/style.css" />
 
 
-<title>5Sur - Create Listing</title>
+<title>5Sur - Crear viaje</title>
 </head>
 
 <body id="form_page">
 	<form method="post" action="https://5sur.com/createSubmit" class="card_page" id="plain_form">
 		<a href="https://5sur.com/" id="form_logo"></a>
 		<select name="Origin">
-			<option disabled selected class="blank_option">Origin</option>
+			<option disabled selected class="blank_option">Origen</option>
 			{{range $key, $value := .}}
 			<option value="{{$value.Id}}">{{$value.Name}}</option>{{end}}
 		</select>
 		<select name="Destination">
-			<option disabled selected class="blank_option">Destination</option>
+			<option disabled selected class="blank_option">Destino</option>
 			{{range $key, $value := .}}
 			<option value="{{$value.Id}}">{{$value.Name}}</option>{{end}}
 		</select>
-		<input type="text" name="Date" placeholder="Date leaving" id="date_box">
+		<input type="text" name="Date" placeholder="Fecha de salida" id="date_box">
 		<div id="calendar_wrapper">
 			<div id="month_wrapper">
 				<span id="month_left">&#9664;</span>
@@ -52,7 +52,7 @@
 		</div>
 		<input type="text" name="Time" placeholder="Time leaving">
 		<select name="Seats">
-			<option disabled selected class="blank_option">Seats</option>
+			<option disabled selected class="blank_option">Cupos</option>
 			<option value="1">1</option>
 			<option value="2">2</option>
 			<option value="3">3</option>
@@ -62,10 +62,10 @@
 			<option value="7">7</option>
 			<option value="8">8</option>
 		</select>
-		<input type="text" name="Fee" placeholder="Fee">
+		<input type="text" name="Fee" placeholder="Precio">
 		<input type="hidden" name="Listing" value="">
-		<input type="submit" value="Create listing">
-		<a href="https://5sur.com/" id="discard_form">Cancel</a>
+		<input type="submit" value="Crear viaje">
+		<a href="https://5sur.com/" id="discard_form">Cancelar</a>
 	</form>
 <script src="https://5sur.com/formScript.js"></script>
 <script src="https://5sur.com/calendarScript.js"></script>

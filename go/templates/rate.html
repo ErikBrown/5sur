@@ -1,6 +1,6 @@
 <!doctype html>
 
-<html>
+<html lang="es">
 
 <head>
 
@@ -13,7 +13,7 @@
 <link rel="stylesheet" type="text/css" href="https://5sur.com/style.css" />
 
 
-<title>5Sur - Rate</title>
+<title>5Sur - Dar puntaje</title>
 
 </head>
 
@@ -23,14 +23,14 @@
 		<span id="driver_info"><a href="https://5sur.com/u/{{.Name}}">{{.Name}}</a></span>
 		<input type="hidden" name="User" value="{{.Id}}">
 		<select name="Positive">
-			<option disabled selected class="blank_option">Your rating</option>
-			<option value="true">Positive</option>
-			<option value="false">Negative</option>
+			<option disabled selected class="blank_option">Tu rating</option>
+			<option value="true">Positivo</option>
+			<option value="false">Negativo</option>
 		</select>
-		<textarea name="Comment" placeholder="Leave a comment (optional)... " id="message_text"></textarea>
-		<label><input type="checkbox" name="Public" value="true">Make rating public</label>
-		<input type="submit" value="Submit Rating">
-		<a href="https://5sur.com/" id="discard_form">Discard rating</a>
+		<textarea name="Comment" placeholder="dejar comentario (opcional)... " id="message_text"></textarea>
+		<label><input type="checkbox" name="Public" value="true">Hacer rating público</label>
+		<input type="submit" value="Dar puntaje">
+		<a href="https://5sur.com/" id="discard_form">Borrar rating</a>
 	</form>
 <script src="https://5sur.com/formScript.js"></script>
 <script src="https://5sur.com/messageScript.js"></script>

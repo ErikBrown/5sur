@@ -1,6 +1,6 @@
 <!doctype html>
 
-<html>
+<html lang="es">
 
 <head>
 
@@ -13,17 +13,17 @@
 <link rel="stylesheet" type="text/css" href="style.css" />
 
 
-<title>5Sur - Delete Picture</title>
+<title>5Sur - Borrar foto</title>
 
 </head>
 
 <body id="form_page">
 	<form method="post" action="https://5sur.com/deletePictureSubmit" class="card_page" id="plain_form">
 		<a href="https://5sur.com/" id="form_logo"></a>
-		<div id="current_picture"><span>Current picture</span> <img src="{{.Picture}}" alt="user img"></div>
+		<div id="current_picture"><span>Foto de perfil</span> <img src="{{.Picture}}" alt="user img"></div>
 		<input type="hidden" name="User" value="{{.User}}">
-		<input type="submit" value="Delete Picture">
-		<a href="https://5sur.com/dashboard/settings" id="discard_form">Cancel</a>
+		<input type="submit" value="Borrar foto">
+		<a href="https://5sur.com/dashboard/settings" id="discard_form">Cancelar</a>
 	</form>
 <script src="formScript.js"></script>
 </body>

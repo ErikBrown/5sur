@@ -1,6 +1,6 @@
 <!doctype html>
 
-<html>
+<html lang="es">
 
 <head>
 
@@ -23,27 +23,27 @@
 
 <div class="sidebar" id="main_sidebar">
 	<a href="https://5sur.com/u/{{.Header.Username}}">
-		<img src="https://5sur.com/{{if eq .Header.UserImage false}}default{{else}}images/{{.Header.Username}}{{end}}.png" alt="user">
+		<img src="https://5sur.com/{{if eq .Header.UserImage false}}default{{else}}images/{{.Header.Username}}{{end}}.png" alt="usuario">
 		<span>{{.Header.Username}}</span>
 	</a>
 	<ul>
 		<li class="message_icon">
-			<a href="https://5sur.com/dashboard/messages">Messages</a>
+			<a href="https://5sur.com/dashboard/messages">Mensajes</a>
 		</li>
 		<li class="listings_icon selected_dark">
-			<a href="https://5sur.com/dashboard/listings">My Listings</a>
+			<a href="https://5sur.com/dashboard/listings">Mis viajes</a>
 		</li>
 		<li class="reservation_icon">
-			<a href="https://5sur.com/dashboard/reservations">My Reservations</a>
+			<a href="https://5sur.com/dashboard/reservations">Mis reservaciónes</a>
 		</li>
 		<li class="settings_icon">
-			<a href="https://5sur.com/dashboard/settings">Settings</a>
+			<a href="https://5sur.com/dashboard/settings">Ajustes</a>
 		</li>
 	</ul>
 </div>
 
 <div class="sidebar listings_sidebar" id="sub_sidebar">
-	<h2>Listings</h2>
+	<h2>Viajes</h2>
 	<ul>
 		{{range $key, $value := .Body.SidebarListings}}
 		{{if eq $value.ListingId $.Body.Listing.ListingId}}
@@ -69,16 +69,16 @@
 		<h3>{{.Body.Listing.Origin}} <span class="to"></span> {{.Body.Listing.Destination}}</h3>
 		<span id="dash_listing_date">{{.Body.Listing.Month}} {{.Body.Listing.Day}} - {{.Body.Listing.Time}}</span>
 		<span>&#8226;</span>
-		<span id="dash_listing_seats">{{.Body.Listing.Seats}} {{if eq .Body.Listing.Seats 1}}seat{{else}}seats{{end}}</span>
+		<span id="dash_listing_seats">{{.Body.Listing.Seats}} {{if eq .Body.Listing.Seats 1}}cupo{{else}}cupos{{end}}</span>
 		<span>&#8226;</span>
-		<span id="dash_listing_fee">${{.Body.Listing.Fee}}/seat</span>
+		<span id="dash_listing_fee">${{.Body.Listing.Fee}}/cupo</span>
 		<form id="delete_form" method="GET" action="https://5sur.com/dashboard/listings/delete">
 			<input name="i" value="{{$.Body.Listing.ListingId}}" id="delete_form_input" type="submit">
 		</form>
 	</div>
 	{{if index .Body.Listing.RegisteredUsers}}
 	<div id="registered_passengers" class="passengers">
-		<span>Registered</span>
+		<span>Registrado</span>
 		<ul>
 			{{range $key, $value := .Body.Listing.RegisteredUsers}}
 			<li>
@@ -102,12 +102,12 @@
 	{{end}}
 	{{if index .Body.Listing.PendingUsers}}
 	<div id="pending_passengers" class="passengers">
-		<span>Pending</span>
+		<span>Por confirmar</span>
 		<ul>
 			{{range $key, $value := .Body.Listing.PendingUsers}}
 			<li>
 				<a href="https://5sur.com/u/{{$value.Name}}">
-					<img src="{{$value.Picture}}" alt="user image">
+					<img src="{{$value.Picture}}" alt="usuario">
 				</a>
 				<div class="pending_passenger_info">
 					<p><a href="https://5sur.com/u/{{$value.Name}}">{{$value.Name}}</a><span>{{$value.Message}}</span></p>
@@ -116,7 +116,7 @@
 					<input name="a" value="{{$value.Id}}" id="passenger_accept" type="submit">
 					<input name="r" value="{{$value.Id}}" id="passenger_reject" type="submit">
 				</form>
-				<span class="passenger_seats">{{$value.Seats}} {{if eq $value.Seats 1}}Seat{{else}}Seats{{end}}</span>
+				<span class="passenger_seats">{{$value.Seats}} {{if eq $value.Seats 1}}cupo{{else}}cupos{{end}}</span>
 			</li>
 			{{end}}
 		</ul>

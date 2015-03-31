@@ -27,8 +27,8 @@ function handleFiles() {
 		return
 	}
 	var size = files[0].size;
-	if (size > 1048576) { // 1MB
-		alert("File size too big. Max size = 1MB")
+	if (size > 10485760) { // 1MB
+		alert("File size too big. Max size = 10MB")
 		inputform.value = "";
 		return
 	}

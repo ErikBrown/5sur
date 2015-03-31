@@ -23,34 +23,34 @@
 
 <div class="sidebar" id="main_sidebar">
 	<a href="https://5sur.com/u/{{.Header.Username}}">
-		<img src="https://5sur.com/{{if eq .Header.UserImage false}}default{{else}}images/{{.Header.Username}}{{end}}.png" alt="user">
+		<img src="https://5sur.com/{{if eq .Header.UserImage false}}default{{else}}images/{{.Header.Username}}{{end}}.png" alt="usuario">
 		<span>{{.Header.Username}}</span>
 	</a>
 	<ul>
 		<li class="message_icon selected_dark">
-			<a href="https://5sur.com/dashboard/messages">Messages</a>
+			<a href="https://5sur.com/dashboard/messages">Mensajes</a>
 		</li>
 		<li class="listings_icon">
-			<a href="https://5sur.com/dashboard/listings">My Listings</a>
+			<a href="https://5sur.com/dashboard/listings">Mis viajes</a>
 		</li>
 		<li class="reservation_icon">
-			<a href="https://5sur.com/dashboard/reservations">My Reservations</a>
+			<a href="https://5sur.com/dashboard/reservations">Mis reservaciónes</a>
 		</li>
 		<li class="settings_icon">
-			<a href="https://5sur.com/dashboard/settings">Settings</a>
+			<a href="https://5sur.com/dashboard/settings">Ajustes</a>
 		</li>
 	</ul>
 </div>
 
 <div class="sidebar messages_sidebar" id="sub_sidebar">
-	<h2>Messages</h2>
+	<h2>Mensajes</h2>
 	<ul>
 		{{range $key, $value := .Body.SidebarMessages}}
 		{{if eq $value.Id $.Body.MessageThread.UserId}}
 		<li class="selected_light">{{else}}
 		<li>{{end}}
 			<a href="https://5sur.com/dashboard/messages?i={{$value.Id}}">
-				<img src="{{$value.Picture}}">
+				<img src="{{$value.Picture}}" alt="usuario">
 				<span class="sidebar_text">{{$value.Name}}</span>
 				{{if ne $value.Count 0}}
 				<span class="sidebar_alert">{{$value.Count}}</span>{{end}}
@@ -63,12 +63,12 @@
 <div id="dash_content" class="dash_messages">
 	{{if ne .Body.MessageThread.UserId 0}}
 	<div id="dash_title">
-		<h3>Conversation with {{.Body.MessageThread.Name}}</h3>
-		<span id="dash_message_warning"><a href="https://5sur.com/">Expires {{.Body.MessageThread.Expires}}</a></span>
+		<h3>{{.Body.MessageThread.Name}}</h3>
+		<span id="dash_message_warning"><a href="https://5sur.com/">Válido hasta {{.Body.MessageThread.Expires}}</a></span>
 	</div>
 	{{range $key, $value := .Body.MessageThread.Messages}}
 	<div class="dash_message">
-		<a href="https://5sur.com/u/{{if eq $value.Sent true}}{{$.Header.Username}}{{else}}{{$.Body.MessageThread.Name}}{{end}}"><img src="{{if eq $value.Sent true}}{{$.Body.MessageThread.UserPicture}}{{else}}{{$.Body.MessageThread.Picture}}{{end}}" alt="user image"></a>
+		<a href="https://5sur.com/u/{{if eq $value.Sent true}}{{$.Header.Username}}{{else}}{{$.Body.MessageThread.Name}}{{end}}"><img src="{{if eq $value.Sent true}}{{$.Body.MessageThread.UserPicture}}{{else}}{{$.Body.MessageThread.Picture}}{{end}}" alt="usuario"></a>
 		<span class="dash_message_name">
 			{{if eq $value.Sent true}}{{$.Header.Username}}{{else}}{{$.Body.MessageThread.Name}}{{end}}
 		</span>
@@ -79,8 +79,8 @@
 	<div id="dash_message_reply" class="dash_message">
 		<form method="post" action="https://5sur.com/messageSubmit">
 			<input type="hidden" name="Recipient" value="{{.Body.MessageThread.UserId}}">
-			<textarea name="Message" placeholder="Write a reply... " id="message_text"></textarea>
-			<input type="submit" value="Send">
+			<textarea name="Message" placeholder="Deja tu respuesta... " id="message_text"></textarea>
+			<input type="submit" value="Enviar">
 		</form>
 	</div>
 	{{end}}

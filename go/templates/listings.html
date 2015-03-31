@@ -24,21 +24,21 @@
 <div id="search_wrapper">
 	<form method="post" action="https://5sur.com/l/" id="search_form">
 		<select name="Origin" id="origin_select" class="search_option">
-			<option disabled {{if eq .Body.Query.Origin 0}}selected{{end}} class="blank_option">Origin</option>
+			<option disabled {{if eq .Body.Query.Origin 0}}selected{{end}} class="blank_option">Origen</option>
 			{{range $key, $value := .Body.Filter}}
 			<option {{if eq $.Body.Query.Origin $value.Id}}selected{{end}} value="{{$value.Id}}">{{$value.Name}}</option>{{end}}
 		</select>
 		<span class="to"></span>
 		<select name="Destination" id="destination_select" class="search_option">
-			<option disabled {{if eq .Body.Query.Destination 0}}selected{{end}} class="blank_option">Destination</option>
+			<option disabled {{if eq .Body.Query.Destination 0}}selected{{end}} class="blank_option">Destino</option>
 			{{range $key, $value := .Body.Filter}}
 			<option {{if eq $.Body.Query.Destination $value.Id}}selected{{end}} value="{{$value.Id}}">{{$value.Name}}</option>{{end}}
 		</select>
 		<div id="search_date_wrapper">
-			<input type="text" name="Date" placeholder="Date" autocomplete="off" id="date_box" class="search_option time_option" value="{{.Body.Query.Date}}">
+			<input type="text" name="Date" placeholder="Fecha" autocomplete="off" id="date_box" class="search_option time_option" value="{{.Body.Query.Date}}">
 			<span class="clock"></span>
 			<select name="Time" id="time_box" class="search_option time_option">
-				<option disabled {{if eq .Body.Query.Time ""}}selected{{end}} class="blank_option">Time</option>
+				<option disabled {{if eq .Body.Query.Time ""}}selected{{end}} class="blank_option">Tiempo</option>
 			</select>
 			<div id="calendar_wrapper">
 				<div id="month_wrapper">
@@ -69,11 +69,11 @@
 	{{if index .Body.Listings}}
 	<li class="listing_header">
 		<ul>
-			<li class="list_driver">Driver</li>
-			<li>Route</li>
-			<li class="list_fee">Fee</li>
-			<li class="list_seats">Seats</li>
-			<li class="list_date">Date</li>
+			<li class="list_driver">Conductor</li>
+			<li>Ruta</li>
+			<li class="list_fee">Precio</li>
+			<li class="list_seats">Cupos</li>
+			<li class="list_date">Fecha</li>
 		</ul>
 	</li>
 	{{range $key, $value := .Body.Listings}}
@@ -97,7 +97,7 @@
 	</li>
 	{{end}}
 	{{else}}
-	No listings found
+	No hay resultados
 	{{end}}
 </ul>
 

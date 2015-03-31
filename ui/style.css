@@ -321,12 +321,14 @@ h5 {
 #form_page {
 	background: #A5DCF1;
 	text-align: center;
+	padding-top: 50px;
 }
 
 .card_page {
 	min-width: 400px;
+	min-height: calc(100% - 50px);
 	width: 40%;
-	margin: 50px auto 0 auto;
+	margin: 0 auto 50px auto;
 	padding: 80px 0;
 	background: #ffffff;
 	border-radius: 10px;
@@ -446,7 +448,7 @@ h5 {
 #driver_info {
 	font-size: 14px;
 	font-weight: 400;
-	width: 155px;
+	width: 175px;
 	outline: none;
 	line-height: 30px;
 	color: #32A2C7;

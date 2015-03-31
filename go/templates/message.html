@@ -1,6 +1,6 @@
 <!doctype html>
 
-<html>
+<html lang="es">
 
 <head>
 
@@ -20,11 +20,11 @@
 <body id="form_page">
 	<form method="post" action="https://5sur.com/messageSubmit" class="card_page" id="plain_form">
 		<a href="https://5sur.com/" id="form_logo"></a>
-		<span>To: <b><a href="https://5sur.com/user">{{.Name}}</a></b></span>
+		<span>A: <b><a href="https://5sur.com/u/{{.Name}}">{{.Name}}</a></b></span>
 		<input type="hidden" name="Recipient" value="{{.Id}}">
-		<textarea name="Message" placeholder="Create a message... " id="message_text"></textarea>
+		<textarea name="Message" placeholder="Crear mensaje... " id="message_text"></textarea>
 		<input type="submit" value="Send Message">
-		<a href="https://5sur.com/" id="discard_form">Discard message</a>
+		<a href="https://5sur.com/" id="discard_form">Borrar mensaje </a>
 	</form>
 <script src="https://5sur.com/formScript.js"></script>
 <script src="https://5sur.com/messageScript.js"></script>

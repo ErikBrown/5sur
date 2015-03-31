@@ -5,12 +5,12 @@
 		<li id="nav_create"><a href="https://5sur.com/create"></a></li>
 		<li id="nav_alert">{{if ne .Header.Alerts 0}}<span>{{.Header.Alerts}}</span>{{end}}</li>
 		<li id="nav_user">
-			<img src="https://5sur.com/{{if eq .Header.UserImage false}}default_35{{else}}images/{{.Header.Username}}_35{{end}}.png" alt="user">
+			<img src="https://5sur.com/{{if eq .Header.UserImage false}}default_35{{else}}images/{{.Header.Username}}_35{{end}}.png" alt="usuario">
 		</li>
 	</ul>
 	<ul id="nav_dropdown">
 		<li id="nav_alert_dropdown" class="dropdown">
-			<span>{{.Header.Alerts}} Alert{{if ne .Header.Alerts 1}}s{{end}}</span>
+			<span>{{.Header.Alerts}} alerta{{if ne .Header.Alerts 1}}s{{end}}</span>
 			<ul>
 				{{range $key, $value := .Header.AlertText}}{{$value}}
 				{{end}}
@@ -19,14 +19,14 @@
 		<li id="nav_user_dropdown" class="dropdown">
 			<span>{{.Header.Username}}</span>
 			<ul>
-				<li id="profile_icon"><a href="https://5sur.com/u/{{.Header.Username}}">Profile</a></li>
-				<li id="dashboard_icon"><a href="https://5sur.com/dashboard">Dashboard</a></li>
-				<li id="logout_icon"><a href="https://5sur.com/logout">Logout</a></li>
+				<li id="profile_icon"><a href="https://5sur.com/u/{{.Header.Username}}">Perfil</a></li>
+				<li id="dashboard_icon"><a href="https://5sur.com/dashboard">Menú</a></li>
+				<li id="logout_icon"><a href="https://5sur.com/logout">Salir</a></li>
 			</ul>
 		</li>
 	</ul>
 		{{else}}
-		<li><a href="https://5sur.com/login" id="login_button">Login</a></li>
+		<li><a href="https://5sur.com/login" id="login_button">Ingresar</a></li>
 	</ul>
 		{{end}}
 </div>

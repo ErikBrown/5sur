@@ -196,6 +196,17 @@ func GetDashMessages(db *sql.DB, userId int) ([]DashMessages, error) {
 				JOIN users AS u 
 					ON u.id = m.sender 
 				WHERE m.receiver = ?
+				AND EXISTS (
+					SELECT NULL FROM reservations AS r
+						WHERE (
+							r.driver_id = m.sender
+							AND r.passenger_id = m.receiver
+						)
+						OR (
+							r.passenger_id = m.sender
+							AND r.driver_id = m.receiver
+						)
+				)
 				GROUP BY m.sender
 
 			UNION ALL
@@ -205,6 +216,17 @@ func GetDashMessages(db *sql.DB, userId int) ([]DashMessages, error) {
 				JOIN users AS u 
 					ON u.id = m.receiver
 				WHERE m.sender = ?
+				AND EXISTS (
+					SELECT NULL FROM reservations AS r
+						WHERE (
+							r.driver_id = m.sender
+							AND r.passenger_id = m.receiver
+						)
+						OR (
+							r.passenger_id = m.sender
+							AND r.driver_id = m.receiver
+						)
+				)
 				GROUP BY m.receiver
 			) AS tmp
 			GROUP BY sender;

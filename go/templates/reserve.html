@@ -1,6 +1,6 @@
 <!doctype html>
 
-<html>
+<html lang="es">
 
 <head>
 
@@ -13,25 +13,25 @@
 <link rel="stylesheet" type="text/css" href="https://5sur.com/style.css" />
 
 
-<title>5Sur - Reserve</title>
+<title>5Sur - Reservar</title>
 </head>
 
 <body id="form_page">
 	<form method="post" action="https://5sur.com/reserveSubmit" class="card_page" id="plain_form">
 		<a href="https://5sur.com/" id="form_logo"></a>
 		<span id="driver_info">
-			<a href="https://5sur.com/u/{{.Driver}}">View driver's profile</a>
+			<a href="https://5sur.com/u/{{.Driver}}">Ver perfil de conductor</a>
 		</span>
 		<input type="hidden" name="Listing" value="{{.ListingId}}">
 		<select name="Seats">
-			<option disabled selected class="blank_option">Seats</option>
+			<option disabled selected class="blank_option">Cupos</option>
 			{{range $key, $value := .Seats}}
 			<option value="{{$value}}">{{$value}}</option>
 			{{end}}
 		</select>
-		<textarea name="Message" placeholder="Send a note (optional)... " id="message_text"></textarea>
-		<input type="submit" value="Reserve ride">
-		<a href="https://5sur.com/" id="discard_form">Cancel</a>
+		<textarea name="Message" placeholder="Enviar mensaje (opcional)... " id="message_text"></textarea>
+		<input type="submit" value="Reservar viaje">
+		<a href="https://5sur.com/" id="discard_form">Cancelar</a>
 	</form>
 <script src="https://5sur.com/formScript.js"></script>
 
