@@ -28,6 +28,7 @@ func SendEmail(toAddress string, subject string, body string) error {
 	message := "From: " + from + "\r\n"
 	message += "To: " + to + "\r\n"
 	message += "Subject: " + subject + "\r\n"
+	message += "Content-Type: text/html; charset=UTF-8" + "\r\n"
 	message += "\r\n" + body
 
 	// SMTP Server info
