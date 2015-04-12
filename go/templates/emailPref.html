@@ -1,0 +1,37 @@
+<!doctype html>
+
+<html lang="es">
+
+<head>
+
+<meta charset='utf-8'>
+<meta name="viewport" content="width=device-width">
+
+<link rel="icon" type="image/png" href="https://5sur.com/graphics/favicon.png">
+<!-- remove the extra weights -->
+<link href='https://fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:400,400italic,600,300,700,800|Bitter:400,400italic,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="https://5sur.com/style.css" />
+
+
+<title>5Sur - Email Preferences</title>
+
+</head>
+
+<body id="form_page">
+	<form method="post" action="https://5sur.com/emailPrefSubmit" class="card_page" id="plain_form">
+		<a href="https://5sur.com/" id="form_logo"></a>
+		<p><b>Select which emails you want to recieve</b></p>
+		<label><input type="checkbox" name="pending" value="true"{{if eq .Pending true}} checked{{end}}>Pending users</label>
+		<label><input type="checkbox" name="dropped" value="true"{{if eq .Dropped true}} checked{{end}}>Someone dropped from a listing</label>
+		<label><input type="checkbox" name="message" value="true"{{if eq .Message true}} checked{{end}}>New messages</label>
+		<label><input type="checkbox" name="accepted" value="true"{{if eq .Accepted true}} checked{{end}}>Accepted reservations</label>
+		<label><input type="checkbox" name="removed" value="true"{{if eq .Removed true}} checked{{end}}>Removed from a reservation</label>
+		<label><input type="checkbox" name="deleted" value="true"{{if eq .Deleted true}} checked{{end}}>Reservation deleted</label>
+		<label><input type="checkbox" name="rate" value="true"{{if eq .Rate true}} checked{{end}}>Rate users</label>
+		<input type="submit" value="Set preferences">
+		<a href="https://5sur.com/dashboard/settings" id="discard_form">Cancel</a>
+	</form>
+<script src="https://5sur.com/formScript.js"></script>
+</body>
+
+</html>

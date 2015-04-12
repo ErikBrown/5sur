@@ -49,6 +49,25 @@ func deleteAllAlerts(db *sql.DB, user int) error {
 	return nil
 }
 
+func deleteEmailPrefs(db *sql.DB, user int) error {
+	stmt, err := db.Prepare(`
+		DELETE FROM email_pref
+			WHERE user = ?;
+	`)
+
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(user)
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+
+	return nil
+}
+
 func deleteDeleteAlerts(db *sql.DB, user int) error {
 	// Always prepare queries to be used multiple times. The parameter placehold is ?
 	stmt, err := db.Prepare(`
@@ -91,6 +110,9 @@ func DeleteAccount(db *sql.DB, user int) error {
 	if err != nil { return err }
 
 	err = deleteDeleteAlerts(db, user)
+	if err != nil { return err }
+
+	err = deleteEmailPrefs(db, user)
 	if err != nil { return err }
 
 	stmt, err := db.Prepare(`

@@ -1120,6 +1120,62 @@ func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func EmailPrefHandler(w http.ResponseWriter, r *http.Request) error {
+	db, err := util.OpenDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	// User authentication
+	_, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
+
+	if userId == 0 {
+		return util.NewError(nil, "Login required", 401)
+	}
+
+	prefs, err := util.ReturnEmailPref(db, userId)
+	if err != nil { return err }
+
+	err = templates.ExecuteTemplate(w, "emailPref.html", prefs)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
+	return nil
+}
+
+func EmailPrefSubmitHandler(w http.ResponseWriter, r *http.Request) error {
+	db, err := util.OpenDb()
+	if err != nil { return err }
+	defer db.Close()
+
+	// User authentication
+	_, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
+	if err != nil { return err }
+
+	if userId == 0 {
+		return util.NewError(nil, "Login required", 401)
+	}
+	
+	err = util.SetEmailPref(db, r, userId)
+	if err !=nil { return err }
+
+	Page := struct {
+		Title string
+		MessageTitle string
+		Message string
+	}{
+		"Email Preferences",
+		"",
+		"Email preference changes saved",
+	}
+
+	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)
+	if err != nil {
+		return util.NewError(err, "Failed to load page", 500)
+	}
+	return nil
+}
+
 type handlerWrapper func(http.ResponseWriter, *http.Request) error
 
 func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -1214,6 +1270,8 @@ func main() {
 	http.Handle("/passwordChangeSubmit", handlerWrapper(PasswordChangeHandler))
 	http.Handle("/deleteAccount", handlerWrapper(DeleteAccountFormHandler))
 	http.Handle("/deleteAccountSubmit", handlerWrapper(DeleteAccountHandler))
+	http.Handle("/emailPreferences", handlerWrapper(EmailPrefHandler))
+	http.Handle("/emailPrefSubmit", handlerWrapper(EmailPrefSubmitHandler))
 	http.Handle("/", handlerWrapper(RootHandler))
 
 	/*

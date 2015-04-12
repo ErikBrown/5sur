@@ -8,10 +8,8 @@ import (
 	"encoding/hex"
 	"crypto/sha256"
 	"net/http"
-	"net/smtp"
 	"io/ioutil"
 	"encoding/json"
-	"crypto/tls"
 	"5sur/util"
 )
 
@@ -171,75 +169,6 @@ func createUserAuth(db *sql.DB, username string, password string, email string, 
 	return nil
 }
 
-func mailUser(toAddress string, body string) error {
-	from := "admin@5sur.com"
-	to := toAddress
-	subject := "email subject"
-
-	// Setup message (need the carriage return \r before body)
-	message := "From: " + from + "\r\n"
-	message += "To: " + to + "\r\n"
-	message += "Subject: " + subject + "\r\n"
-	message += "\r\n" + body
-
-	// SMTP Server info
-	user, err := ioutil.ReadFile("sesUser")
-	if err != nil {
-		return util.NewError(err, "Internal server error", 500)
-	}
-	password, err := ioutil.ReadFile("sesPassword")
-	if err != nil {
-		return util.NewError(err, "Internal server error", 500)
-	}
-	servername := "email-smtp.us-west-2.amazonaws.com:465"
-	host := "email-smtp.us-west-2.amazonaws.com"
-	auth := smtp.PlainAuth("", string(user[:]), string(password[:]), host)
-
-	// TLS config
-	tlsconfig := &tls.Config {
-		ServerName: host,
-	}
-
-	conn, err := tls.Dial("tcp",servername,tlsconfig)
-	if err != nil {
-		return util.NewError(err, "Email authentication error", 500)
-	}
-
-	client, err := smtp.NewClient(conn, host)
-	if err != nil {
-		return util.NewError(err, "Email authentication error", 500)
-	}
-	defer client.Quit()
-
-	// auth
-	if err = client.Auth(auth); err != nil {
-		return util.NewError(err, "Email authentication error", 500)
-	}
-
-	// to and from
-	if err = client.Mail(from); err != nil {
-		return util.NewError(err, "Email authentication error", 500)
-	}
-
-	// Can have multiple Rcpt calls
-	if err = client.Rcpt(to); err != nil {
-		return util.NewError(err, "Email authentication error", 500)
-	}
-
-	// Data
-	dataWriter, err := client.Data()
-	if err != nil {
-		return util.NewError(err, "Email authentication error", 500)
-	}
-	defer dataWriter.Close()
-
-	_, err = dataWriter.Write([]byte(message))
-	if err != nil {
-		return util.NewError(err, "Email authentication error", 500)
-	}
-	return nil
-}
-
 func UserAuth(db *sql.DB, username string, password string, email string) error {
 	// Create auth token
 	alphaNum := []byte("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv")
@@ -259,9 +188,10 @@ func UserAuth(db *sql.DB, username string, password string, email string) error 
 	err = createUserAuth(db, username, password, email, hashedStr)
 	if err != nil { return err }
 
+	subject := "5sur email verification"
 	body := "Welcome to 5sur.com! Click on the following link to complete the registration process:\nhttps://5sur.com/auth/?t=" + randValue 
 
-	err = mailUser(email, body)
+	err = util.SendEmail(email, subject, body)
 	if err != nil { return err }
 
 	return nil
@@ -316,16 +246,19 @@ func CreateUser(db *sql.DB, token string) (string, error){
 		return "", err
 	}
 	if !uniqueUsername {
-		deleteUserAuth(db, userInfo.email)
+		err = deleteUserAuth(db, userInfo.email)
 		return "", util.NewError(nil, "Username is taken", 400)
 	}
 
-	err = createUser(db, userInfo)
+	userId, err := createUser(db, userInfo)
 	if err != nil { return "", err }
+
+	err = util.CreateEmailPrefs(db, userId)
+	if err != nil { return "", err}
 	return userInfo.name, nil
 }
 
-func createUser(db *sql.DB, u unauthedUser) error {
+func createUser(db *sql.DB, u unauthedUser) (int64, error) {
 	stmt, err := db.Prepare(`
 		INSERT INTO users (name, email, password)
 			VALUES (?, ?, ?)
@@ -333,20 +266,18 @@ func createUser(db *sql.DB, u unauthedUser) error {
 	defer stmt.Close()
 
 	if err != nil {
-		return util.NewError(err, "Internal server error", 500)
+		return 0, util.NewError(err, "Internal server error", 500)
 	}
-	_, err = stmt.Exec(u.name, u.email, u.password)
+	res, err := stmt.Exec(u.name, u.email, u.password)
 	if err != nil {
-		return util.NewError(err, "Internal server error", 500)
+		return 0, util.NewError(err, "Internal server error", 500)
 	}
+
+	lastId, err := res.LastInsertId()
+	if err != nil { return 0, util.NewError(err, "Internal server error", 500) }
 	deleteUserAuth(db, u.email)
-	/*
-	rowCnt, err := res.RowsAffected()
-	if err != nil {
-		// Log the error
-	}
-	*/
-	return nil
+
+	return lastId, nil
 }
 
 func CheckCredentials(db *sql.DB, username string, password string) (bool, error) {
@@ -486,8 +417,9 @@ func ResetPassword(db *sql.DB, email string) error {
 	err = storePasswordToken(db, email, hashedStr)
 	if err != nil { return err }
 
+	subject := "5sur reset password"
 	body := "Username: " + username + "\nTo reset your password, click the following link: https://5sur.com/passwordChange?t=" + randValue + "&u=" + username
-	err = mailUser(email, body)
+	err = util.SendEmail(email, subject, body)
 
 	return nil
 }

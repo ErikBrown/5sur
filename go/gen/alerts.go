@@ -148,30 +148,6 @@ func createAlertContent(db *sql.DB, user int, category string, targetId int) (st
 	return "", nil
 }
 
-func CreateAlert(db *sql.DB, user int, category string, targetId int) error {
-	stmt, err := db.Prepare(`
-		INSERT INTO alerts (user, category, target_id)
-			SELECT ? AS user, ? AS category, ? AS target_id FROM dual
-				WHERE NOT EXISTS(
-					SELECT user
-						FROM alerts
-						WHERE user = ?
-						AND category = ?
-						AND target_id = ?
-				) LIMIT 1;
-	`)
-	if err != nil {
-		return util.NewError(err, "Database error", 500)
-	}
-	defer stmt.Close()
-
-	_, err = stmt.Exec(user, category, targetId, user, category, targetId)
-	if err != nil {
-		return util.NewError(err, "Database error", 500)
-	}
-	return nil
-}
-
 func returnAlertMessage(db *sql.DB, recipient int, sender int) (AlertMessage, error) {
 	result := AlertMessage{}
 	stmt, err := db.Prepare(`
@@ -200,4 +176,130 @@ func returnAlertMessage(db *sql.DB, recipient int, sender int) (AlertMessage, er
 		result.Picture = "https://5sur.com/default_35.png"
 	}
 	return result, nil
+}
+
+func CreateAlert(db *sql.DB, user int, category string, targetId int) error {
+	stmt, err := db.Prepare(`
+		INSERT INTO alerts (user, category, target_id)
+			SELECT ? AS user, ? AS category, ? AS target_id FROM dual
+				WHERE NOT EXISTS(
+					SELECT user
+						FROM alerts
+						WHERE user = ?
+						AND category = ?
+						AND target_id = ?
+				) LIMIT 1;
+	`)
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(user, category, targetId, user, category, targetId)
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+
+	err = emailAlert(db, user, category, targetId)
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+	return nil
+}
+
+func emailAlert(db *sql.DB, user int, category string, targetId int) error {
+	send, err := emailPref(db, user, category)
+	if err != nil { return util.NewError(err, "Database error", 500) }
+
+	toAddress, err := returnUserEmail(db, user)
+	if err != nil { return util.NewError(err, "Database error", 500) }
+
+	// If email pref set to not email for that category, return nil and send no email
+	if !send {
+		return nil
+	}
+
+	subject := ""
+	body := ""
+
+	id := strconv.Itoa(targetId)
+	switch category {
+		case "pending": // The target id is the listing id
+			listing, err := ReturnIndividualListing(db, targetId)
+			if err != nil {return err}
+			subject = "5sur - New pending users on your listing"
+			body = `You have <b>new pending users</b> on <a href="https://5sur.com/dashboard/listings?i=` + id + `"> ` + listing.Origin + ` > ` + listing.Destination + `</a>.`
+		case "dropped":
+			listing, err := ReturnIndividualListing(db, targetId)
+			if err != nil {return err}
+			subject = "5sur - Someone has dropped from one of your listings"
+			body = `Someone has <b>dropped</b> from ride <a href="https://5sur.com/dashboard/listings?i=` + id + `">` + listing.Origin + ` > ` + listing.Destination + `</a>.`
+		case "message": // The target id is the user id
+			message, err := returnAlertMessage(db, user, targetId)
+			if err != nil {return err}
+			subject = "5sur - New message"
+			body = `You have a <a href="https://5sur.com/dashboard/messages?i=` + id + `">new message</a> from ` + message.Name + `.`
+		case "accepted":
+			listing, err := ReturnIndividualListing(db, targetId)
+			if err != nil {return err}
+			subject = "5sur - You have been accepted onto a ride"
+			body = `You have been <b>Accepted</b> onto ride <a href="https://5sur.com/dashboard/reservations?i=` + id + `">` + listing.Origin + ` > ` + listing.Destination + `</a>.`
+		case "removed":
+			listing, err := ReturnIndividualListing(db, targetId)
+			if err != nil {return err}
+			subject = "5sur - You have been removed from a ride you were registered for"
+			body = `You have been <b>removed</b> from ride <a href="https://5sur.com/dashboard/reservations">` + listing.Origin + ` > ` + listing.Destination + `</a>.`
+		case "deleted":
+			subject = "5sur - Listing deleted"
+			body = `A ride you were registered for has been <b>deleted</b> by the driver.`
+	}
+
+	err = util.SendEmail(toAddress, subject, body)
+	if err != nil { return util.NewError(err, "Database error", 500) }
+
+	return nil
+}
+
+// Return true if you want an email, false otherwise
+func emailPref(db *sql.DB, user int, category string) (bool, error) {
+	prefs, err := util.ReturnEmailPref(db, user)
+	if err != nil { return false, err }
+
+	switch category {
+		case "pending":
+			return prefs.Pending, nil
+		case "dropped":
+			return prefs.Dropped, nil
+		case "message":
+			return prefs.Message, nil
+		case "accepted":
+			return prefs.Accepted, nil
+		case "removed":
+			return prefs.Removed, nil
+		case "deleted":
+			return prefs.Deleted, nil
+	}
+
+	return false, nil
+}
+
+func returnUserEmail(db *sql.DB, user int) (string, error) {
+	stmt, err := db.Prepare(`
+		SELECT u.email
+			FROM users AS u
+			WHERE u.id = ?;
+		`)
+	
+	if err != nil {
+		return "", util.NewError(err, "Database error", 500)
+	}
+	defer stmt.Close()
+
+	email := ""
+	err = stmt.QueryRow(user).Scan(&email)
+	if err != nil {
+		return "", util.NewError(err, "Internal Server Error", 500)
+	}
+
+	return email, nil
 }
