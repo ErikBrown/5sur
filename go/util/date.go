@@ -13,7 +13,7 @@ type Date struct{
 	Time string
 }
 
-var months = [12]string{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
+var months = [12]string{"ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"}
 
 // Determines time layout for the following:
 // YYYY-MM-DD, MM-DD-YYYY, MM-DD-YY (the punctuation is variable)

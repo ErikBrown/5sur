@@ -205,6 +205,30 @@ func SubmitRating(db *sql.DB, commenter int, user int, positive bool, comment st
 		return util.NewError(nil, "You cannot rate this user. You either have no past transactions with this user or one week has passed since last transaction", 400)
 	}
 
+	err = updateRatingScore(db, user, positive)
+	if err != nil { return err }
+
+	return nil
+}
+
+func updateRatingScore(db *sql.DB, user int, positive bool) error {
+	stmtText := ""
+	if positive {
+		stmtText = "UPDATE users SET positive_ratings = positive_ratings + 1 WHERE user = ?;"
+	} else {
+		stmtText = "UPDATE users SET negative_ratings = negative_ratings + 1 WHERE user = ?;"
+	}
+	stmt, err := db.Prepare(stmtText)
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(user)
+	if err != nil {
+		return util.NewError(err, "Database error", 500)
+	}
+
 	return nil
 }
 
