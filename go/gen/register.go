@@ -189,8 +189,9 @@ func UserAuth(db *sql.DB, username string, password string, email string) error 
 	if err != nil { return err }
 
 	subject := "5sur email verification"
-	body := "Welcome to 5sur.com! Click on the following link to complete the registration process:\nhttps://5sur.com/auth/?t=" + randValue 
-
+	text := "Welcome to 5sur.com! Click on the following link to complete the registration process."
+	link := "https://5sur.com/auth/?t=" + randValue 
+	body := util.EmailTemplate(text, "Register account", link)
 	err = util.SendEmail(email, subject, body)
 	if err != nil { return err }
 
@@ -418,7 +419,9 @@ func ResetPassword(db *sql.DB, email string) error {
 	if err != nil { return err }
 
 	subject := "5sur reset password"
-	body := "Username: " + username + "\nTo reset your password, click the following link: https://5sur.com/passwordChange?t=" + randValue + "&u=" + username
+	text := "<b>" + username + "</b>, to reset your password, click the following link."
+	link := "https://5sur.com/passwordChange?t=" + randValue + "&u=" + username
+	body := util.EmailTemplate(text, "Change Password", link)
 	err = util.SendEmail(email, subject, body)
 
 	return nil
