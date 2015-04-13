@@ -214,9 +214,9 @@ func SubmitRating(db *sql.DB, commenter int, user int, positive bool, comment st
 func updateRatingScore(db *sql.DB, user int, positive bool) error {
 	stmtText := ""
 	if positive {
-		stmtText = "UPDATE users SET positive_ratings = positive_ratings + 1 WHERE user = ?;"
+		stmtText = "UPDATE users SET positive_ratings = positive_ratings + 1 WHERE id = ?;"
 	} else {
-		stmtText = "UPDATE users SET negative_ratings = negative_ratings + 1 WHERE user = ?;"
+		stmtText = "UPDATE users SET negative_ratings = negative_ratings + 1 WHERE id = ?;"
 	}
 	stmt, err := db.Prepare(stmtText)
 	if err != nil {

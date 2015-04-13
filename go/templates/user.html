@@ -24,7 +24,7 @@
 <div id="user_sidebar">
 	<img src="{{.Body.Picture}}" alt="user img">
 	<h4>{{.Body.Name}}</h4>
-	<span id="{{if lt .Body.Rating 0}}sidebar_negative{{else}}sidebar_positive{{end}}"><a href="#">{{if lt .Body.Rating 0}}-{{else}}+{{end}}{{.Body.Rating}}</a></span>
+	<span id="{{if lt .Body.Rating 0}}sidebar_negative{{else}}sidebar_positive{{end}}"><a href="#">{{if lt .Body.Rating 0}}{{else}}+{{end}}{{.Body.Rating}}</a></span>
 	<div id="chart1" class="donut_chart">
 		<canvas id="donut_bars1" width="225" height="225"></canvas>
 		<canvas id="donut_text1" width="225" height="225"></canvas>
