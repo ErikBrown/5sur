@@ -11,6 +11,7 @@ var dateInput = document.getElementById('date_box');
 var monthRight = document.getElementById('month_right');
 var monthLeft = document.getElementById('month_left');
 var hideCalendar = false;
+var calendarToggle = false;
 
 function createTable(d, n) {
 	var currentMonth = d.getMonth();
@@ -61,10 +62,8 @@ function createTable(d, n) {
 		} else {
 			tableBody.style.left = '-' + calendar.offsetWidth + 'px';
 		}
-	} else {
-		calendarWrapper.style.width = calendar.offsetWidth + 'px';	
 	}
-	tableBody.style.width = calendar.offsetWidth + 'px';	
+	tableBody.style.width = calendar.offsetWidth + 'px';
 	calendar.appendChild(tableBody);
 }
 
@@ -94,7 +93,12 @@ monthLeft.addEventListener('click', function() {
 dateInput.addEventListener('click', function() {
 	calendarWrapper.style.display = 'block';
 	calendarWrapper.style.opacity = '1';
-	calendarWrapper.style.height = '505px';
+	var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+	if (w > 850) {
+		calendarWrapper.style.height = '505px';
+	} else {
+		calendarWrapper.style.height = '280px';
+	}
 	calendarWrapper.style.marginBottom = '25px';
 	hideCalendar = false;
 }, false);
@@ -124,9 +128,49 @@ document.addEventListener('click', function() {
 		calendarWrapper.style.height = '0px';
 		calendarWrapper.style.opacity = '.8';
 		calendarWrapper.style.marginBottom = '0px';
+		calendarToggle = false;
+	} else {
+		calendarToggle = true;
 	}
 	hideCalendar = true;
 }, false);
+
+var prevWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+
+window.addEventListener('resize', function(event){
+		var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+		if (prevWidth < 850 && w >= 850) {
+			var tableBody = document.getElementsByTagName("tbody");
+			if (tableBody.length == 2) {
+				tableBody[0].style.left = '455px';
+				tableBody[1].style.width = '455px';
+			} else {
+				tableBody[0].style.width = '455px';
+			}
+			if (calendarToggle) {
+				calendarWrapper.style.height = '505px';
+				console.log("nooooo");
+			} else {
+				calendarWrapper.style.height = '0px';
+				console.log("yess");
+			}
+		} else if (prevWidth >=850 && w < 850) {
+			var tableBody = document.getElementsByTagName("tbody");
+			if (tableBody.length == 2) {
+				tableBody[0].style.left = '245px';
+				tableBody[1].style.width = '245px';
+			} else {
+				tableBody[0].style.width = '245px';
+			}
+			if (calendarToggle) {
+				calendarWrapper.style.height = '280px';
+			} else {
+				calendarWrapper.style.height = '0px';
+			}
+		}
+		prevWidth = w;
+	
+});
 
 window.addEventListener("load", function(){
 	createTable(today, true);

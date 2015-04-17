@@ -88,7 +88,7 @@
 					<span class="positive">+{{$value.Rating}}</span>
 					{{end}}
 				</li>
-				<li>{{$value.Origin}} <span class="to"></span> {{$value.Destination}}</li>
+				<li class="list_place">{{$value.Origin}} <span class="to"></span> {{$value.Destination}}</li>
 				<li class="list_fee">{{if ne $value.Fee 0.0}}${{$value.Fee}}/seat{{else}}Free{{end}}</li>
 				<li class="list_seats">{{$value.Seats}}</li>
 				<li class="list_date"><span class="list_day">{{$value.Date}}</span><span class="list_time">{{$value.Time}}</span></li>

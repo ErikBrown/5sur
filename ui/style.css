@@ -139,13 +139,22 @@ h5 {
 #nav > li+li {
 	margin-left: 25px;
 }
-
 #nav > li > a {
 	display: block;
 	width: 100%;
 	height: 100%;
 	font-size: 0;
 }
+
+#login_link {
+	width: auto !important;
+}
+
+#login_link > a {
+	font-size: 14px !important;
+	color: #1C2224;
+}
+
 
 #nav_create {
 	background: url('https://5sur.com/graphics/create.png');
@@ -310,11 +319,6 @@ h5 {
 #profile_icon { background: url("https://5sur.com/graphics/user.png") 12px 12px no-repeat; }
 #dashboard_icon { background: url("https://5sur.com/graphics/dashboard.png") 12px 12px no-repeat; }
 #logout_icon { background: url("https://5sur.com/graphics/logout.png") 12px 12px no-repeat; }
-
-#login_button {
-	font-size: 14px !important;
-	color: #000000;
-}
 
 /*** Forms ***/
 
@@ -497,6 +501,7 @@ h5 {
 	margin-bottom: 50px;
 	padding: 40px 0;
 	text-align: center;
+	background: #313F4F;
 	background: -webkit-linear-gradient(45deg, #F2F0DF 10%, #F1FBFE 90%);
 	background:     -ms-linear-gradient(45deg, #F2F0DF 10%, #F1FBFE 90%);
 	background:         linear-gradient(90deg, #272B2E 10%, #313F4F 90%);
@@ -547,7 +552,7 @@ h5 {
 	background: #DE6049;
 	border-radius: 4px;
 	cursor: pointer;
-	outline: none
+	outline: none;
 }
 
 #search_submit:hover {
@@ -578,6 +583,7 @@ h5 {
 	display: hidden;
 	overflow: hidden;
 	height: 0px;
+	width: 455px;
 	margin-left: auto;
 	margin-right: auto;
 	background: #ffffff;
@@ -590,7 +596,6 @@ h5 {
 
 #calendar {
 	position: relative;
-	height: 457px;
 	color: #333333;
 }
 
@@ -669,15 +674,16 @@ h5 {
 /* Listing items */
 
 #listings_page {
+	min-width: 375px;
 }
 
 #listing_items {
 	margin: 0 auto;
+	padding: 0 15px;
 	max-width: 800px;
-	height: 500px;
 }
 
-#listing_items > li li,  #listing_items > li li{
+#listing_items > li li {
 	display: inline-block;
 	line-height: 50px;
 	vertical-align: top;
@@ -736,6 +742,13 @@ h5 {
 	display: block;
 }
 
+.list_place {
+	max-width: 275px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
 .list_day {
 	margin-top: 3px;
 	line-height: 22px;
@@ -746,6 +759,146 @@ h5 {
 	line-height: 22px;
 	font-size: 14px;
 	color: #5C666D;
+}
+
+@media all and (max-width: 850px) {
+	#calendar_wrapper {
+		font-size: 14px;
+		width: 245px;
+	}
+
+	#calendar {
+		width: 245px;
+	}
+
+	#month_wrapper {
+		height: 35px;
+		line-height: 34px;
+		text-align: center;
+		font-weight: 700;
+		-webkit-transition: .75s;
+		transition: .75s;
+	}
+
+	#calendar th {
+		width: 35px;
+		height: 35px;
+	}
+
+	#calendar td {
+		width: 35px;
+		height: 35px;
+	}
+
+	#listing_items > li li {
+		line-height: 35px;
+		font-size: 14px;
+	}
+
+	.list_driver > img {
+		width: 35px;
+	}
+
+	.list_driver {
+		width: 85px;
+	}
+
+	.list_place {
+		max-width: 215px;
+	}
+
+	.list_fee, .list_date, .list_seats {
+		width: 60px;
+	}
+
+	.list_day {
+		margin-top: 0;
+		line-height: 18px;
+	}
+
+	.list_time {
+		line-height: 22px;
+		font-size: 12px;
+	}
+
+	#listing_items {
+		max-width: 700px;
+	}
+}
+
+@media all and (max-width: 560px) {
+	#search_wrapper {
+		padding: 25px 0;
+	}
+
+	.search_option {
+		width: 115px;
+		padding: 0 7px;
+		font-size: 13px;
+		height: 35px;
+	}
+
+	#search_submit {
+		height: 35px;
+		width: 115px;
+		font-size: 14px;
+	}
+
+	#time_box {
+		margin-bottom: 25px;
+	}
+
+	.listing_header {
+		padding: 0;
+		line-height: 35px !important;
+	}
+
+	.listing_header li {
+		line-height: 35px !important;
+		font-size: 12px !important;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.listing_item a {
+		padding: 12px 0;
+	}
+
+	#listing_items > li li {
+		line-height: 50px;
+	}
+
+	.list_driver > span {
+		float: left;
+		clear: left;
+		width: 35px;
+		margin-left: 0;
+		margin-top: 5px;
+		line-height: 12px;
+		text-align: center;
+	}
+
+	.list_place {
+		max-width: 100px;
+		line-height: 12px !important;
+		padding: 2px 0;
+	}
+
+	.list_place > span {
+		display: block;
+		height: 24px;
+		width: 15px;
+		margin-left: 15px;
+	}
+
+	.list_driver, .list_seats {
+		width: 50px;
+	}
+
+	.list_day {
+		margin-top: 6px;
+	}
 }
 
 /*** Dashboard Page ***/
