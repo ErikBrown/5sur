@@ -10,10 +10,14 @@ function adjustHeight() {
 	if (w > 1050) {
 		document.getElementById("main_sidebar").style.height = h - 75 + "px";
 		document.getElementById("sub_sidebar").style.height = h - 75 + "px";
-	} else {
+	} else if (w > 600) {
 		document.getElementById("main_sidebar").style.height = "250px";
 		document.getElementById("sub_sidebar").style.height = h - 325 + "px";
+	} else {
+		document.getElementById("main_sidebar").style.height = "250px";
+		document.getElementById("sub_sidebar").style.height = "100px";
 	}
+	console.log(w, h);
 }
 
 window.addEventListener("load", function(){

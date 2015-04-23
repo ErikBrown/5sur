@@ -68,9 +68,9 @@
 	<div id="dash_title">
 		<h3>{{.Body.Listing.Origin}} <span class="to"></span> {{.Body.Listing.Destination}}</h3>
 		<span id="dash_listing_date">{{.Body.Listing.Month}} {{.Body.Listing.Day}} - {{.Body.Listing.Time}}</span>
-		<span>&#8226;</span>
+		<span class="bullet">&#8226;</span>
 		<span id="dash_listing_seats">{{.Body.Listing.Seats}} {{if eq .Body.Listing.Seats 1}}cupo{{else}}cupos{{end}}</span>
-		<span>&#8226;</span>
+		<span class="bullet">&#8226;</span>
 		<span id="dash_listing_fee">${{.Body.Listing.Fee}}/cupo</span>
 		<form id="delete_form" method="GET" action="https://5sur.com/dashboard/listings/delete">
 			<input name="i" value="{{$.Body.Listing.ListingId}}" id="delete_form_input" type="submit">

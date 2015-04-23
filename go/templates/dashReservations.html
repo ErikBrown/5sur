@@ -66,9 +66,9 @@
 	<div id="dash_title">
 		<h3>{{.Body.Reservation.Origin}} <span class="to"></span> {{.Body.Reservation.Destination}}</h3>
 		<span id="dash_listing_date">{{.Body.Reservation.Month}} {{.Body.Reservation.Day}} - {{.Body.Reservation.Time}}</span>
-		<span>&#8226;</span>
+		<span class="bullet">&#8226;</span>
 		<span id="dash_listing_seats">Registrado por {{.Body.Reservation.Seats}} {{if eq .Body.Reservation.Seats 1}}cupo{{else}}cupos{{end}}</span>
-		<span>&#8226;</span>
+		<span class="bullet">&#8226;</span>
 		<span id="dash_listing_fee">${{.Body.Reservation.Fee}}/cupo</span>
 	</div>
 	<div id="dash_reservation">
