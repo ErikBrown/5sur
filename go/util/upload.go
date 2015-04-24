@@ -20,9 +20,11 @@ func SaveImage(db *sql.DB, user string, file multipart.File, header *multipart.F
 
 	bounds := picture.Bounds()
 	ratio := float64(bounds.Dx())/float64(bounds.Dy())
+	/*
 	if ratio < .8 || ratio > 1.2 {
 		return NewError(nil, "Invalid image dimensions", 400)
 	}
+	*/
 
 	cropWidth := bounds.Dx();
 

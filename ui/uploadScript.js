@@ -46,6 +46,7 @@ function handleFiles() {
 			
 		};
 	})(img);
+	/*
 	img.onload = function(){
 		var ratio = img.width / img.height;
 		if (ratio < .8 || ratio > 1.2) {
@@ -54,6 +55,7 @@ function handleFiles() {
 			return
 		}
 	};
+	*/
 	reader.readAsDataURL(files[0]);
 }
 
