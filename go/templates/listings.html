@@ -97,7 +97,10 @@
 	</li>
 	{{end}}
 	{{else}}
+	{{if eq .Body.Homepage true}}
+	{{else}}
 	No hay resultados
+	{{end}}
 	{{end}}
 </ul>
 

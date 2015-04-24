@@ -628,6 +628,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) error {
 
 	body := &gen.ListingsHTML{
 		Filter: cities,
+		Homepage: true,
 	}
 
 	page := struct {

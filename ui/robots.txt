@@ -1,0 +1,16 @@
+User-agent: *
+Disallow: /graphics/
+Disallow: /images/
+Disallow: /register
+Disallow: /login
+Disallow: /auth
+Disallow: /logout
+Disallow: /reserve
+Disallow: /create
+Disallow: /dashboard
+Disallow: /upload
+Disallow: /delete
+Disallow: /message
+Disallow: /rate
+Disallow: /password
+Disallow: /email

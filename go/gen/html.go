@@ -38,6 +38,7 @@ type ListingsHTML struct {
 	Filter []City
 	Listings []Listing
 	Query util.ListingQueryFields
+	Homepage bool
 }
 
 type ReserveHTML struct {
