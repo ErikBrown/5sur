@@ -271,7 +271,7 @@ func emailAlert(db *sql.DB, user int, category string, targetId int) error {
 	body := util.EmailTemplate(text, buttonText, buttonLink)
 
 	err = util.SendEmail(toAddress, subject, body)
-	if err != nil { return util.NewError(err, "Database error", 500) }
+	if err != nil { return err }
 
 	return nil
 }
