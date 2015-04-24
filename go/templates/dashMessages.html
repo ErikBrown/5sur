@@ -64,7 +64,7 @@
 	{{if ne .Body.MessageThread.UserId 0}}
 	<div id="dash_title">
 		<h3>{{.Body.MessageThread.Name}}</h3>
-		<span id="dash_message_warning"><a href="https://5sur.com/">Válido hasta {{.Body.MessageThread.Expires}}</a></span>
+		<span id="dash_message_warning"><a href="https://5sur.com/faq.html#faq_expire">Válido hasta {{.Body.MessageThread.Expires}}</a></span>
 	</div>
 	{{range $key, $value := .Body.MessageThread.Messages}}
 	<div class="dash_message">

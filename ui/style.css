@@ -1723,3 +1723,38 @@ h5 {
 		width: 97%;
 	}
 }
+
+/** FAQ **/
+#faq {
+	font-family: 'Bitter', serif;
+	color: #1290C9;
+	font-size: 22px;
+	display: block;
+	max-width: 500px;
+	margin: 0 auto;
+	padding: 0 25px;
+}
+
+#faq ul {
+	font-family: 'Open Sans', sans-serif;
+	color: #3F4143;
+	font-size: 14px;
+	margin-top: 5px;
+}
+
+#faq li {
+	text-align: left;
+	margin-left: 15px;
+	margin-bottom: 15px;
+}
+
+@media all and (max-width: 520px) {
+	#faq {
+		font-size: 16px;
+	}
+
+	#faq ul {
+		font-size: 12px;
+		font-weight: 400;
+	}
+}
