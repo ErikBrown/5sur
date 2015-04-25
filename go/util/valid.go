@@ -32,10 +32,10 @@ type ReservationPost struct {
 func ValidAuthQuery(u *url.URL) (string, error) {
 	m, err := url.ParseQuery(u.RawQuery)
 	if err != nil {
-		return "", NewError(nil, "Authentication failed", 400)
+		return "", NewError(nil, "Verificación incorrecta ", 400)
 	}
 	if _,ok := m["t"]; !ok {
-		return "", NewError(nil, "Authentication failed", 400)
+		return "", NewError(nil, "Verificación incorrecta", 400)
 	}
 	f := m["t"][0]
 	return f, nil
@@ -44,13 +44,13 @@ func ValidAuthQuery(u *url.URL) (string, error) {
 func ValidChangePasswordQuery(u *url.URL) (string, string, error) {
 	m, err := url.ParseQuery(u.RawQuery)
 	if err != nil {
-		return "", "", NewError(nil, "Authentication failed", 400)
+		return "", "", NewError(nil, "Verificación incorrecta", 400)
 	}
 	if _,ok := m["t"]; !ok {
-		return "", "", NewError(nil, "Authentication failed", 400)
+		return "", "", NewError(nil, "Verificación incorrecta", 400)
 	}
 	if _,ok := m["u"]; !ok {
-		return "", "", NewError(nil, "Authentication failed", 400)
+		return "", "", NewError(nil, "Verificación incorrecta", 400)
 	}
 
 	return m["t"][0], m["u"][0], nil
@@ -58,15 +58,15 @@ func ValidChangePasswordQuery(u *url.URL) (string, string, error) {
 
 func ValidChangePasswordSubmit(r *http.Request) error {
 	if r.FormValue("Password") == "" || r.FormValue("Password2") == "" || r.FormValue("User") == "" || r.FormValue("Token") == "" {
-		return NewError(nil, "Please fully fill out the form", 400)
+		return NewError(nil, "Rellena el formulario completo por favor", 400)
 	}
 
 	if utf8.RuneCountInString(r.FormValue("Password")) < 6 {
-		return NewError(nil, "Password must be at least six characters", 400)
+		return NewError(nil, "La contraseña debe tener al menos 6 caracteres", 400)
 	}
 
 	if r.FormValue("Password") != r.FormValue("Password2"){
-		return NewError(nil, "Passwords do not match", 400)
+		return NewError(nil, "No coincide la contraseña", 400)
 	}
 
 	return nil
@@ -77,51 +77,51 @@ func ValidCreateSubmit(r *http.Request) (CreateSubmitPost, error) {
 	//Check if values are empty.
 	values := CreateSubmitPost{}
 	if r.FormValue("Date") == "" || r.FormValue("Time") == "" || r.FormValue("Seats") == "" || r.FormValue("Fee") == "" {
-		return values, NewError(nil, "Please fully fill out the form", 400)
+		return values, NewError(nil, "Rellena el formulario completo por favor", 400)
 	}
 	err := errors.New("")
 	values.Origin, err = strconv.Atoi(r.FormValue("Origin"))
 	if err != nil {
-		return values, NewError(nil, "Invalid origin", 400)
+		return values, NewError(nil, "Origen invalido", 400)
 	}
 
 	values.Destination, err = strconv.Atoi(r.FormValue("Destination"))
 	if err != nil {
-		return values, NewError(nil, "Invalid destination", 400)
+		return values, NewError(nil, "Destino invalido", 400)
 	}
 	values.Seats, err = strconv.Atoi(r.FormValue("Seats"))
 	if err != nil {
-		return values, NewError(nil, "Invalid number of seats", 400)
+		return values, NewError(nil, "Número de cupos invalido", 400)
 	}
 	values.Fee, err = strconv.ParseFloat(r.FormValue("Fee"), 64)
 	if err != nil {
-		return values, NewError(nil, "Invalid fee", 400)
+		return values, NewError(nil, "Precio invalido", 400)
 	}
 
 	if r.FormValue("Origin") == r.FormValue("Destination") {
-		return values, NewError(nil, "Please enter different origin and destination", 400)
+		return values, NewError(nil, "Por favor ingresa otro origen y destino", 400)
 	}
 
 	if values.Fee > 100 {
-		return values, NewError(nil, "Fee is too high. Max fee is $100", 400)
+		return values, NewError(nil, "Precio demasiado alto. Max 100€", 400)
 	}
 
 	if values.Seats > 8 {
-		return values, errors.New("Too many seats. You can only select up to 8 seats")
+		return values, errors.New("Demasiados cupos. Max 8")
 	}
 
 	// Date leaving stuff
 	timeVar, err := ReturnTime(r.FormValue("Date"), r.FormValue("Time"))
 	if err != nil {
-		return values, NewError(nil, "Invalid date leaving", 400)
+		return values, NewError(nil, "Fecha de salida invalida", 400)
 	}
 
 	if timeVar.Before(time.Now().Local()) {
-		return values, NewError(nil, "Can't make listings in the past", 400)
+		return values, NewError(nil, "No se puede hacer viajes en el pasado.", 400)
 	}
 
 	if timeVar.After(time.Now().Local().AddDate(0,2,0)) {
-		return values, NewError(nil, "Can't make listings more than two months in the future", 400)
+		return values, NewError(nil, "No se pueden crear eventos superiores a 2 meses", 400)
 	}
 
 	values.Date = timeVar.Format("2006-01-02 15:04:05")
@@ -135,32 +135,32 @@ func ValidListingQuery(u *url.URL) (ListingQueryFields, error) {
 	// ParseQuery always returns a non-nil map containing all the valid query parameters found
 	urlParsed, err := url.Parse(u.String())
 	if err != nil {
-		return ListingQueryFields{}, NewError(nil, "Invalid url", 400)
+		return ListingQueryFields{}, NewError(nil, "URL invalido", 400)
 	}
 
 	m, err := url.ParseQuery(urlParsed.RawQuery)
 	if err != nil {
-		return ListingQueryFields{}, NewError(nil, "Missing parameters", 400)
+		return ListingQueryFields{}, NewError(nil, "Faltan parámetros", 400)
 	}
 	if _,ok := m["o"]; !ok {
-		return ListingQueryFields{}, NewError(nil, "Missing origin", 400)
+		return ListingQueryFields{}, NewError(nil, "Falta origen", 400)
 	}
 	if _,ok := m["d"]; !ok {
-		return ListingQueryFields{}, NewError(nil, "Missing destination", 400)
+		return ListingQueryFields{}, NewError(nil, "Falta destino", 400)
 	}
 	if _,ok := m["t"]; !ok {
-		return ListingQueryFields{}, NewError(nil, "Missing date", 400)
+		return ListingQueryFields{}, NewError(nil, "Falta fecha", 400)
 	}
 	if _,ok := m["h"]; !ok {
-		return ListingQueryFields{}, NewError(nil, "Missing time", 400)
+		return ListingQueryFields{}, NewError(nil, "Falta la hora", 400)
 	}
 	city1, err := strconv.Atoi(m["o"][0])
 	if err != nil{
-		return ListingQueryFields{}, NewError(nil, "Invalid origin", 400)
+		return ListingQueryFields{}, NewError(nil, "Falta origen", 400)
 	}
 	city2, err := strconv.Atoi(m["d"][0])
 	if err != nil{
-		return ListingQueryFields{}, NewError(nil, "Invalid Destination", 400)
+		return ListingQueryFields{}, NewError(nil, "Falta destino", 400)
 	}
 
 	timeVar, err := ReturnTime(m["t"][0], m["h"][0])
@@ -174,19 +174,19 @@ func ValidListingQuery(u *url.URL) (ListingQueryFields, error) {
 func ValidRegister(r *http.Request) error {
 		// POST validation
 	if r.FormValue("Password") == "" || r.FormValue("Username") == "" || r.FormValue("Email") == "" {
-		return NewError(nil, "Please fully fill out the form", 400)
+		return NewError(nil, "Rellena el formulario completo por favor", 400)
 	}
 
 	if utf8.RuneCountInString(r.FormValue("Password")) < 6 {
-		return NewError(nil, "Password must be at least six characters", 400)
+		return NewError(nil, "Contraseña debe tener por lo menos 6 caracteres", 400)
 	}
 
 	if r.FormValue("Password") != r.FormValue("Password2"){
-		return NewError(nil, "Passwords do not match", 400)
+		return NewError(nil, "No coincide la contraseña", 400)
 	}
 
 	if r.FormValue("Email") != r.FormValue("Email2") {
-		return NewError(nil, "Emails do not match", 400)
+		return NewError(nil, "Correos electrónicos diferentes", 400)
 	}
 	return nil
 }
@@ -195,17 +195,17 @@ func ValidReservePost(r *http.Request) (ReservationPost, error) {
 	reservePost := ReservationPost{}
 	err := errors.New("")
 	if r.FormValue("Seats") == "" || r.FormValue("Listing") == ""{
-		return ReservationPost{}, NewError(nil, "Please fully fill out the form", 400)
+		return ReservationPost{}, NewError(nil, "Rellena el formulario completo por favor", 400)
 	}
 	
 	reservePost.ListingId, err = strconv.Atoi(r.FormValue("Listing"))
 	if err != nil {
-		return ReservationPost{}, NewError(nil, "Invalid Listing", 400)
+		return ReservationPost{}, NewError(nil, "Viaje invalido", 400)
 	}
 	
 	reservePost.Seats, err = strconv.Atoi(r.FormValue("Seats"))
 	if err != nil {
-		return ReservationPost{}, NewError(nil, "Invalid number of seats", 400)
+		return ReservationPost{}, NewError(nil, "Número de cupos invalido", 400)
 	}
 	return reservePost, nil
 }
@@ -213,18 +213,18 @@ func ValidReservePost(r *http.Request) (ReservationPost, error) {
 func ValidReserveURL(r *http.Request) (int, error) {
 	u, err := url.Parse(r.URL.String())
 	if err != nil {
-		return 0, NewError(err, "Internal server error", 500)
+		return 0, NewError(err, "Error de servidor", 500)
 	}
 	m, err := url.ParseQuery(u.RawQuery)
 	if err != nil {
-		return 0, NewError(err, "Internal server error", 500)
+		return 0, NewError(err, "Error de servidor", 500)
 	}
 	if _,ok := m["l"]; !ok {
-		return 0, NewError(nil, "Missing listing ID", 400)
+		return 0, NewError(nil, "Falta viaje id", 400)
 	}
 	listingId, err := strconv.Atoi(m["l"][0])
 	if err != nil {
-		return 0, NewError(nil, "Invalid listing", 400)
+		return 0, NewError(nil, "Viaje invalido", 400)
 	}
 	return listingId, nil
 }
@@ -232,15 +232,15 @@ func ValidReserveURL(r *http.Request) (int, error) {
 func ValidDashQuery(u *url.URL) (int, error) {
 	m, err := url.ParseQuery(u.RawQuery)
 	if err != nil {
-		return 0, NewError(nil, "Invalid url", 400)
+		return 0, NewError(nil, "URL invalido", 400)
 	}
 	if _,ok := m["i"]; !ok {
-		return 0, NewError(nil, "Invalid url", 400)
+		return 0, NewError(nil, "URL invalido", 400)
 	}
 	f := m["i"][0]
 	i, err := strconv.Atoi(f)
 	if err != nil {
-		return 0, NewError(nil, "Invalid url", 400)
+		return 0, NewError(nil, "URL invalido", 400)
 	}
 	return i, nil
 }
@@ -248,33 +248,33 @@ func ValidDashQuery(u *url.URL) (int, error) {
 func ValidMessageURL(r *http.Request) (int, error) {
 	u, err := url.Parse(r.URL.String())
 	if err != nil {
-		return 0, NewError(err, "Internal server error", 500)
+		return 0, NewError(err, "Error de servidor", 500)
 	}
 	m, err := url.ParseQuery(u.RawQuery)
 	if err != nil {
-		return 0, NewError(err, "Internal server error", 500)
+		return 0, NewError(err, "Error de servidor", 500)
 	}
 	if _,ok := m["i"]; !ok {
-		return 0, NewError(nil, "Missing message recipient", 400)
+		return 0, NewError(nil, "Falta recipiente", 400)
 	}
 	userId, err := strconv.Atoi(m["i"][0])
 	if err != nil {
-		return 0, NewError(nil, "Invalid message recipient", 400)
+		return 0, NewError(nil, "Falta recipiente", 400)
 	}
 	return userId, nil
 }
 
 func ValidMessagePost(r *http.Request) (int, string, error) {
 	if r.FormValue("Recipient") == "" || r.FormValue("Message") == ""{
-		return 0, "", NewError(nil, "Please fully fill out the form", 400)
+		return 0, "", NewError(nil, "Rellena el formulario completo por favor", 400)
 	}
 	
 	recipient, err := strconv.Atoi(r.FormValue("Recipient"))
 	if err != nil {
-		return 0, "", NewError(nil, "Invalid message recipient", 400)
+		return 0, "", NewError(nil, "Falta recipiente", 400)
 	}
 	if utf8.RuneCountInString(r.FormValue("Message")) > 500 {
-		return 0, "", NewError(nil, "Message too long (500 character max length)", 400)
+		return 0, "", NewError(nil, "Mensaje demasiado largo. Max 500 caracteres", 400)
 	}
 	return recipient, r.FormValue("Message"), nil
 }
@@ -282,25 +282,25 @@ func ValidMessagePost(r *http.Request) (int, string, error) {
 func ValidRateURL(r *http.Request) (int, error) {
 	u, err := url.Parse(r.URL.String())
 	if err != nil {
-		return 0, NewError(err, "Internal server error", 500)
+		return 0, NewError(err, "Error de servidor", 500)
 	}
 	m, err := url.ParseQuery(u.RawQuery)
 	if err != nil {
-		return 0, NewError(err, "Internal server error", 500)
+		return 0, NewError(err, "Error de servidor", 500)
 	}
 	if _,ok := m["i"]; !ok {
-		return 0, NewError(nil, "Invalid url", 400)
+		return 0, NewError(nil, "URL invalido", 400)
 	}
 	userId, err := strconv.Atoi(m["i"][0])
 	if err != nil {
-		return 0, NewError(nil, "Invalid url", 400)
+		return 0, NewError(nil, "URL invalido", 400)
 	}
 	return userId, nil
 }
 
 func ValidRatePost(r *http.Request) (int, bool, string, bool, error) {
 	if r.FormValue("User") == "" || r.FormValue("Positive") == "" {
-		return 0, false, "", false, NewError(nil, "Please fully fill out the form", 400)
+		return 0, false, "", false, NewError(nil, "Rellena el formulario completo por favor", 400)
 	}
 	
 	recipient, err := strconv.Atoi(r.FormValue("User"))
@@ -308,7 +308,7 @@ func ValidRatePost(r *http.Request) (int, bool, string, bool, error) {
 		return 0, false, "", false, NewError(nil, "Invalid recipient", 400)
 	}
 	if utf8.RuneCountInString(r.FormValue("Comment")) > 200 {
-		return 0, false, "", false, NewError(nil, "Comment too long (200 character max length)", 400)
+		return 0, false, "", false, NewError(nil, "Comentario demasiado largo. Max 200 caracteres", 400)
 	}
 
 	var positive, public bool
@@ -317,7 +317,7 @@ func ValidRatePost(r *http.Request) (int, bool, string, bool, error) {
 	} else if r.FormValue("Positive") == "false" {
 		positive = false
 	} else {
-		return 0, false, "", false, NewError(nil, "Invalid rating selection", 400)
+		return 0, false, "", false, NewError(nil, "Rating invalido", 400)
 	}
 
 	if r.FormValue("Public") == "true" {

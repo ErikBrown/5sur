@@ -13,7 +13,7 @@
 <link rel="stylesheet" type="text/css" href="https://5sur.com/style.css" />
 
 
-<title>5Sur - Email Preferences</title>
+<title>5Sur - Preferencias email</title>
 
 </head>
 
@@ -21,13 +21,13 @@
 	<form method="post" action="https://5sur.com/emailPrefSubmit" class="card_page" id="plain_form">
 		<a href="https://5sur.com/" id="form_logo"></a>
 		<p><b>Select which emails you want to recieve</b></p>
-		<label><input type="checkbox" name="pending" value="true"{{if eq .Pending true}} checked{{end}}>Pending users</label>
-		<label><input type="checkbox" name="dropped" value="true"{{if eq .Dropped true}} checked{{end}}>Someone dropped from a listing</label>
-		<label><input type="checkbox" name="message" value="true"{{if eq .Message true}} checked{{end}}>New messages</label>
-		<label><input type="checkbox" name="accepted" value="true"{{if eq .Accepted true}} checked{{end}}>Accepted reservations</label>
-		<label><input type="checkbox" name="removed" value="true"{{if eq .Removed true}} checked{{end}}>Removed from a reservation</label>
-		<label><input type="checkbox" name="deleted" value="true"{{if eq .Deleted true}} checked{{end}}>Reservation deleted</label>
-		<label><input type="checkbox" name="rate" value="true"{{if eq .Rate true}} checked{{end}}>Rate users</label>
+		<label><input type="checkbox" name="pending" value="true"{{if eq .Pending true}} checked{{end}}>Usuarios pendientes</label>
+		<label><input type="checkbox" name="dropped" value="true"{{if eq .Dropped true}} checked{{end}}>Un pasajero se retiró del viaje</label>
+		<label><input type="checkbox" name="message" value="true"{{if eq .Message true}} checked{{end}}>Mensajes nuevos</label>
+		<label><input type="checkbox" name="accepted" value="true"{{if eq .Accepted true}} checked{{end}}>Viajes aceptadas</label>
+		<label><input type="checkbox" name="removed" value="true"{{if eq .Removed true}} checked{{end}}>Eliminado de un viaje</label>
+		<label><input type="checkbox" name="deleted" value="true"{{if eq .Deleted true}} checked{{end}}>Viaje eliminado</label>
+		<label><input type="checkbox" name="rate" value="true"{{if eq .Rate true}} checked{{end}}>Rate usuarios</label>
 		<input type="submit" value="Set preferences">
 		<a href="https://5sur.com/dashboard/settings" id="discard_form">Cancel</a>
 	</form>

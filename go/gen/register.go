@@ -29,7 +29,7 @@ func unusedUsername(db *sql.DB, username string) (bool, error) {
 		`)
 	
 	if err != nil {
-		return false, util.NewError(err, "Database error", 500)
+		return false, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
@@ -37,7 +37,7 @@ func unusedUsername(db *sql.DB, username string) (bool, error) {
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	rows, err := stmt.Query(username)
 	if err != nil {
-		return false, util.NewError(err, "Database error", 500)
+		return false, util.NewError(err, "Error de la base de datos", 500)
 	}
 	// Always defer rows.Close(), even if you explicitly Close it at the end of the
 	// loop. The connection will have the chance to remain open otherwise.
@@ -58,7 +58,7 @@ func unusedEmail(db *sql.DB, email string) (string, error) {
 	`)
 
 	if err != nil {
-		return "", util.NewError(err, "Database error", 500)
+		return "", util.NewError(err, "Correo electrónico en uso", 500)
 	}
 	defer stmt.Close()
 
@@ -88,7 +88,7 @@ func CheckUserInfo(db *sql.DB, username string, email string) error {
 	if err != nil { return err }
 
 	if !uniqueUsername {
-		return util.NewError(nil, "Username is taken", 400)
+		return util.NewError(nil, "Nombre ya en uso", 400)
 	}
 
 	return nil
@@ -97,23 +97,23 @@ func CheckUserInfo(db *sql.DB, username string, email string) error {
 func invalidUsername(username string) error {
 	valid, err := regexp.Match("^[a-zA-ZÁÉÍÓÑÚÜáéíóñúü0-9_-]{3,20}$", []byte(username))
 	if err!= nil {
-		return util.NewError(err, "Internal server error", 500)
+		return util.NewError(err, "Error de servidor", 500)
 	}
 	if valid {
 		return nil
 	}
-	return util.NewError(nil, "Invalid username", 400)
+	return util.NewError(nil, "Usuario invalido", 400)
 }
 
 func invalidEmail(email string) error {
 	valid, err := regexp.Match(`\S+\@\S+\.\S`, []byte(email))
 	if err!= nil {
-		return util.NewError(err, "Internal server error", 500)
+		return util.NewError(err, "Error de servidor", 500)
 	}
 	if valid {
 		return nil
 	}
-	return util.NewError(nil, "Invalid email", 400)
+	return util.NewError(nil, "Correo electrónico invalido", 400)
 }
 
 func deleteUserAuth(db *sql.DB, email string) error {
@@ -123,7 +123,7 @@ func deleteUserAuth(db *sql.DB, email string) error {
 	`)
 
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
@@ -131,11 +131,11 @@ func deleteUserAuth(db *sql.DB, email string) error {
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	res, err := stmt.Exec(email)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	_, err = res.RowsAffected()
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	return nil
 }
@@ -147,7 +147,7 @@ func createUserAuth(db *sql.DB, username string, password string, email string, 
 			VALUES (?, ?, ?, ?)
 		`)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
@@ -158,12 +158,12 @@ func createUserAuth(db *sql.DB, username string, password string, email string, 
 
 	res, err := stmt.Exec(username, email, hashedPassword, auth)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	
 	_, err = res.RowsAffected()
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	return nil
@@ -188,10 +188,10 @@ func UserAuth(db *sql.DB, username string, password string, email string) error 
 	err = createUserAuth(db, username, password, email, hashedStr)
 	if err != nil { return err }
 
-	subject := "5sur email verification"
-	text := "Welcome to 5sur.com! Click on the following link to complete the registration process."
+	subject := "Verificación de correo electrónico 5sur"
+	text := "Bienvenido a 5sur.com! haz click en el siguiente link para registrarte."
 	link := "https://5sur.com/auth/?t=" + randValue 
-	body := util.EmailTemplate(text, "Register account", link)
+	body := util.EmailTemplate(text, "Regístrate", link)
 	err = util.SendEmail(email, subject, body)
 	if err != nil { return err }
 
@@ -201,7 +201,7 @@ func UserAuth(db *sql.DB, username string, password string, email string) error 
 func hashPassword(password string) ([]byte, error){
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 	if err != nil{
-		return hashed, util.NewError(err, "Internal server error", 500)
+		return hashed, util.NewError(err, "Error de servidor", 500)
 	}
 	return hashed, nil
 }
@@ -216,13 +216,13 @@ func CreateUser(db *sql.DB, token string) (string, error){
 		WHERE u.auth = ?
 		`)
 	if err != nil {
-		return "", util.NewError(err, "Creating user failed", 500)
+		return "", util.NewError(err, "Usuario no creado", 500)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(hashedStr)
 	if err != nil {
-		return "", util.NewError(err, "Creating user failed", 500)
+		return "", util.NewError(err, "Usuario no creado", 500)
 	}
 	defer rows.Close()
 
@@ -233,12 +233,12 @@ func CreateUser(db *sql.DB, token string) (string, error){
 	for rows.Next() {
 		err := rows.Scan(&userInfo.name, &userInfo.email, &userInfo.password, &userInfo.auth)
 		if err != nil {
-			return "", util.NewError(err, "Creating user failed", 500)
+			return "", util.NewError(err, "Usuario no creado", 500)
 		}
 	}
 
 	if userInfo.name == "" {
-		return "", util.NewError(nil, "Authentication failed", 400)
+		return "", util.NewError(nil, "Verificación incorrecta ", 400)
 	}
 
 	// Always run this check before creating a user (which should only be here anyway)
@@ -248,7 +248,7 @@ func CreateUser(db *sql.DB, token string) (string, error){
 	}
 	if !uniqueUsername {
 		err = deleteUserAuth(db, userInfo.email)
-		return "", util.NewError(nil, "Username is taken", 400)
+		return "", util.NewError(nil, "Nombre ya en uso", 400)
 	}
 
 	userId, err := createUser(db, userInfo)
@@ -267,15 +267,15 @@ func createUser(db *sql.DB, u unauthedUser) (int64, error) {
 	defer stmt.Close()
 
 	if err != nil {
-		return 0, util.NewError(err, "Internal server error", 500)
+		return 0, util.NewError(err, "Error de servidor", 500)
 	}
 	res, err := stmt.Exec(u.name, u.email, u.password)
 	if err != nil {
-		return 0, util.NewError(err, "Internal server error", 500)
+		return 0, util.NewError(err, "Error de servidor", 500)
 	}
 
 	lastId, err := res.LastInsertId()
-	if err != nil { return 0, util.NewError(err, "Internal server error", 500) }
+	if err != nil { return 0, util.NewError(err, "Error de servidor", 500) }
 	deleteUserAuth(db, u.email)
 
 	return lastId, nil
@@ -289,7 +289,7 @@ func CheckCredentials(db *sql.DB, username string, password string) (bool, error
 		`)
 	
 	if err != nil {
-		return false, util.NewError(err, "Database error", 500)
+		return false, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
@@ -297,7 +297,7 @@ func CheckCredentials(db *sql.DB, username string, password string) (bool, error
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	rows, err := stmt.Query(username)
 	if err != nil {
-		return false, util.NewError(err, "Database error", 500)
+		return false, util.NewError(err, "Error de la base de datos", 500)
 	}
 	// Always defer rows.Close(), even if you explicitly Close it at the end of the
 	// loop. The connection will have the chance to remain open otherwise.
@@ -310,7 +310,7 @@ func CheckCredentials(db *sql.DB, username string, password string) (bool, error
 	for rows.Next() {
 		err := rows.Scan(&hashedPassword)
 		if err != nil {
-			return false, util.NewError(err, "Database error", 500)
+			return false, util.NewError(err, "Error de la base de datos", 500)
 		}
 	}
 
@@ -328,16 +328,16 @@ func CheckCredentials(db *sql.DB, username string, password string) (bool, error
 func CheckCaptcha(formValue string, userIp string) (bool, error){
 	secretKey, err := ioutil.ReadFile("captchaPassword")
 	if err != nil {
-		return false, util.NewError(err, "Internal server error", 500)
+		return false, util.NewError(err, "Error de servidor", 500)
 	}
 	resp, err := http.Get("https://www.google.com/recaptcha/api/siteverify?secret=" + string(secretKey[:]) + "&response="+ formValue + "&remoteip=" + userIp)
 	if err != nil {
-		return false, util.NewError(err, "Captcha authentication error", 500)
+		return false, util.NewError(err, "Verificación de captcha incorrecta", 500)
 	}
 	defer resp.Body.Close() 
 	contents, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return false, util.NewError(err, "Captcha authentication error", 500)
+		return false, util.NewError(err, "Verificación de captcha incorrecta", 500)
 	}
 
 	type Captcha struct {
@@ -348,7 +348,7 @@ func CheckCaptcha(formValue string, userIp string) (bool, error){
 	var captcha Captcha
 	err = json.Unmarshal(contents, &captcha)
 	if err != nil {
-		return false, util.NewError(err, "Captcha authentication error", 500)
+		return false, util.NewError(err, "Verificación de captcha incorrecta", 500)
 	}
 	return captcha.Success, nil
 }
@@ -361,7 +361,7 @@ func CheckAttempts(db *sql.DB, ip string) (int, error) {
 	`)
 	
 	if err != nil {
-		return 0, util.NewError(err, "Database error", 500)
+		return 0, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
@@ -381,14 +381,14 @@ func UpdateLoginAttempts(db *sql.DB, ip string) error {
 			attempts = attempts + 1;
 		`)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	defer stmt.Close()
 
 	_, err = stmt.Exec(ip)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	
 	return nil
@@ -396,13 +396,13 @@ func UpdateLoginAttempts(db *sql.DB, ip string) error {
 
 func ResetPassword(db *sql.DB, email string) error {
 	if email == "" {
-		return util.NewError(nil, "Email required", 400)
+		return util.NewError(nil, "Correo electrónico requerido", 400)
 	}
 
 	username, err := unusedEmail(db, email)
 	if err != nil { return err }
 
-	if username == "" { return util.NewError(nil, "Email is not registered by any user", 400) }
+	if username == "" { return util.NewError(nil, "Correo electrónico no registrado", 400) }
 
 	alphaNum := []byte("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv")
 	randValue := ""
@@ -418,10 +418,10 @@ func ResetPassword(db *sql.DB, email string) error {
 	err = storePasswordToken(db, email, hashedStr)
 	if err != nil { return err }
 
-	subject := "5sur reset password"
-	text := "<b>" + username + "</b>, to reset your password, click the following link."
+	subject := "5sur - Restablecer contraseña"
+	text := "<b>" + username + "</b> - Para cambiar tu contraseña haz click en el siguiente link."
 	link := "https://5sur.com/passwordChange?t=" + randValue + "&u=" + username
-	body := util.EmailTemplate(text, "Change Password", link)
+	body := util.EmailTemplate(text, "Cambiar contraseña", link)
 	err = util.SendEmail(email, subject, body)
 
 	return nil
@@ -435,14 +435,14 @@ func storePasswordToken(db *sql.DB, email string, token string) error {
 			auth = ?, created = NOW();
 		`)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	defer stmt.Close()
 
 	_, err = stmt.Exec(email, token, token)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	
 	return nil
@@ -465,14 +465,14 @@ func ChangePassword(db *sql.DB, user string, token string, password string) erro
 			AND r.auth = ?;
 	`)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	defer stmt.Close()
 
 	_, err = stmt.Exec(hashedPassword, user, hashedToken)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	err = deletePasswordToken(db, hashedToken)
@@ -487,13 +487,13 @@ func deletePasswordToken(db *sql.DB, token string) error {
 			WHERE auth = ?;
 	`)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(token)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	
 	return nil

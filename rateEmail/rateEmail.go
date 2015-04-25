@@ -15,6 +15,7 @@ type rateEmail struct {
 	emailPref bool
 }
 
+/** Human readable errors here do not need to be translated, or even explicilty stated **/
 
 func checkRateAlerts(db *sql.DB) ([]rateEmail, error) {
 	var results []rateEmail
@@ -93,7 +94,7 @@ func main() {
 		return
 	}
 
-	subject := "5sur - You can now give a user rating"
+	subject := "5sur - You can now give a user rating" // Needs to be translated
 	for _, rateEmail := range rateEmails {
 		err = setRateEmail(db, rateEmail.id)
 		if err != nil { 

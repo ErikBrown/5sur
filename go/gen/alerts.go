@@ -22,13 +22,13 @@ func GetAlerts(db *sql.DB, user int) ([]template.HTML, error) {
 			WHERE user = ?;
 	`)
 	if err != nil {
-		return results, util.NewError(err, "Database error", 500)
+		return results, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(user)
 	if err != nil {
-		return results, util.NewError(err, "Database error", 500)
+		return results, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer rows.Close()
 
@@ -37,7 +37,7 @@ func GetAlerts(db *sql.DB, user int) ([]template.HTML, error) {
 		var targetId int
 		err := rows.Scan(&category, &targetId)
 		if err != nil {
-			return results, util.NewError(err, "Database error", 500)
+			return results, util.NewError(err, "Error de la base de datos", 500)
 		}
 		content, err := createAlertContent(db, user, category, targetId)
 		if err != nil {
@@ -64,13 +64,13 @@ func DeleteAlert(db *sql.DB, user int, category string, targetId int) error {
 				);
 	`)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(user, category, targetId)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	return nil
 }
@@ -85,7 +85,7 @@ func createAlertContent(db *sql.DB, user int, category string, targetId int) (st
 			return `
 			<li>
 				<a href="https://5sur.com/dashboard/listings?i=` + id + `">
-					<b>New pending users</b> on ` + listing.Origin + ` > ` + listing.Destination + `
+					Nuevos usuarios <b>pendientes</b> en el viaje ` + listing.Origin + ` > ` + listing.Destination + `
 				</a>
 			</li>`, nil
 		case "dropped":
@@ -94,7 +94,7 @@ func createAlertContent(db *sql.DB, user int, category string, targetId int) (st
 			return `
 			<li>
 				<a href="https://5sur.com/dashboard/listings?i=` + id + `">
-					Someone has <b>dropped</b> from ride ` + listing.Origin + ` > ` + listing.Destination + `
+					Alguien <b>abortó</b> el viaje ` + listing.Origin + ` > ` + listing.Destination + `
 				</a>
 			</li>
 			`, nil
@@ -114,7 +114,7 @@ func createAlertContent(db *sql.DB, user int, category string, targetId int) (st
 			return `
 			<li>
 				<a href="https://5sur.com/dashboard/reservations?i=` + id + `">
-					<b>Accepted</b> onto ride ` + listing.Origin + ` > ` + listing.Destination + `
+					Viaje <b>aceptada</b> ` + listing.Origin + ` > ` + listing.Destination + `
 				</a>
 			</li>
 			`, nil
@@ -124,7 +124,7 @@ func createAlertContent(db *sql.DB, user int, category string, targetId int) (st
 			return `
 			<li>
 				<a href="https://5sur.com/dashboard/reservations">
-					You have been <b>removed</b> from ride ` + listing.Origin + ` > ` + listing.Destination + `
+					Has sido <b>eliminado</b> del viaje ` + listing.Origin + ` > ` + listing.Destination + `
 				</a>
 			</li>
 			`, nil
@@ -132,7 +132,7 @@ func createAlertContent(db *sql.DB, user int, category string, targetId int) (st
 			return `
 			<li>
 				<a href="https://5sur.com/dashboard/reservations">
-					A ride you were registered for has been <b>deleted</b>
+					El viaje donde te registraste ha sido <b>borrado</b>
 				</a>
 			</li>`, nil
 		case "rate":
@@ -141,7 +141,7 @@ func createAlertContent(db *sql.DB, user int, category string, targetId int) (st
 			return `
 			<li>
 				<a href="https://5sur.com/rate?i=` + id + `">
-					You can now give <b>` + user.Name + `</b> a rating based on your recent ride with them
+					Ahora puedes dar un rating a <b>` + user.Name + `</b> por un viaje recién compartido
 				</a>
 			</li>`, nil
 	}
@@ -161,13 +161,13 @@ func returnAlertMessage(db *sql.DB, recipient int, sender int) (AlertMessage, er
 		`)
 	
 	if err != nil {
-		return AlertMessage{}, util.NewError(err, "Database error", 500)
+		return AlertMessage{}, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 	customPicture := false
 	err = stmt.QueryRow(recipient, sender).Scan(&result.Name, &customPicture, &result.Message)
 	if err != nil {
-		return AlertMessage{}, util.NewError(nil, "Message does not exist", 400)
+		return AlertMessage{}, util.NewError(nil, "Mensaje no existe", 400)
 	}
 
 	if customPicture {
@@ -191,28 +191,28 @@ func CreateAlert(db *sql.DB, user int, category string, targetId int) error {
 				) LIMIT 1;
 	`)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(user, category, targetId, user, category, targetId)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	err = emailAlert(db, user, category, targetId)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	return nil
 }
 
 func emailAlert(db *sql.DB, user int, category string, targetId int) error {
 	send, err := emailPref(db, user, category)
-	if err != nil { return util.NewError(err, "Database error", 500) }
+	if err != nil { return util.NewError(err, "Error de la base de datos", 500) }
 
 	toAddress, err := returnUserEmail(db, user)
-	if err != nil { return util.NewError(err, "Database error", 500) }
+	if err != nil { return util.NewError(err, "Error de la base de datos", 500) }
 
 	// If email pref set to not email for that category, return nil and send no email
 	if !send {
@@ -229,42 +229,42 @@ func emailAlert(db *sql.DB, user int, category string, targetId int) error {
 		case "pending": // The target id is the listing id
 			listing, err := ReturnIndividualListing(db, targetId)
 			if err != nil {return err}
-			subject = "5sur - New pending users on your listing"
-			text = `You have new pending users on listing ` + listing.Origin + ` > ` + listing.Destination + `.`
-			buttonText = "View Listing"
+			subject = "5sur - Nuevos usuarios pendientes"
+			text = `Nuevos usuarios pendientes en el viaje ` + listing.Origin + ` > ` + listing.Destination + `.`
+			buttonText = "Ver listing"
 			buttonLink = "https://5sur.com/dashboard/listings?i=" + id
 		case "dropped":
 			listing, err := ReturnIndividualListing(db, targetId)
 			if err != nil {return err}
-			subject = "5sur - Someone has dropped from one of your listings"
-			text = `Someone has dropped from ride ` + listing.Origin + ` > ` + listing.Destination + `.`
-			buttonText = "View Listing"
+			subject = "5sur - Alguien se ha retirado de tu viaje"
+			text = `Alguien se ha retirado de tu viaje ` + listing.Origin + ` > ` + listing.Destination + `.`
+			buttonText = "Ver listing"
 			buttonLink = "https://5sur.com/dashboard/listings?i=" + id
 		case "message": // The target id is the user id
 			message, err := returnAlertMessage(db, user, targetId)
 			if err != nil {return err}
-			subject = "5sur - New message"
-			text = `You have a new message from ` + message.Name + `.`
-			buttonText = "View Message"
+			subject = "5sur - Mensaje nuevo"
+			text = `Tienes un mensaje nuevo de ` + message.Name + `.`
+			buttonText = "Ver mensaje"
 			buttonLink = "https://5sur.com/dashboard/messages?i=" + id
 		case "accepted":
 			listing, err := ReturnIndividualListing(db, targetId)
 			if err != nil {return err}
-			subject = "5sur - You have been accepted onto a ride"
-			text = `You have been Accepted onto ride ` + listing.Origin + ` > ` + listing.Destination + `.`
-			buttonText = "View Reservation"
+			subject = "5sur - Has sido aceptado por un viaje"
+			text = `Has sido aceptado por viajee ` + listing.Origin + ` > ` + listing.Destination + `.`
+			buttonText = "Ver reserva"
 			buttonLink = "https://5sur.com/dashboard/reservations?i=" + id
 		case "removed":
 			listing, err := ReturnIndividualListing(db, targetId)
 			if err != nil {return err}
 			subject = "5sur - You have been removed from a ride you were registered for"
 			text = `You have been removed from ride ` + listing.Origin + ` > ` + listing.Destination + `.`
-			buttonText = "View Reservations"
+			buttonText = "Ver reservas"
 			buttonLink = "https://5sur.com/dashboard/reservations"
 		case "deleted":
-			subject = "5sur - Listing deleted"
-			text = `A ride you were registered for has been <b>deleted</b> by the driver.`
-			buttonText = "View Reservations"
+			subject = "5sur - Listing eliminado"
+			text = `Un viaje por lo cual estabas registrado ha sido eliminado por el conductor.`
+			buttonText = "Ver reservas"
 			buttonLink = "https://5sur.com/dashboard/reservations"
 	}
 
@@ -307,14 +307,14 @@ func returnUserEmail(db *sql.DB, user int) (string, error) {
 		`)
 	
 	if err != nil {
-		return "", util.NewError(err, "Database error", 500)
+		return "", util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	email := ""
 	err = stmt.QueryRow(user).Scan(&email)
 	if err != nil {
-		return "", util.NewError(err, "Internal Server Error", 500)
+		return "", util.NewError(err, "Error de servidor", 500)
 	}
 
 	return email, nil

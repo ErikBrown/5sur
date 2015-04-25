@@ -34,11 +34,11 @@ func SendEmail(toAddress string, subject string, body string) error {
 	// SMTP Server info
 	user, err := ioutil.ReadFile("sesUser")
 	if err != nil {
-		return NewError(err, "Internal server error", 500)
+		return NewError(err, "Error de servidor", 500)
 	}
 	password, err := ioutil.ReadFile("sesPassword")
 	if err != nil {
-		return NewError(err, "Internal server error", 500)
+		return NewError(err, "Error de servidor", 500)
 	}
 	servername := "email-smtp.us-west-2.amazonaws.com:465"
 	host := "email-smtp.us-west-2.amazonaws.com"
@@ -51,40 +51,40 @@ func SendEmail(toAddress string, subject string, body string) error {
 
 	conn, err := tls.Dial("tcp",servername,tlsconfig)
 	if err != nil {
-		return NewError(err, "Email authentication error", 500)
+		return NewError(err, "Error de verificación de correo electrónico", 500)
 	}
 
 	client, err := smtp.NewClient(conn, host)
 	if err != nil {
-		return NewError(err, "Email authentication error", 500)
+		return NewError(err, "Error de verificación de correo electrónico", 500)
 	}
 	defer client.Quit()
 
 	// auth
 	if err = client.Auth(auth); err != nil {
-		return NewError(err, "Email authentication error", 500)
+		return NewError(err, "Error de verificación de correo electrónico", 500)
 	}
 
 	// to and from
 	if err = client.Mail(from); err != nil {
-		return NewError(err, "Email authentication error", 500)
+		return NewError(err, "Error de verificación de correo electrónico", 500)
 	}
 
 	// Can have multiple Rcpt calls
 	if err = client.Rcpt(to); err != nil {
-		return NewError(err, "Email authentication error", 500)
+		return NewError(err, "Error de verificación de correo electrónico", 500)
 	}
 
 	// Data
 	dataWriter, err := client.Data()
 	if err != nil {
-		return NewError(err, "Email authentication error", 500)
+		return NewError(err, "Error de verificación de correo electrónico", 500)
 	}
 	defer dataWriter.Close()
 
 	_, err = dataWriter.Write([]byte(message))
 	if err != nil {
-		return NewError(err, "Email authentication error", 500)
+		return NewError(err, "Error de verificación de correo electrónico", 500)
 	}
 	return nil
 }
@@ -125,14 +125,14 @@ func SetEmailPref(db *sql.DB, r *http.Request, user int) error {
 			WHERE user = ?;
 		`)
 	if err != nil {
-		return NewError(err, "Database error", 500)
+		return NewError(err, "Error de la base de datos", 500)
 	}
 
 	defer stmt.Close()
 
 	_, err = stmt.Exec(prefs.Pending, prefs.Dropped, prefs.Message, prefs.Accepted, prefs.Removed, prefs.Deleted, prefs.Rate, user)
 	if err != nil {
-		return NewError(err, "Database error", 500)
+		return NewError(err, "Error de la base de datos", 500)
 	}
 
 	return nil
@@ -147,7 +147,7 @@ func ReturnEmailPref(db *sql.DB, user int) (EmailPrefs, error) {
 	`)
 
 	if err != nil {
-		return prefs, NewError(err, "Database error", 500)
+		return prefs, NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
@@ -165,14 +165,14 @@ func CreateEmailPrefs(db *sql.DB, user int64) error {
 			VALUES(?, true, true, true, true, true, true, true);
 		`)
 	if err != nil {
-		return NewError(err, "Database error", 500)
+		return NewError(err, "Error de la base de datos", 500)
 	}
 
 	defer stmt.Close()
 
 	_, err = stmt.Exec(user)
 	if err != nil {
-		return NewError(err, "Database error", 500)
+		return NewError(err, "Error de la base de datos", 500)
 	}
 
 	return nil

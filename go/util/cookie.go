@@ -67,13 +67,13 @@ func deleteAuthToken(db *sql.DB, userId int, app bool) error {
 	}
 	stmt, err := db.Prepare(stmtText)
 	if err != nil {
-		return NewError(err, "Database error", 500)
+		return NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(userId)
 	if err != nil {
-		return NewError(err, "Database error", 500)
+		return NewError(err, "Error de la base de datos", 500)
 	}
 	return nil
 }
@@ -93,13 +93,13 @@ func updateSession(v string, u string, db *sql.DB, app bool) error {
 	}
 	stmt, err := db.Prepare(stmtText)
 	if err != nil {
-		return NewError(err, "Database error", 500)
+		return NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(hashedStr, u)
 	if err != nil {
-		return NewError(err, "Database error", 500)
+		return NewError(err, "Error de la base de datos", 500)
 	}
 	return nil
 }
@@ -149,7 +149,7 @@ func checkSession(s string, app bool, db *sql.DB) (string, int, bool, error){
 	stmt, err := db.Prepare(stmtText)
 	
 	if err != nil {
-		return "", 0, false, NewError(err, "Database error", 500)
+		return "", 0, false, NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
@@ -157,7 +157,7 @@ func checkSession(s string, app bool, db *sql.DB) (string, int, bool, error){
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	rows, err := stmt.Query(hashedStr)
 	if err != nil {
-		return "", 0, false, NewError(err, "Database error", 500)
+		return "", 0, false, NewError(err, "Error de la base de datos", 500)
 	}
 	// Always defer rows.Close(), even if you explicitly Close it at the end of the
 	// loop. The connection will have the chance to remain open otherwise.
@@ -172,7 +172,7 @@ func checkSession(s string, app bool, db *sql.DB) (string, int, bool, error){
 	for rows.Next() {
 		err := rows.Scan(&name, &id, &customPicture)
 		if err != nil {
-			return "", 0, false, NewError(err, "Database error", 500)
+			return "", 0, false, NewError(err, "Error de la base de datos", 500)
 		}
 	}
 

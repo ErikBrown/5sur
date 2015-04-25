@@ -63,7 +63,7 @@ func ReturnUserInfo(db *sql.DB, u interface{}) (User, error) {
 	stmt, err := db.Prepare(stmtText)
 	
 	if err != nil {
-		return result, util.NewError(err, "Database error", 500)
+		return result, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
@@ -72,7 +72,7 @@ func ReturnUserInfo(db *sql.DB, u interface{}) (User, error) {
 	customPicture := false
 	err = stmt.QueryRow(u).Scan(&result.Id, &result.Name, &customPicture, &result.Rating, &given, &taken)
 	if err != nil {
-		return result, util.NewError(nil, "User does not exist", 404)
+		return result, util.NewError(nil, "Usuario no existe", 404)
 	}
 
 	if customPicture {
@@ -112,13 +112,13 @@ func returnRideHistory(db *sql.DB, u int) (map[string]int, map[string]int, error
 	`)
 
 	if err != nil {
-		return result, result2, util.NewError(err, "Database error", 500)
+		return result, result2, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(u)
 	if err != nil {
-		return result, result2, util.NewError(err, "Database error", 500)
+		return result, result2, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer rows.Close()
 
@@ -127,7 +127,7 @@ func returnRideHistory(db *sql.DB, u int) (map[string]int, map[string]int, error
 		var given, taken int
 		err := rows.Scan(&year, &given, &taken)
 		if err != nil {
-			return result, result2, util.NewError(err, "Database error", 500)
+			return result, result2, util.NewError(err, "Error de la base de datos", 500)
 		}
 		result[year] = given
 		result2[year] = taken
@@ -147,13 +147,13 @@ func returnUserComments(db *sql.DB, u int) ([]Comment, error) {
 	`)
 
 	if err != nil {
-		return results, util.NewError(err, "Database error", 500)
+		return results, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(u)
 	if err != nil {
-		return results, util.NewError(err, "Database error", 500)
+		return results, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer rows.Close()
 
@@ -161,7 +161,7 @@ func returnUserComments(db *sql.DB, u int) ([]Comment, error) {
 		comment := Comment{}
 		err := rows.Scan(&comment.Positive, &comment.Date, &comment.Text)
 		if err != nil {
-			return results, util.NewError(err, "Database error", 500)
+			return results, util.NewError(err, "Error de la base de datos", 500)
 		}
 		results = append(results, comment)
 	}
@@ -187,22 +187,22 @@ func SubmitRating(db *sql.DB, commenter int, user int, positive bool, comment st
 				) LIMIT 1;
 		`)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	res, err := stmt.Exec(user, commenter, comment, positive, public, commenter, user, commenter, user)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	rowCnt, err := res.RowsAffected()
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	if rowCnt != 1 {
-		return util.NewError(nil, "You cannot rate this user. You either have no past transactions with this user or one week has passed since last transaction", 400)
+		return util.NewError(nil, "No puedes dar rating a este usuario. no has viajado con el o ha pasado más de una semana desde tu viaje", 400)
 	}
 
 	err = updateRatingScore(db, user, positive)
@@ -220,13 +220,13 @@ func updateRatingScore(db *sql.DB, user int, positive bool) error {
 	}
 	stmt, err := db.Prepare(stmtText)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(user)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	return nil
@@ -238,7 +238,7 @@ func duplicateRating(db *sql.DB, user int, commenter int) error {
 		`)
 	
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
@@ -248,7 +248,7 @@ func duplicateRating(db *sql.DB, user int, commenter int) error {
 		return nil
 	}
 
-	return util.NewError(nil, "You have already left a rating for this user", 400)
+	return util.NewError(nil, "Ya diste rating a este usuario", 400)
 }
 
 func ReturnUserPicture(db *sql.DB, user int, size string) (string, error) {
@@ -258,7 +258,7 @@ func ReturnUserPicture(db *sql.DB, user int, size string) (string, error) {
 		`)
 	
 	if err != nil {
-		return picture, util.NewError(err, "Database error", 500)
+		return picture, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
@@ -266,7 +266,7 @@ func ReturnUserPicture(db *sql.DB, user int, size string) (string, error) {
 	name := ""
 	err = stmt.QueryRow(user).Scan(&customPicture, &name)
 	if err != nil {
-		return picture, util.NewError(err, "User not found", 500)
+		return picture, util.NewError(err, "Usuario no encontrado", 500)
 	}
 
 	sizeSuffix := ""

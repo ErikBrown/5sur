@@ -41,7 +41,7 @@ func CreateListingHandler(w http.ResponseWriter, r *http.Request) error {
 	user, _, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 	if user == "" {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 
 	// HTML generation (also does listing-specific SQL calls)
@@ -50,7 +50,7 @@ func CreateListingHandler(w http.ResponseWriter, r *http.Request) error {
 
 	err = templates.ExecuteTemplate(w, "create.html", cities)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -65,7 +65,7 @@ func CreateSubmitHandler(w http.ResponseWriter, r *http.Request) error{
 	user, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 	if user == "" {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 
 	createFormPost, err := util.ValidCreateSubmit(r)
@@ -96,7 +96,7 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request) error{
 	if err != nil { return err }
 
 	if user == "" {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 
 	// Check post data for if a button was clicked that directed the user here.
@@ -142,7 +142,7 @@ func DashListingsHandler(w http.ResponseWriter, r *http.Request) error{
 
 	err = templates.ExecuteTemplate(w, "dashListings.html", page)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -158,7 +158,7 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 	if err != nil { return err }
 
 	if user == "" {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 	dashMessages, err := gen.GetDashMessages(db, userId)
 	if err != nil { return err }
@@ -205,7 +205,7 @@ func DashMessagesHandler(w http.ResponseWriter, r *http.Request) error{
 
 	err = templates.ExecuteTemplate(w, "dashMessages.html", page)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -221,7 +221,7 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request) error{
 	if err != nil { return err }
 
 	if userId == 0 {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 
 	dashReservations, err := gen.GetDashReservations(db, userId)
@@ -274,7 +274,7 @@ func DashReservationsHandler(w http.ResponseWriter, r *http.Request) error{
 
 	err = templates.ExecuteTemplate(w, "dashReservations.html", page)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -290,7 +290,7 @@ func DeleteListingHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	if userId == 0 {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 
 	if r.PostFormValue("d") == "" {
@@ -298,13 +298,13 @@ func DeleteListingHandler(w http.ResponseWriter, r *http.Request) error {
 		if err != nil { return err }
 		err = templates.ExecuteTemplate(w, "deleteListing.html", listingId)
 		if err != nil {
-			return util.NewError(err, "Failed to load page", 500)
+			return util.NewError(err, "No se cargó la página", 500)
 		}
 		return nil
 	}
 	listingId, err := strconv.Atoi(r.FormValue("d"))
 	if err != nil {
-		return util.NewError(nil, "Invalid listing", 400)
+		return util.NewError(nil, "Viaje invalido", 400)
 	}
 
 	registeredUsers, err := gen.DeleteListing(db, userId, listingId)
@@ -372,7 +372,7 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	header := &gen.HeaderHTML {
-		Title: "Listings",
+		Title: "Viajes",
 		Username: user,
 		Alerts: len(alerts),
 		AlertText: alerts,
@@ -405,7 +405,7 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) error {
 
 	err = templates.ExecuteTemplate(w, "listings.html", page)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -413,7 +413,7 @@ func ListingsHandler(w http.ResponseWriter, r *http.Request) error {
 func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 	// POST validation
 	if r.FormValue("Password") == "" || r.FormValue("Username") == "" {
-		return util.NewError(nil, "Missing username or password", 400)
+		return util.NewError(nil, "Falta nombre de usuario o contraseña", 400)
 	}
 
 	// Database initialization
@@ -437,7 +437,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 		human, err := gen.CheckCaptcha(r.FormValue("g-recaptcha-response"), userIp)
 		if err != nil { return err }
 		if !human {
-			return util.NewError(nil, "Invalid Captcha", 400)
+			return util.NewError(nil, "Captcha invalido", 400)
 		}
 	}
 	
@@ -457,7 +457,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 	}else {
 		err = gen.UpdateLoginAttempts(db, userIp)
 		if err != nil { return err }
-		return util.NewError(nil, "Your username or password was incorrect", 400)
+		return util.NewError(nil, "Nombre de usuario o contraseña incorrecto", 400)
 	}
 	return nil
 }
@@ -504,7 +504,7 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) error {
 	human, err := gen.CheckCaptcha(r.FormValue("g-recaptcha-response"), userIp)
 	if err != nil { return err }
 	if !human {
-		return util.NewError(nil, "Invalid Captcha", 400)
+		return util.NewError(nil, "Captcha invalido", 400)
 	}
 	
 	err = gen.UserAuth(db, r.FormValue("Username"), r.FormValue("Password"), r.FormValue("Email"))
@@ -514,14 +514,14 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) error {
 		MessageTitle string
 		Message string
 	}{
-		"Register",
+		"Regístrate",
 		"",
-		"Confirmation email has been sent to " + r.FormValue("Email"),
+		"Confirmation email has been sent to " + r.FormValue("Email"), // Needs to be translated
 	}
 
 	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -539,7 +539,7 @@ func ReserveFormHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	if user == "" {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 	listing, err := gen.ReturnIndividualListing(db, l)
 	if err != nil { return err }
@@ -560,7 +560,7 @@ func ReserveFormHandler(w http.ResponseWriter, r *http.Request) error {
 
 	err = templates.ExecuteTemplate(w, "reserve.html", reserve)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -579,7 +579,7 @@ func ReserveHandler(w http.ResponseWriter, r *http.Request) error {
 	user, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 	if user == "" {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 
 	err = gen.CreateReservation(db, userId, values.ListingId, values.Seats, r.FormValue("Message"))
@@ -590,14 +590,14 @@ func ReserveHandler(w http.ResponseWriter, r *http.Request) error {
 		MessageTitle string
 		Message string
 	}{
-		"Reserve",
-		"You have been placed on the reservation queue",
-		"Note: This does not guarantee you a ride - you must first be accepted by the driver and will be notified when that happens.",
+		"Reservar",
+		"Has entrado a la lista de reservaciones",
+		"Atento: tu viaje no esta garantizado hasta que el conductor te acepte. Te notificaremos cuando esto suceda.",
 	}
 
 	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -641,7 +641,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) error {
 
 	err = templates.ExecuteTemplate(w, "listings.html", page)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -656,12 +656,12 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) error {
 	user, _, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 	if user == "" {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 	// the FormFile function takes in the POST input id file
 	file, header, err := r.FormFile("Picture")
 	if err != nil {
-		return util.NewError(nil, "No picture found", 400)
+		return util.NewError(nil, "Foto no encontrado", 400)
 	}
 	defer file.Close()
 
@@ -682,11 +682,11 @@ func UploadFormHandler(w http.ResponseWriter, r *http.Request) error {
 	user, _, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 	if user == "" {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 	err = templates.ExecuteTemplate(w, "upload.html", "")
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -701,7 +701,7 @@ func UploadDeleteFormHandler(w http.ResponseWriter, r *http.Request) error {
 	user, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 	if user == "" {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 
 	picture, err := gen.ReturnUserPicture(db, userId, "100")
@@ -717,7 +717,7 @@ func UploadDeleteFormHandler(w http.ResponseWriter, r *http.Request) error {
 
 	err = templates.ExecuteTemplate(w, "deletePicture.html", body)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -732,11 +732,11 @@ func UploadDeleteHandler(w http.ResponseWriter, r *http.Request) error {
 	user, userId, _, err := util.CheckCookie(r, db) // return "" if not logged in
 	if err != nil { return err }
 	if userId == 0 {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 
 	if r.FormValue("User") != strconv.Itoa(userId) {
-		return util.NewError(nil, "Picture delete failed", 400)
+		return util.NewError(nil, "Foto no borrado", 400)
 	}
 
 	err = util.DeletePicture(db, user)
@@ -781,7 +781,7 @@ func UserHandler(w http.ResponseWriter, r *http.Request) error {
 
 	err = templates.ExecuteTemplate(w, "user.html", page)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -814,13 +814,13 @@ func LoginFormHandler(w http.ResponseWriter, r *http.Request) error{
 		captcha = `<div class="g-recaptcha" data-sitekey="6LfejAATAAAAAK1DA4l33OntwJy9LZz1GK3F2Egr"></div>`
 	}
 	registerData := &gen.LoginHTML{
-		Title: "Login",
+		Title: "Ingresar",
 		Script: script,
 		Captcha: captcha,
 	}
 	err = templates.ExecuteTemplate(w, "login.html", registerData)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -832,7 +832,7 @@ func RegisterFormHandler(w http.ResponseWriter, r *http.Request) error{
 
 	err = templates.ExecuteTemplate(w, "register.html", "")
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -850,14 +850,14 @@ func SendMessageHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	if userId == 0 {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 	userInfo, err := gen.ReturnUserInfo(db, recipientId)
 	if err != nil { return err }
 
 	err = templates.ExecuteTemplate(w, "message.html", userInfo)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -872,7 +872,7 @@ func SendMessageSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	if userId == 0 {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 
 	recipient, message, err := util.ValidMessagePost(r)
@@ -901,7 +901,7 @@ func RateHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	if userId == 0 {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 	userInfo, err := gen.ReturnUserInfo(db, recipientId)
 	if err != nil { return err }
@@ -911,7 +911,7 @@ func RateHandler(w http.ResponseWriter, r *http.Request) error {
 
 	err = templates.ExecuteTemplate(w, "rate.html", userInfo)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -926,7 +926,7 @@ func RateSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	if userId == 0 {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 
 	userRate, positive, comment, public, err := util.ValidRatePost(r)
@@ -940,14 +940,14 @@ func RateSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 		MessageTitle string
 		Message string
 	}{
-		"Rate",
+		"Dar puntaje",
 		"",
-		"Rating submitted!",
+		"Rating submitted!", // Needs to be translated
 	}
 
 	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -955,7 +955,7 @@ func RateSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 func PasswordResetFormHandler(w http.ResponseWriter, r *http.Request) error {
 	err := templates.ExecuteTemplate(w, "passwordReset.html", "")
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -973,14 +973,14 @@ func PasswordResetHandler(w http.ResponseWriter, r *http.Request) error {
 		MessageTitle string
 		Message string
 	}{
-		"Password Reset",
+		"Restablecer contraseña",
 		"",
-		"Password reset email has been sent to " + r.FormValue("Email"),
+		"Password reset email has been sent to " + r.FormValue("Email"), // Needs to be translated
 	}
 
 	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -997,7 +997,7 @@ func PasswordChangeFormHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 	err = templates.ExecuteTemplate(w, "passwordChange.html", body)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -1026,7 +1026,7 @@ func DashSettingsHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	if userId == 0 {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 
 	alerts, err := gen.GetAlerts(db, userId)
@@ -1048,7 +1048,7 @@ func DashSettingsHandler(w http.ResponseWriter, r *http.Request) error {
 
 	err = templates.ExecuteTemplate(w, "dashSettings.html", page)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -1063,12 +1063,12 @@ func DeleteAccountFormHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	if user == "" {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 
 	err = templates.ExecuteTemplate(w, "deleteAccount.html", "")
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -1083,22 +1083,22 @@ func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	if user == "" {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 	// put this in valid
 	if r.FormValue("Password") == "" || r.FormValue("Password2") == "" {
-		return util.NewError(nil, "Please fully fill out the form", 400)
+		return util.NewError(nil, "Rellena el formulario completo por favor", 400)
 	}
 
 	if r.FormValue("Password") != r.FormValue("Password2") {
-		return util.NewError(nil, "Passwords do not match", 400)
+		return util.NewError(nil, "No coincide la contraseña", 400)
 	}
 
 	authenticated, err := gen.CheckCredentials(db, user, r.FormValue("Password"))
 	if err != nil { return err }
 
 	if !authenticated {
-		return util.NewError(nil, "Incorrect Password", 400)
+		return util.NewError(nil, "Contraseña incorrecta", 400)
 	}
 
 	err = gen.DeleteAccount(db, userId)
@@ -1109,14 +1109,14 @@ func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) error {
 		MessageTitle string
 		Message string
 	}{
-		"Delete Account",
+		"Borrar cuenta",
 		"",
-		"Account deleted",
+		"Account deleted", // Needs to be translated
 	}
 
 	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -1131,7 +1131,7 @@ func EmailPrefHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	if userId == 0 {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 
 	prefs, err := util.ReturnEmailPref(db, userId)
@@ -1139,7 +1139,7 @@ func EmailPrefHandler(w http.ResponseWriter, r *http.Request) error {
 
 	err = templates.ExecuteTemplate(w, "emailPref.html", prefs)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -1154,7 +1154,7 @@ func EmailPrefSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	if userId == 0 {
-		return util.NewError(nil, "Login required", 401)
+		return util.NewError(nil, "Se requiere ingreso a la cuenta", 401)
 	}
 	
 	err = util.SetEmailPref(db, r, userId)
@@ -1165,14 +1165,14 @@ func EmailPrefSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 		MessageTitle string
 		Message string
 	}{
-		"Email Preferences",
+		"Preferencias email",
 		"",
-		"Email preference changes saved",
+		"Email preference changes saved", // Needs to be translated
 	}
 
 	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)
 	if err != nil {
-		return util.NewError(err, "Failed to load page", 500)
+		return util.NewError(err, "No se cargó la página", 500)
 	}
 	return nil
 }
@@ -1191,14 +1191,14 @@ func (fn handlerWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			ref := r.Referer()
 			refUrl, _ := url.Parse(ref)
 			refHost := refUrl.Host
-			prevUrlText := "Return"
+			prevUrlText := "Volver"
 			if myErr.StatusCode == 401{
 				ref = "https://5sur.com/login"
-				prevUrlText = "Login"
+				prevUrlText = "Ingresar"
 			}
 			if refHost != "5sur.com" {
 				ref = "https://5sur.com/"
-				prevUrlText = "Return to homepage"
+				prevUrlText = "Volver a homepage"
 			}
 
 			ErrorPage := struct {

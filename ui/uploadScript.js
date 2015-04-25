@@ -7,7 +7,7 @@ function checkFileName() {
 		return true;
 	}
 	else {
-		alert("File type " + fileName.split(".")[1] + " is invalid. Images have to be png, jpg, or non-animated gif");
+		alert(fileName.split(".")[1] + " tipo de archivo invalido. imágenes debe ser .png, .jpg, o gif no animado.");
 		inputform.value = "";
 		return false;
 	}
@@ -22,13 +22,13 @@ function handleFiles() {
 
 	var files = this.files;
 	if (files.length > 1) {
-		alert("You can only upload one item at a time")
+		alert("Sólo puedes subir un archivo a la vez")
 		inputform.value = "";
 		return
 	}
 	var size = files[0].size;
 	if (size > 10485760) { // 1MB
-		alert("File size too big. Max size = 10MB")
+		alert("Archivo demasiado pesado. Tamaño máximo  = 10MB")
 		inputform.value = "";
 		return
 	}

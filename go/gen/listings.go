@@ -16,7 +16,7 @@ func ReturnFilter(db *sql.DB) ([]City, error) {
 	`)
 
 	if err != nil {
-		return results, util.NewError(err, "Database error", 500)
+		return results, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
@@ -24,7 +24,7 @@ func ReturnFilter(db *sql.DB) ([]City, error) {
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	rows, err := stmt.Query()
 	if err != nil {
-		return results, util.NewError(err, "Database error", 500)
+		return results, util.NewError(err, "Error de la base de datos", 500)
 	}
 	// Always defer rows.Close(), even if you explicitly Close it at the end of the
 	// loop. The connection will have the chance to remain open otherwise.
@@ -35,7 +35,7 @@ func ReturnFilter(db *sql.DB) ([]City, error) {
 		var temp City
 		err := rows.Scan(&temp.Id, &temp.Name)
 		if err != nil {
-			return results, util.NewError(err, "Database error", 500)
+			return results, util.NewError(err, "Error de la base de datos", 500)
 		}
 		results = append(results, temp)
 	}
@@ -50,18 +50,18 @@ func checkNearbyListings(db *sql.DB, date_leaving string, id int) error {
 		driver = ?
 	`)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(date_leaving, date_leaving, id)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		return util.NewError(nil, "You already have a listing near this date", 400)
+		return util.NewError(nil, "Ya tienes un viaje en esta fecha", 400)
 	}
 	return nil
 }
@@ -86,7 +86,7 @@ func ReturnListings(db *sql.DB, o int, d int, t string) ([]Listing, error) {
 		`)
 	
 	if err != nil {
-		return results, util.NewError(err, "Database error", 500)
+		return results, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
@@ -94,7 +94,7 @@ func ReturnListings(db *sql.DB, o int, d int, t string) ([]Listing, error) {
 	// trips to the databse. Call it infrequently as possible; use efficient SQL statments
 	rows, err := stmt.Query(o, d, t)
 	if err != nil {
-		return results, util.NewError(err, "Database error", 500)
+		return results, util.NewError(err, "Error de la base de datos", 500)
 	}
 	// Always defer rows.Close(), even if you explicitly Close it at the end of the
 	// loop. The connection will have the chance to remain open otherwise.
@@ -107,7 +107,7 @@ func ReturnListings(db *sql.DB, o int, d int, t string) ([]Listing, error) {
 		name := ""
 		err := rows.Scan(&temp.Id, &temp.Driver, &name, &customPicture, &temp.Rating, &temp.Timestamp, &temp.Origin, &temp.Destination, &temp.Seats, &temp.Fee)
 		if err != nil {
-			return results, util.NewError(err, "Database error", 500)
+			return results, util.NewError(err, "Error de la base de datos", 500)
 		}
 		prettyTime, err := util.PrettyDate(temp.Timestamp, false)
 		if err != nil { return results, err }
@@ -130,7 +130,7 @@ func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, dest
 	if err != nil { return 0, err }
 
 	if listingTotal > 20 {
-		return 0, util.NewError(err, "You have too many current listings (max 20)", 400)
+		return 0, util.NewError(err, "Tienes demasiados viajes existentes (max 20)", 400)
 	}
 
 	err = checkNearbyListings(db, date_leaving, driver)
@@ -149,27 +149,27 @@ func CreateListing(db *sql.DB, date_leaving string, driver int, origin int, dest
 				) LIMIT 1;
 		`)
 	if err != nil {
-		return 0, util.NewError(err, "Database error", 500)
+		return 0, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	res, err := stmt.Exec(date_leaving, driver, origin, destination, seats, fee, origin, destination)
 	if err != nil {
-		return 0, util.NewError(err, "Database error", 500)
+		return 0, util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	rowCnt, err := res.RowsAffected()
 	if err != nil {
-		return 0, util.NewError(err, "Database error", 500)
+		return 0, util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	if rowCnt != 1 { // Invalid city id
-		return 0, util.NewError(nil, "Invalid create listing parameters", 400)
+		return 0, util.NewError(nil, "Parámetros inválidos", 400)
 	}
 
 	lastId, err := res.LastInsertId()
 	if err != nil {
-		return 0, util.NewError(err, "Database error", 500)
+		return 0, util.NewError(err, "Error de la base de datos", 500)
 	}
 	
 	return lastId, nil
@@ -184,7 +184,7 @@ func checkListingTotal(db *sql.DB, driver int) (int, error) {
 		`)
 	
 	if err != nil {
-		return 0, util.NewError(err, "Database error", 500)
+		return 0, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
@@ -192,7 +192,7 @@ func checkListingTotal(db *sql.DB, driver int) (int, error) {
 	err = stmt.QueryRow(driver).Scan(&listingTotal)
 	if err != nil {
 		// This should never happen
-		return 0, util.NewError(err, "Database error", 500)
+		return 0, util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	return listingTotal, nil
@@ -211,7 +211,7 @@ func ReturnIndividualListing(db *sql.DB, id int) (Listing, error) {
 		`)
 	
 	if err != nil {
-		return Listing{}, util.NewError(err, "Database error", 500)
+		return Listing{}, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
@@ -219,7 +219,7 @@ func ReturnIndividualListing(db *sql.DB, id int) (Listing, error) {
 	name := ""
 	err = stmt.QueryRow(id).Scan(&result.Id, &result.Driver, &name, &customPicture, &result.Rating, &result.Timestamp, &result.Origin, &result.Destination, &result.Seats, &result.Fee)
 	if err != nil {
-		return Listing{}, util.NewError(nil, "Listing does not exist", 400)
+		return Listing{}, util.NewError(nil, "Viaje no existe", 400)
 	}
 	prettyTime, err := util.PrettyDate(result.Timestamp, false)
 	if err != nil { return result, err }

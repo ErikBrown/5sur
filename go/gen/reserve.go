@@ -14,19 +14,19 @@ func CreateReservation(db *sql.DB, userId int, listingId int, seats int, message
 	}
 
 	if userId == ride.Driver {
-		return util.NewError(nil, "Cannot register for your own ride", 400)
+		return util.NewError(nil, "No puedes registrarte por tu propio viaje", 400)
 	}
 
 	if seats > ride.Seats {
-		return util.NewError(nil, "Not enough seats available", 400)
+		return util.NewError(nil, "No hay cupos disponibles", 400)
 	}
 
 	if seats <= 0 {
-		return util.NewError(nil, "You must register for at least one seat", 400)
+		return util.NewError(nil, "Tienes que registrarte por la menos un asiento", 400)
 	}
 
 	if utf8.RuneCountInString(message) > 200 {
-		return util.NewError(nil, "Message too long (max characters: 200)", 400)
+		return util.NewError(nil, "Mensaje demasiado largo. Max caracteres 200", 400)
 	}
 	
 	err = validReservation(db, userId, listingId, ride.Timestamp)
@@ -51,14 +51,14 @@ func validReservation(db *sql.DB, userId int, listingId int, date string) error 
 	`)
 	
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	t := ""
 	err = stmt.QueryRow(listingId, userId).Scan(&t)
 	if err == nil {
-		return util.NewError(nil, "You are already on this reservation queue", 400)
+		return util.NewError(nil, "Ya estás en la lista de reservaciones ", 400)
 	}
 
 	stmt2, err := db.Prepare(`
@@ -72,13 +72,13 @@ func validReservation(db *sql.DB, userId int, listingId int, date string) error 
 	`)
 	
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt2.Close()
 
 	rows, err := stmt2.Query(userId, date, date)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer rows.Close()
 
@@ -88,18 +88,18 @@ func validReservation(db *sql.DB, userId int, listingId int, date string) error 
 		var temp int
 		err := rows.Scan(&temp)
 		if err != nil {
-			return util.NewError(err, "Database error", 500)
+			return util.NewError(err, "Error de la base de datos", 500)
 		}
 		results = append(results, temp)
 	}
 	for _, v := range results {
 		if v == listingId {
-			return util.NewError(nil, "You are already registered for this listing", 400)
+			return util.NewError(nil, "Ya estas registrado por este viaje", 400)
 		}
 	}
 
 	if len(results) != 0 {
-		return util.NewError(nil, "You are already registered for a ride at this time", 400)
+		return util.NewError(nil, "Ya estas registrado por un viaje en esta fecha", 400)
 	}
 
 	return nil
@@ -111,12 +111,12 @@ func CheckReservationQueue(db *sql.DB, listingId int) (bool, error) {
 			WHERE listing_id = ?
 		`)
 	if err != nil {
-		return false, util.NewError(err, "Database error", 500)
+		return false, util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 	rows, err := stmt.Query(listingId)
 	if err != nil {
-		return false, util.NewError(err, "Database error", 500)
+		return false, util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	defer rows.Close()
@@ -133,13 +133,13 @@ func makeReservation(db *sql.DB, listingId int, seats int, userId int, message s
 			VALUES (?, ?, ?, ?)
 		`)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(listingId, seats, userId, message)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	return nil
 }

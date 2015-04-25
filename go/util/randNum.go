@@ -12,7 +12,7 @@ func RandKey(i int64) (int64, error) {
 	// than we can generate in Go)
 	randNum, err := rand.Int(rand.Reader, byteLen)
 	if err != nil {
-		return 0, NewError(err, "Internal server error", 500)
+		return 0, NewError(err, "Error de servidor", 500)
 	}
 	key := randNum.Int64()
 	return key, nil

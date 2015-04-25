@@ -17,13 +17,13 @@ func deleteUpdateSeats(db *sql.DB, user int) error {
 	`)
 
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(user)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	return nil
@@ -37,13 +37,13 @@ func deleteAllAlerts(db *sql.DB, user int) error {
 	`)
 
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(user, user)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	return nil
@@ -56,13 +56,13 @@ func deleteEmailPrefs(db *sql.DB, user int) error {
 	`)
 
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(user)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	return nil
@@ -79,13 +79,13 @@ func deleteDeleteAlerts(db *sql.DB, user int) error {
 	`)
 
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(user)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer rows.Close()
 
@@ -93,7 +93,7 @@ func deleteDeleteAlerts(db *sql.DB, user int) error {
 		var id, driver int
 		err := rows.Scan(&id, &driver)
 		if err != nil {
-			return util.NewError(err, "Database error", 500)
+			return util.NewError(err, "Error de la base de datos", 500)
 		}
 		err = CreateAlert(db, driver, "dropped", id)
 		if err != nil { return err }
@@ -127,21 +127,21 @@ func DeleteAccount(db *sql.DB, user int) error {
 	`)
 
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	defer stmt.Close()
 
 	res, err := stmt.Exec(user)
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 	num, err := res.RowsAffected()
 	if err != nil {
-		return util.NewError(err, "Database error", 500)
+		return util.NewError(err, "Error de la base de datos", 500)
 	}
 
 	if num == 0 {
-		return util.NewError(errors.New("Delete function didn't delete anything"), "Database error", 500)
+		return util.NewError(errors.New("Delete function didn't delete anything"), "Error de la base de datos", 500)
 	}
 	return nil
 }
