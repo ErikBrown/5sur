@@ -228,7 +228,7 @@ func EmailTemplate(text string, buttonText string, buttonLink string) string {
 		<tr height="15px"></tr>
 		<tr height="1px">
 			<td width="25px"></td>
-			<td colspan="3" align="center" style="font-size: 12px; color: #989D9E;">Unsubcribe from emails by changing your <a href="https://5sur.com/emailPreferences" style="text-decoration: none; color=#4DBBE6">email preferences</a></td>
+			<td colspan="3" align="center" style="font-size: 12px; color: #989D9E;">Cancela tu suscripción a emails cambiando tus <a href="https://5sur.com/emailPreferences" style="text-decoration: none; color=#4DBBE6">preferencias de email</a></td>
 			<td width="25px"></td>
 		</tr>
 		<tr height="35px"></tr>
