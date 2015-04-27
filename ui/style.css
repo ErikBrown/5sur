@@ -1748,6 +1748,10 @@ h5 {
 	margin-bottom: 15px;
 }
 
+#faq img {
+	width: 15px;
+}
+
 @media all and (max-width: 520px) {
 	#faq {
 		font-size: 16px;
@@ -1757,4 +1761,27 @@ h5 {
 		font-size: 12px;
 		font-weight: 400;
 	}
+}
+
+/*** Footer ***/
+
+#listings_page {
+	height: auto !important;
+	min-height: 100%;
+	padding-bottom: 45px;
+}
+
+#footer {
+	color: #BEC6C8;
+	font-size: 14px;
+	line-height: 35px;
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	text-align: center;
+	border-top: 1px solid #E3E8E9;
+}
+
+#footer > a {
+	color: #8DD2E8;
 }
