@@ -94,7 +94,7 @@ func main() {
 		return
 	}
 
-	subject := "5sur - You can now give a user rating" // Needs to be translated
+	subject := "5sur - Ahora puedes dar rating a un usuario"
 	for _, rateEmail := range rateEmails {
 		err = setRateEmail(db, rateEmail.id)
 		if err != nil { 

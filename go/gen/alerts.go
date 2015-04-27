@@ -231,14 +231,14 @@ func emailAlert(db *sql.DB, user int, category string, targetId int) error {
 			if err != nil {return err}
 			subject = "5sur - Nuevos usuarios pendientes"
 			text = `Nuevos usuarios pendientes en el viaje ` + listing.Origin + ` > ` + listing.Destination + `.`
-			buttonText = "Ver listing"
+			buttonText = "Ver viaje"
 			buttonLink = "https://5sur.com/dashboard/listings?i=" + id
 		case "dropped":
 			listing, err := ReturnIndividualListing(db, targetId)
 			if err != nil {return err}
 			subject = "5sur - Alguien se ha retirado de tu viaje"
 			text = `Alguien se ha retirado de tu viaje ` + listing.Origin + ` > ` + listing.Destination + `.`
-			buttonText = "Ver listing"
+			buttonText = "Ver viaje"
 			buttonLink = "https://5sur.com/dashboard/listings?i=" + id
 		case "message": // The target id is the user id
 			message, err := returnAlertMessage(db, user, targetId)
@@ -262,7 +262,7 @@ func emailAlert(db *sql.DB, user int, category string, targetId int) error {
 			buttonText = "Ver reservas"
 			buttonLink = "https://5sur.com/dashboard/reservations"
 		case "deleted":
-			subject = "5sur - Listing eliminado"
+			subject = "5sur - Viaje eliminado"
 			text = `Un viaje por lo cual estabas registrado ha sido eliminado por el conductor.`
 			buttonText = "Ver reservas"
 			buttonLink = "https://5sur.com/dashboard/reservations"

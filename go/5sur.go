@@ -516,7 +516,7 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) error {
 	}{
 		"Regístrate",
 		"",
-		"Confirmation email has been sent to " + r.FormValue("Email"), // Needs to be translated
+		"Email de confirmacion ha sido mandado a " + r.FormValue("Email"),
 	}
 
 	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)
@@ -942,7 +942,7 @@ func RateSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 	}{
 		"Dar puntaje",
 		"",
-		"Rating submitted!", // Needs to be translated
+		"Rating entregado!",
 	}
 
 	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)
@@ -975,7 +975,7 @@ func PasswordResetHandler(w http.ResponseWriter, r *http.Request) error {
 	}{
 		"Restablecer contraseña",
 		"",
-		"Password reset email has been sent to " + r.FormValue("Email"), // Needs to be translated
+		"Email para reestablecer contraseña ha sido mandado a " + r.FormValue("Email"),
 	}
 
 	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)
@@ -1111,7 +1111,7 @@ func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) error {
 	}{
 		"Borrar cuenta",
 		"",
-		"Account deleted", // Needs to be translated
+		"Cuenta eliminada",
 	}
 
 	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)
@@ -1167,7 +1167,7 @@ func EmailPrefSubmitHandler(w http.ResponseWriter, r *http.Request) error {
 	}{
 		"Preferencias email",
 		"",
-		"Email preference changes saved", // Needs to be translated
+		"Preferencias guardadas",
 	}
 
 	err = templates.ExecuteTemplate(w, "formSubmit.html", Page)

@@ -121,7 +121,7 @@ func ValidCreateSubmit(r *http.Request) (CreateSubmitPost, error) {
 	}
 
 	if timeVar.After(time.Now().Local().AddDate(0,2,0)) {
-		return values, NewError(nil, "No se pueden crear eventos superiores a 2 meses", 400)
+		return values, NewError(nil, "No se pueden crear viajes superiores a 2 meses", 400)
 	}
 
 	values.Date = timeVar.Format("2006-01-02 15:04:05")
