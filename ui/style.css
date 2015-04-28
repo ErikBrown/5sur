@@ -540,8 +540,8 @@ h5 {
 	padding: 40px 0;
 	text-align: center;
 	background: #313F4F;
-	background: -webkit-linear-gradient(45deg, #F2F0DF 10%, #F1FBFE 90%);
-	background:     -ms-linear-gradient(45deg, #F2F0DF 10%, #F1FBFE 90%);
+	background: -webkit-linear-gradient(90deg, #272B2E 10%, #313F4F 90%);
+	background:     -ms-linear-gradient(90deg, #272B2E 10%, #313F4F 90%);
 	background:         linear-gradient(90deg, #272B2E 10%, #313F4F 90%);
 }
 
