@@ -27,7 +27,7 @@ q:before,q:after {
 }
 
 abbr,acronym { 
-	border:0;
+	border: 0;
 }
 	
 ul { 
@@ -1438,22 +1438,34 @@ h5 {
 }
 
 @media all and (max-width: 600px) {
+	.settings_sidebar {
+		height: auto !important;
+		overflow-x: hidden !important;
+		box-shadow: none !important;
+	}
+
+	.settings_sidebar h2 {
+		float: none !important;
+	}
+
+	.settings_sidebar li {
+		display: block !important;
+		width: 100% !important;
+		height: 75px !important;
+		line-height: 75px !important;
+	}
+
 	#sub_sidebar {
 		height: 100px;
 		width: 100%;
-		z-index: 500;
+		overflow-x: scroll;
+		overflow-y: hidden;
+		white-space: nowrap;
 	}
 
 	#dash_content {
 		clear: left;
 		margin-left: 0 !important;
-	}
-
-	#sub_sidebar {
-		width: 100%;
-		overflow-x: scroll;
-		overflow-y: hidden;
-		white-space: nowrap;
 	}
 
 	#sub_sidebar h2 {
@@ -1473,7 +1485,6 @@ h5 {
 	}
 
 	#dash_title {
-		max-width: 320px;
 		position: relative;
 	}
 
@@ -1499,7 +1510,7 @@ h5 {
 	}
 
 	.dash_message {
-		width: 260px;
+		min-width: 260px;
 		min-height: 50px;
 		margin: 15px 5px 0 15px;
 		padding-bottom: 15px;
