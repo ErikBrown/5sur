@@ -20,7 +20,7 @@
 <body id="form_page">
 	<form method="post" action="https://5sur.com/emailPrefSubmit" class="card_page" id="plain_form">
 		<a href="https://5sur.com/" id="form_logo"></a>
-		<p><b>Select which emails you want to recieve</b></p>
+		<p><b>Selecciona los mensajes que deseas recibir</b></p>
 		<label><input type="checkbox" name="pending" value="true"{{if eq .Pending true}} checked{{end}}>Usuarios pendientes</label>
 		<label><input type="checkbox" name="dropped" value="true"{{if eq .Dropped true}} checked{{end}}>Un pasajero se retiró del viaje</label>
 		<label><input type="checkbox" name="message" value="true"{{if eq .Message true}} checked{{end}}>Mensajes nuevos</label>
@@ -28,7 +28,7 @@
 		<label><input type="checkbox" name="removed" value="true"{{if eq .Removed true}} checked{{end}}>Eliminado de un viaje</label>
 		<label><input type="checkbox" name="deleted" value="true"{{if eq .Deleted true}} checked{{end}}>Viaje eliminado</label>
 		<label><input type="checkbox" name="rate" value="true"{{if eq .Rate true}} checked{{end}}>Rate usuarios</label>
-		<input type="submit" value="Set preferences">
+		<input type="submit" value="Cambiar preferencias">
 		<a href="https://5sur.com/dashboard/settings" id="discard_form">Cancelar</a>
 	</form>
 <script src="https://5sur.com/formScript.js"></script>
