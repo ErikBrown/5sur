@@ -6,6 +6,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+
 func ReturnFilter(db *sql.DB) ([]City, error) {
 	results := make ([]City, 0)
 
@@ -66,6 +67,56 @@ func checkNearbyListings(db *sql.DB, date_leaving string, id int) error {
 	return nil
 }
 
+func ReturnAllListings(db *sql.DB) ([]Listing, error) {
+	results := make ([]Listing, 0)
+
+	// Always prepare queries to be used multiple times. The parameter placehold is ?
+	stmt, err := db.Prepare(`
+		SELECT l.id, u.id, u.name, u.custom_picture, (u.positive_ratings - u.negative_ratings), l.date_leaving, c.name, c2.name, l.seats, l.fee
+			FROM listings AS l
+			JOIN users AS u ON l.driver = u.id
+			JOIN cities AS c ON l.origin = c.id
+			LEFT JOIN cities AS c2 ON l.destination = c2.id
+			WHERE l.seats > 0
+				AND l.date_leaving > NOW()
+			ORDER BY l.date_leaving
+			LIMIT 50
+		`)
+	
+	if err != nil {
+		return results, util.NewError(err, "Error de la base de datos", 500)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return results, util.NewError(err, "Error de la base de datos", 500)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var temp Listing
+		customPicture := false
+		name := ""
+		err := rows.Scan(&temp.Id, &temp.Driver, &name, &customPicture, &temp.Rating, &temp.Timestamp, &temp.Origin, &temp.Destination, &temp.Seats, &temp.Fee)
+		if err != nil {
+			return results, util.NewError(err, "Error de la base de datos", 500)
+		}
+		prettyTime, err := util.PrettyDate(temp.Timestamp, false)
+		if err != nil { return results, err }
+		temp.Date = prettyTime.Month + " " + prettyTime.Day
+		temp.Time = prettyTime.Time
+
+		if customPicture {
+			temp.Picture = "https://5sur.com/images/" + name + "_50.png"
+		} else {
+			temp.Picture = "https://5sur.com/default_50.png"
+		}
+		results = append(results, temp)
+	}
+	return results, nil
+}
+
 func ReturnListings(db *sql.DB, o int, d int, t string) ([]Listing, error) {
 	results := make ([]Listing, 0)
 
@@ -82,7 +133,7 @@ func ReturnListings(db *sql.DB, o int, d int, t string) ([]Listing, error) {
 				AND l.seats > 0
 				AND l.date_leaving > NOW()
 			ORDER BY l.date_leaving
-			LIMIT 25
+			LIMIT 50
 		`)
 	
 	if err != nil {

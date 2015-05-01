@@ -626,8 +626,12 @@ func RootHandler(w http.ResponseWriter, r *http.Request) error {
 	cities, err := gen.ReturnFilter(db)
 	if err != nil { return err }
 
+	listings, err := gen.ReturnAllListings(db)
+	if err != nil { return err }
+
 	body := &gen.ListingsHTML{
 		Filter: cities,
+		Listings: listings,
 		Homepage: true,
 	}
 
