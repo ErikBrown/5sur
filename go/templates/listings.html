@@ -6,6 +6,7 @@
 
 <meta charset='utf-8'>
 <meta name="viewport" content="width=device-width">
+<!-- <meta content="" name="description"> -->
 
 <link rel="icon" type="image/png" href="https://5sur.com/graphics/favicon.png">
 <!-- remove the extra weights -->
@@ -13,7 +14,8 @@
 <link rel="stylesheet" type="text/css" href="https://5sur.com/style.css">
 
 
-<title>5Sur - {{.Header.Title}}</title>
+
+<title>5Sur{{if ne .Header.Title ""}} - {{.Header.Title}}{{end}}</title>
 
 </head>
 

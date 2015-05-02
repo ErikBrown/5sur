@@ -616,7 +616,6 @@ func RootHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil { return err }
 
 	header := &gen.HeaderHTML {
-		Title: "Homepage",
 		Username: user,
 		Alerts: len(alerts),
 		AlertText: alerts,
