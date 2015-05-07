@@ -1254,7 +1254,7 @@ h5 {
 
 /* dash messages */
 .dash_message {
-	width: 400px;
+	max-width: 400px;
 	min-height: 50px;
 	margin: 15px 0 0 25px;
 	padding-bottom: 20px;
@@ -1272,7 +1272,7 @@ h5 {
 
 .dash_message > p {
 	margin-top: 5px;
-	margin-left: 60px;
+	margin-left: 65px;
 	color: #373F42;
 }
 
