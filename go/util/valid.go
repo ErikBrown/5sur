@@ -323,7 +323,7 @@ func ValidRatePost(r *http.Request) (int, bool, string, bool, error) {
 	if r.FormValue("Public") == "true" {
 		public = true
 	} else {
-		positive = false
+		public = false
 	}
 
 	return recipient, positive, r.FormValue("Comment"), public, nil
