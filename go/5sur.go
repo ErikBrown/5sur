@@ -816,7 +816,7 @@ func LoginFormHandler(w http.ResponseWriter, r *http.Request) error{
 		script = `<script src='https://www.google.com/recaptcha/api.js'></script>`
 		captcha = `<div class="g-recaptcha" data-sitekey="6LfejAATAAAAAK1DA4l33OntwJy9LZz1GK3F2Egr"></div>`
 	}
-	registerData := &gen.LoginHTML{
+	registerData := &gen.LoginHTML {
 		Title: "Ingresar",
 		Script: script,
 		Captcha: captcha,

@@ -1,0 +1,32 @@
+server {
+	listen 80 default_server;
+	listen [::]:80 default_server ipv6only=on;
+	listen 443 ssl;
+	root /var/www/html;
+	index index.html index.htm;
+	
+	# Limit max upload size
+	client_max_body_size 10M;	
+	# Make site accessible from http://localhost/
+	ssl_certificate /etc/nginx/ssl/bundle.crt;
+	ssl_certificate_key /etc/nginx/ssl/5sur.com.key;
+	location / {
+		# First attempt to serve request as file, then
+		# as directory, then fall back to displaying a 404.
+		try_files $uri $uri @go_app;
+		# Uncomment to enable naxsi on this location
+		# include /etc/nginx/naxsi.rules
+	}
+
+	location @go_app {
+		limit_req zone=general burst=2;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_pass http://localhost:8080;
+	}
+}
+
+server {
+    listen      80;
+    server_name 5sur.com www.5sur.com;
+    return 301 https://5sur.com$request_uri;
+}
